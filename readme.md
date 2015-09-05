@@ -1,60 +1,221 @@
-## walkdict 
+# validater 
 
-walkdict is a tool to deep traversal dict and list, no Recursion Depth limit
+validater can validate json/dict/list and **convert value** by schema
 
-walkdict可以用来深度遍历dict和list，不受dict嵌套深度限制
 
 ##install 安装
 
-	pip install walkdict
+	pip install validater
+
 
 ## usage 用法
 
 ```python
->>> from walkdict import walkdict
->>> d={"key":"value","inner":{"inner-key":"inner-value","list":[1,2,3,4]}}
->>> for k,v in walkdict(d):
-... 	print k,v
-... 
-key value
-inner.inner-key inner-value
-inner.list.[0] 1
-inner.list.[1] 2
-inner.list.[2] 3
-inner.list.[3] 4
+>>> from validater import validate
+>>> schema={
+	"key":{
+		"desc":"input a int value",
+		"required":True,
+		"validate":"int",
+		"default":"123"
+	},
+	"list":[{
+		"desc":"input a int value",
+		"required":True,
+		"validate":"int",
+		"default":"123"
+	}]
+}
+>>> obj={
+	"key":"333",
+	"list":["1","23","asd"]
+}
+
+>>> error,value=validate(obj,schema)
+>>> print error
+[('list.[2]', u"must be 'int': input a int value")]
+>>> print value
+{'list': [1, 23, None], 'key': 333}
 ```
 
-when dict's key is a class, the key name will be $classname 
 
-当dict的key是一个类时，将会显示$classname 
+## validate(obj, schema)
+
+obj can be dict, list or just a value, if you want to validate json, you should loads json to dict or list first
+
+return
 
 ```python
->>> from datetime import datetime
->>> from walkdict import walkdict
->>> d={datetime:"value","time":datetime}
->>> for k,v in walkdict(d):
-... 	print k,v
-... 
-$datetime value
-time <type 'datetime.datetime'>
+tuple(error,validated_value)
 ```
 
+- error is a list of `tupe(key,err_msg)`
+- validated_value is a dict, it's struct is the same as schema, invalid value will be None
 
-## note 注意事项
 
-can't process circulation dict or list which will cause program frozen
-
-无法处理循环引用的dict和list，将会导致程序假死，一直运行而无法正常退出
-
-for example 例如
+## schema format
 
 ```python
->>> from walkdict import walkdict
->>> d={"key":"value"}
->>> d["key"]=d
->>> for k,v in walkdict(d):
-... 	print k,v
+{
+	"desc":"description",
+	"required":True,
+	"validate":"int",
+	"default":"123"
+}
 ```
+
+- validate is required, desc/required/default is optional
+- desc is msg which will add to err_msg
+- default can be value or callable(without args)
+- nest is supported
+- list should contain (only) one sub_schema(item)
+- built-in validater
+
+	|name           | valid value 
+	|---------------|-----------------------------------
+	|any            | anything
+	|basestring     | basestring
+	|unicode        | unicode
+	|str            | str
+	|list           | list
+	|dict           | dict
+	|bool           | bool
+	|int            | int
+	|long           | long
+	|float          | float
+	|datetime       | isoformat datetime.datetime
+	|objectid       | bson.objectid.ObjectId
+	|re_email       | email
+	|re_ipv4        | ipv4
+	|re_pnone       | phone_number
+	|re_idcard      | 身份证号
+	|re_url         | url, support urls without 'http://'
+	|re_name        | common_use_name [a-z or A-Z or 0-9 or _] and 5~16 chars 
+
+###some example
+
+value of datetime
+```python
+{
+    "desc":"desc of the key",
+    "required":True,
+    "validate":"datetime",
+    "default":datetime.utcnow,
+}
+```
+list of datetime
+```python
+[{
+    "desc":"desc of the key",
+    "required":True,
+    "validate":"datetime",
+    "default":"default_value",
+}]
+```
+nest schema
+```python
+{
+    "key1":{
+        "desc":"desc of the key",
+        "required":True,
+        "validate":"validater, eg datetime",
+        "default":"default_value",
+    },
+    "key2":{
+        "key_nest":{
+            "desc":"desc of the key",
+            "required":True,
+            "validate":"datetime",
+            "default":"default_value",
+        },
+        ...
+    },
+    "key_list":[{
+            "desc":"desc of the key",
+            "required":True,
+            "validate":"datetime",
+            "default":"default_value",
+        }]
+    ...
+}   
+```
+
+**invalid** schema will cause `SchemaError` (list should contain (only) one item)
+```python
+[{
+    "desc":"desc of the key",
+    "required":True,
+    "validate":"datetime",
+    "default":"default_value",
+},
+{
+    "desc":"desc of the key",
+    "required":True,
+    "validate":"datetime",
+    "default":"default_value",
+}]
+```
+
+
+## add_validater
+
+```python
+add_validater(name,validater)
+```
+
+validater is a callable object and return a tuple
+```python
+def validater(v):
+	return (True/False, validated_value)
+```
+
+for example
+```python
+from validater import add_validater
+def plus_int(v):
+    try:
+        return (int(v) > 0, int(v))
+    except:
+        return (False, None)
+add_validater("+int", plus_int)
+
+s = {
+    "key": [{
+        "desc": "plus int",
+        "required": True,
+        "validate": "+int"
+    }]
+}
+obj = {"key": ["123", "0", "-123"]}
+(error, value) = validate(obj, s)
+print error
+print value
+```
+
+## `ProxyDict` validate custome type
+
+ProxyDict can wrap custome type object and use it as dict
+
+	ProxyDict(obj, types)
+
+if you custome type object contain other custome type object, you can add custome type to types, then it will be auto proxy 
+
+```python
+class XX(object):
+
+    """docstring for XX"""
+
+    def __init__(self, xx):
+        self.xx = xx
+
+xx = XX("haha")
+d = ProxyDict(xx)
+schema={
+	"xx":{"validate":"str"}
+}
+error,value = validate(d, schema)
+```
+
 
 ## test 测试
 	

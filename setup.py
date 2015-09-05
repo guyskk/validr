@@ -9,7 +9,7 @@ setup(
     license="MIT",
     packages=['validater'],
     install_requires=[
-        'dateutil',
+        'python-dateutil',
         'bson'
     ],
 )

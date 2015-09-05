@@ -41,13 +41,11 @@ validater can validate json/dict/list and **convert value** by schema
 
 ## validate(obj, schema)
 
-obj can be dict, list or just a value, if you want to validate json, you should loads json to dict or list first
+obj can be dict, list or just a value, 
 
-return
+if you want to validate json, you should loads json to dict or list first
 
-```python
-tuple(error,validated_value)
-```
+return is `tuple(error,validated_value)`
 
 - error is a list of `tupe(key,err_msg)`
 - validated_value is a dict, it's struct is the same as schema, invalid value will be None

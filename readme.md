@@ -1,6 +1,7 @@
 # validater 
 
 validater can validate json/dict/list and **convert value to python object ** by schema
+
 validater 可以依据 schema 校验 json/dict/list 并将值转换成相应的python对象
 
 
@@ -192,7 +193,8 @@ print error
 print value
 ```
 
-## `ProxyDict` validate custome type
+## `ProxyDict` validate custome type 
+###校验自定义类型的对象
 
 ProxyDict can wrap custome type object and use it as dict
 

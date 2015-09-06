@@ -1,6 +1,7 @@
 # validater 
 
-validater can validate json/dict/list and **convert value** by schema
+validater can validate json/dict/list and **convert value to python object ** by schema
+validater 可以依据 schema 校验 json/dict/list 并将值转换成相应的python对象
 
 
 ##install 安装
@@ -65,6 +66,7 @@ return is `tuple(error,validated_value)`
 - validate is required, desc/required/default is optional
 - desc is msg which will add to err_msg
 - default can be value or callable(without args)
+- validate can be basestring or callable(see `add_validater`)
 - nest is supported
 - list should contain (only) one sub_schema(item)
 - built-in validater
@@ -85,12 +87,12 @@ return is `tuple(error,validated_value)`
 	|objectid       | bson.objectid.ObjectId
 	|re_email       | email
 	|re_ipv4        | ipv4
-	|re_pnone       | phone_number
+	|re_phone       | phone_number
 	|re_idcard      | 身份证号
 	|re_url         | url, support urls without 'http://'
 	|re_name        | common_use_name [a-z or A-Z or 0-9 or _] and 5~16 chars 
 
-###some example
+###some examples
 
 value of datetime
 ```python

@@ -218,3 +218,26 @@ def test_default():
     (error, value) = validate(obj, s)
     assert not error
     assert isinstance(value["key"], datetime)
+
+
+def test_validate_lamada():
+    s = {
+        "key": {
+            "desc": "datetime",
+            "required": True,
+            "validate": lambda v: (True, v.isoformat()),
+        },
+        "key2": {
+            "desc": "desc key2",
+            "required": True,
+            "validate": lambda v: (False, v.isoformat()),
+        }
+    }
+    obj = {
+        "key": parser.parse("2015-09-06 09:50:50"),
+        "key2": parser.parse("2015-09-06 08:50:50")
+    }
+    (error, value) = validate(obj, s)
+    assert "desc key2" in dict(error)["key2"]
+    assert isinstance(value["key"], basestring)
+    assert value["key2"] is None

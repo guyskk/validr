@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(
     name="validater",
-    version="0.1",
+    version="0.6",
     description="a python tool to "
     "validate json/dict/list and convert value by schema",
     author="kk",
@@ -9,7 +9,7 @@ setup(
     license="MIT",
     packages=['validater'],
     install_requires=[
-        'python-dateutil',
-        'bson'
+        'python-dateutil>=2.4',
+        'bson>=0.4'
     ],
 )

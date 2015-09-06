@@ -22,12 +22,14 @@ def _schema_info(obj):
     return (is_schema, is_list, info)
     """
     if isinstance(obj, dict):
-        if isinstance(obj.get("validate"), basestring):
+        vali = obj.get("validate")
+        if isinstance(vali, basestring) or callable(vali):
             return (True, False, obj)
     elif isinstance(obj, list):
-        if len(obj) == 1 and isinstance(obj[0], dict)\
-                and isinstance(obj[0].get("validate"), basestring):
-            return (True, True, obj[0])
+        if len(obj) == 1 and isinstance(obj[0], dict):
+            vali = obj[0].get("validate")
+            if isinstance(vali, basestring) or callable(vali):
+                return (True, True, obj[0])
     return (False, False, None)
 
 
@@ -96,7 +98,10 @@ def _check_keys(obj, schema):
 def _get_info(info):
     desc = info.get("desc")
     vali = info.get("validate")
-    valier = validaters.get(vali)
+    if callable(vali):
+        valier = vali
+    else:
+        valier = validaters.get(vali)
     if valier is None:
         raise SchemaError("can't find validater '%s'" % vali)
     return (desc, vali, valier)
@@ -176,14 +181,19 @@ def validate(obj, schema):
     if schema is None:
         raise SchemaError("schema can't be None")
 
+    # use copy.deepcopy(obj) to avoid modify origin obj
+    obj = copy.deepcopy(obj)
+    # make deepcopy of schema to avoid modify origin schema
+    schema = copy.deepcopy(schema)
+
     # validate 1,2,6 stuct
     errors, validated_value = validate_1_2_6(obj, schema)
     if errors is not None or validated_value is not None:
         return (errors, validated_value)
 
     errors = []
-    # make deepcopy of schema, then update it with valid value.
-    validated_value = copy.deepcopy(schema)
+    # update the schema with valid value.
+    validated_value = schema
     # use stack other than recursion to enhance performance.
     stack = [("", obj, validated_value)]
 

@@ -161,7 +161,7 @@ def validate(obj, schema):
         re_pnone        phone_number
         re_idcard       身份证号
         re_url          url, support urls without 'http://'
-        re_name         common_use_name [a-z|A-Z|0-9|_] and 5~16 chars
+        re_name         common_use_name [a-z|A-Z|0-9|_] and 4~16 chars
     """
 
     # there are 6 structs of Obj and Schame

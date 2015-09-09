@@ -85,7 +85,7 @@ re_email = re.compile(ur'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}
 re_ipv4 = re.compile(ur'^(\d+)\.(\d+)\.(\d+)\.(\d+)$')
 re_phone = re.compile(ur'^(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}$')
 re_idcard = re.compile(ur'^\d{15}|\d{17}[0-9Xx]$')
-re_name = re.compile(ur'^[a-zA-Z][a-zA-Z0-9_]{5,15}$')
+re_name = re.compile(ur'^[a-zA-Z][a-zA-Z0-9_]{3,15}$')
 # http://daringfireball.net/2010/07/improved_regex_for_matching_urls
 re_url = re.compile(ur'^\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))$')
 

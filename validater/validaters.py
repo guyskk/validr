@@ -7,6 +7,10 @@ from dateutil.parser import parse as date_parse
 
 
 def re_validater(r):
+    """Return a regex validater
+
+    :param r: regex object
+    """
     def vali(v):
         if isinstance(v, basestring) and r.match(v):
             return (True, v)
@@ -15,6 +19,10 @@ def re_validater(r):
 
 
 def type_validater(cls):
+    """Return a type validater
+
+    :param cls: valid class of value
+    """
     def vali(v):
         if isinstance(v, cls):
             return (True, v)
@@ -24,6 +32,7 @@ def type_validater(cls):
 
 
 def datetime_validater(v):
+    """validater for datetime object or datetime string"""
     if isinstance(v, datetime):
         return (True, v)
     else:
@@ -36,12 +45,14 @@ def datetime_validater(v):
 
 
 def bool_validater(v):
+    """validater for bool object"""
     if isinstance(v, bool):
         return (True, v)
     return (False, None)
 
 
 def int_validater(v):
+    """validater for int object or string"""
     try:
         return (True, int(v))
     except:
@@ -49,6 +60,7 @@ def int_validater(v):
 
 
 def long_validater(v):
+    """validater for long object or string"""
     try:
         return (True, long(v))
     except:
@@ -56,6 +68,7 @@ def long_validater(v):
 
 
 def float_validater(v):
+    """validater for float object or string"""
     try:
         return (True, float(v))
     except:
@@ -63,6 +76,7 @@ def float_validater(v):
 
 
 def objectid_validater(v):
+    """validater for bson.objectid.ObjectId or string"""
     try:
         return (True, ObjectId(v))
     except:
@@ -70,6 +84,7 @@ def objectid_validater(v):
 
 
 def safestr_validater(v):
+    """validater for string, escape ``'>', '<', "'", '"'``"""
     if isinstance(v, basestring):
         return (True, v.replace('&', '&amp;')
                 .replace('>', '&gt;')
@@ -115,9 +130,11 @@ validaters = {
 
 def add_validater(name, fn):
     """add validater
-    - name validater name
-    - fn validater(v) -> tuple(ok, value)
-        ok is True or False, indicate valid
-        value is converted value or None(if ok is False)
+
+    :param name: validater name
+    :param fn: ``validater(v) -> tuple(ok, value)``
+
+        - ok is True or False, indicate valid
+        - value is converted value or None(if ok is False)
     """
     validaters[name] = fn

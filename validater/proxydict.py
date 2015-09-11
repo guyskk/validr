@@ -4,10 +4,12 @@
 class ProxyDict(dict):
 
     """ProxyDict 将普通对象包装成dict
-        -obj 要代理的对象
-        -types 要代理的类型，list of types needed proxy
-        若obj的属性(obj.xy)的类型在types列表中，将会自动ProxyDict并返回
-        -下划线开头的属性(obj._xy, obj.__xy)不会出现在dict中
+
+    :param obj: 要代理的对象
+    :param types: 要代理的类型，list of types needed proxy
+
+        - 若obj的属性(obj.xy)的类型在types列表中，将会自动ProxyDict并返回
+        - 下划线开头的属性(obj._xy, obj.__xy)不会出现在dict中
     """
 
     def __init__(self, obj, types=[]):

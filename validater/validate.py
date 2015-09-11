@@ -6,7 +6,7 @@ from . import validaters
 
 class SchemaError(Exception):
 
-    """docstring for SchemaError"""
+    """SchemaError indicate schema invalid"""
 
 
 def _build_msg(vali, desc):
@@ -109,11 +109,14 @@ def _get_info(info):
 
 def validate(obj, schema):
     """validate obj according to schema
-    return:
-        tuple(errors,validated_value)
+
+    :return: ``tuple(errors,validated_value)``::
+
         - errors is a list of tupe(key,err_msg)
         - validated_value is a dict
-    schema format:
+
+    schema format::
+
         {
             "key1":{
                 "desc":"desc of the key",
@@ -138,10 +141,12 @@ def validate(obj, schema):
                 }]
             ...
         }
+
     - validate is required, desc/required/default is optional
     - nest is supported
     - list contain (only) one sub_schema
-    - built-in validater
+    - built-in validater::
+
         name            valid value
         ---------------------------------
         any             anything
@@ -187,7 +192,7 @@ def validate(obj, schema):
     schema = copy.deepcopy(schema)
 
     # validate 1,2,6 stuct
-    errors, validated_value = validate_1_2_6(obj, schema)
+    errors, validated_value = _validate_1_2_6(obj, schema)
     if errors is not None or validated_value is not None:
         return (errors, validated_value)
 
@@ -246,7 +251,7 @@ def validate(obj, schema):
     return (errors, validated_value)
 
 
-def validate_1_2_6(obj, schema):
+def _validate_1_2_6(obj, schema):
     errors = []
     # make deepcopy of schema, then update it with valid value.
     validated_value = copy.deepcopy(schema)

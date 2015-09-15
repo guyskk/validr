@@ -208,7 +208,7 @@ def validate(obj, schema):
         if not isinstance(s, dict):
             raise SchemaError("%s not a valid schema" % s)
         if not isinstance(o, dict):
-            errors.append((k[:-1], "must be a dict"))
+            errors.append((k[:-1] or "obj", "must be a dict"))
             continue
 
         # find missing keys and common keys

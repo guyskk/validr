@@ -92,6 +92,7 @@ return is `tuple(error,validated_value)`
 	|re_idcard      | 身份证号
 	|re_url         | url, support urls without 'http://'
 	|re_name        | common_use_name [a-z or A-Z or 0-9 or _] and 4~16 chars 
+    |safestr        | escape unsafe string
 
 ###some examples
 

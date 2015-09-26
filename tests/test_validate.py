@@ -17,6 +17,10 @@ def test_1():
     (error, value) = validate(obj1, s1)
     assert error
     assert value is None
+    obj2 = "111"
+    (error, value) = validate(obj2, s1)
+    assert not error
+    assert value == 111
 
 
 def test_2():
@@ -32,7 +36,7 @@ def test_2():
     (error, value) = validate(obj2, s2)
     assert error[0][0] == "[0]"
     assert "desc of the key" in error[0][1]
-    assert value == [None, 1, 2, 3]
+    assert sorted(value) == sorted([None, 1, 2, 3])
 
 
 def test_6():
@@ -57,8 +61,8 @@ def test_6():
     (error, value) = validate(obj6, s6)
     assert len(error) == 1
     assert error[0][0] == "[2].key1"
-    assert value == [{"key1": 123}, {"key1": 321},
-                     {"key1": None}, {"key1": 321}, ]
+    assert sorted(value) == sorted([{"key1": 123}, {"key1": 321},
+                                    {"key1": None}, {"key1": 321}, ])
 
 
 def test_3():
@@ -114,9 +118,7 @@ def test_4():
     assert len(error) == 1
     assert error[0][0] == "key1.[2]"
     assert "desc of the key" in error[0][1]
-    assert value == {
-        "key1": [123, 32, None]
-    }
+    assert sorted(value["key1"]) == sorted([123, 32, None])
 
 
 def test_5():
@@ -169,16 +171,12 @@ def test_5():
     assert "int" in error["key2.[2]"]
     assert "int" in error["key3.key2.[2]"]
     assert "required" in error["key3.key3"]
-    assert value == {
-        "key1": 123,
-        "key2": [123, 32, None],
-        "key3": {
-            "key1": 123,
-            "key2": [123, 32, None],
-            "key3": None,
-            "key4": None
-        }
-    }
+    assert value["key1"] == 123
+    assert sorted(value["key2"]) == sorted([123, 32, None])
+    assert value["key3"]["key1"] == 123
+    assert sorted(value["key3"]["key2"]) == sorted([123, 32, None])
+    assert value["key3"]["key3"] is None
+    assert value["key3"]["key4"] is None
 
 
 def test_addvalidater():
@@ -202,7 +200,7 @@ def test_addvalidater():
     error = dict(error)
     assert "key.[1]" in error
     assert "+int" in error["key.[2]"]
-    assert value == {"key": [123, None, None]}
+    assert sorted(value["key"]) == sorted([123, None, None])
 
 
 def test_default():

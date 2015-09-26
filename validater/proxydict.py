@@ -5,32 +5,22 @@ class ProxyDict(dict):
 
     """ProxyDict 将普通对象包装成dict
 
-    :param obj: 要代理的对象
-    :param types: 要代理的类型，list of types needed proxy
-
-        - 若obj的属性(obj.xy)的类型在types列表中，将会自动ProxyDict并返回
-        - 下划线开头的属性(obj._xy, obj.__xy)不会出现在dict中
+    :param proxy_obj: 要代理的对象
+    :param types: 要代理的类型，list of types needed proxy,
+        若proxy_obj的属性(proxy_obj.xy)的类型在types列表中，将会自动ProxyDict并返回
     """
 
-    def __init__(self, obj, types=[]):
-        self.obj = obj
-        self.proxy_types = types
-        self.proxy_types.append(type(obj))
-        self.update(self._todict())
-        # super(ProxyDict, self).__init__(*arg, **kw)
-
-    def _todict(self):
-        d = {}
-        for k, v in self.items():
-            if isinstance(v, ProxyDict):
-                d[k] = v._todict()
-            else:
-                d[k] = v
-        return d
+    def __init__(self, proxy_obj, types=None):
+        self.proxy_obj = proxy_obj
+        if types is None:
+            self.proxy_types = []
+        else:
+            self.proxy_types = types
+        self.proxy_types.append(type(proxy_obj))
 
     def __getitem__(self, key):
-        if hasattr(self.obj, key):
-            item = getattr(self.obj, key)
+        if hasattr(self.proxy_obj, key):
+            item = getattr(self.proxy_obj, key)
             if isinstance(item, tuple(self.proxy_types)):
                 return ProxyDict(item, self.proxy_types)
             else:
@@ -39,24 +29,37 @@ class ProxyDict(dict):
             raise KeyError(key)
 
     def __setitem__(self, key, item):
-        setattr(self.obj, key, item)
-        self.update(self._todict())
+        setattr(self.proxy_obj, key, item)
 
     def __delitem__(self, key):
-        delattr(self.obj, key)
-        self.update(self._todict())
+        delattr(self.proxy_obj, key)
 
     def has_key(self, k):
-        return hasattr(self.obj, k)
+        return k in self
 
     def keys(self):
-        return [k for k in self.obj.__dict__.keys() if k[:1] != '_']
+        return dir(self.proxy_obj)
 
     def values(self):
-        return [self[k] for k in self.keys()]
+        return [self.__getitem__(k) for k in self.keys()]
 
     def items(self):
-        return [(k, self[k]) for k in self.keys()]
+        return [(k, self.__getitem__(k)) for k in self.keys()]
+
+    def __len__(self):
+        return len(self.keys())
+
+    def __contains__(self, item):
+        return hasattr(self.proxy_obj, item)
 
     def __iter__(self):
         return iter(self.keys())
+
+    def __repr__(self):
+        return "ProxyDict(%s)" % repr(self.keys())
+
+    def __str__(self):
+        return '"%s"' % repr(self)
+
+    def __unicode__(self):
+        return u'"%s"' % repr(self)

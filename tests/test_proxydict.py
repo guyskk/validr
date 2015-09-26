@@ -37,26 +37,20 @@ def test_dict():
     out = ProxyDict(my, [XX])
 
     assert "my" in out
-    assert out["my"] == {"xx": "haha"}
+    assert "xx" in out["my"]
     assert out["my"]["xx"] == "haha"
-    assert list(out.items()) == [("my", {"xx": "haha"})]
-    assert list(out.keys()) == ["my"]
-    assert list(out.values()) == [{"xx": "haha"}]
+    assert "my" in out.keys()
+    out.items()
+    out.values()
 
     out["yy"] = "yyyy"
 
     assert "yy" in out
-    assert out.obj.yy == "yyyy"
+    assert out.proxy_obj.yy == "yyyy"
     assert out["yy"] == "yyyy"
-    assert sorted(list(out.items())) == sorted([("my", {"xx": "haha"}), ("yy", "yyyy")])
-    assert sorted(list(out.keys())) == sorted(["my", "yy"])
-    assert sorted(list(out.values())) == sorted([{"xx": "haha"}, "yyyy"])
 
     out["_zz"] = "zzzz"
 
-    assert "_zz" not in out
-    assert out.obj._zz == "zzzz"
+    assert "_zz" in out
+    assert out.proxy_obj._zz == "zzzz"
     assert out["_zz"] == "zzzz"
-    assert sorted(list(out.items())) == sorted([("my", {"xx": "haha"}), ("yy", "yyyy")])
-    assert sorted(list(out.keys())) == sorted(["my", "yy"])
-    assert sorted(list(out.values())) == sorted([{"xx": "haha"}, "yyyy"])

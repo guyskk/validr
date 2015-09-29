@@ -1,5 +1,6 @@
 # coding:utf-8
 
+from __future__ import unicode_literals
 from bson.objectid import ObjectId
 import re
 from datetime import datetime
@@ -95,14 +96,14 @@ def safestr_validater(v):
         return (False, None)
 
 # more http://www.cnblogs.com/zxin/archive/2013/01/26/2877765.html
-re_datetime = re.compile(ur'^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(.\d+\w?)?$')
-re_email = re.compile(ur'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}$')
-re_ipv4 = re.compile(ur'^(\d+)\.(\d+)\.(\d+)\.(\d+)$')
-re_phone = re.compile(ur'^(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}$')
-re_idcard = re.compile(ur'^\d{15}|\d{17}[0-9Xx]$')
-re_name = re.compile(ur'^[a-zA-Z][a-zA-Z0-9_]{3,15}$')
+re_datetime = re.compile(r'^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(.\d+\w?)?$')
+re_email = re.compile(r'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}$')
+re_ipv4 = re.compile(r'^(\d+)\.(\d+)\.(\d+)\.(\d+)$')
+re_phone = re.compile(r'^(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}$')
+re_idcard = re.compile(r'^\d{15}|\d{17}[0-9Xx]$')
+re_name = re.compile(r'^[a-zA-Z][a-zA-Z0-9_]{3,15}$')
 # http://daringfireball.net/2010/07/improved_regex_for_matching_urls
-re_url = re.compile(ur'^\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))$')
+re_url = re.compile(r'^\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))$')
 
 
 validaters = {

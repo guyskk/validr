@@ -1,5 +1,6 @@
 # coding:utf-8
 
+from __future__ import unicode_literals
 from . import validaters
 
 
@@ -13,7 +14,7 @@ def _build_msg(vali, desc):
         desc = ": " + desc
     else:
         desc = ""
-    return u"must be '%s'%s" % (vali, desc)
+    return "must be '%s'%s" % (vali, desc)
 
 
 def is_schema(obj):
@@ -99,7 +100,7 @@ def validate(obj, schema):
             if len(schema) != 1:
                 raise SchemaError("invalid list schema '%s'" % schema)
             if not isinstance(obj, list):
-                errors.append((key[4:], "must be list"))
+                errors.append((fullkey[4:], "must be list"))
             else:
                 new_value = []
                 _set_value(value, new_value, key)

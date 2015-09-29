@@ -112,10 +112,14 @@ def validate(obj, schema):
             if not is_schema(schema):
                 new_value = {}
                 _set_value(value, new_value, key)
-                # add dict item to stack
-                for k in schema:
-                    full_k = "%s.%s" % (fullkey, k)
-                    stack.append((obj.get(k), schema[k], new_value, k, full_k))
+                # must aways do _set_value
+                if not isinstance(obj, dict):
+                    errors.append((fullkey[4:], "must be dict"))
+                else:
+                    # add dict item to stack
+                    for k in schema:
+                        full_k = "%s.%s" % (fullkey, k)
+                        stack.append((obj.get(k), schema[k], new_value, k, full_k))
             else:
                 (desc, required, has_default, default, vali, valier) = schema_info(schema)
                 # work with default and required

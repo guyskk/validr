@@ -1,4 +1,6 @@
 # coding:utf-8
+from __future__ import unicode_literals
+
 
 import collections
 from validater import ProxyDict

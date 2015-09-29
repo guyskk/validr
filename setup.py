@@ -3,7 +3,7 @@
 from setuptools import setup
 setup(
     name="validater",
-    version="0.7.1",
+    version="0.7.2",
     description="a python tool to "
     "validate json/dict/list and convert value by schema",
     author="kk",

@@ -123,9 +123,11 @@ def validate(obj, schema):
             else:
                 (desc, required, has_default, default, vali, valier) = schema_info(schema)
                 # work with default and required
-                if obj is None and has_default:
+                # treat "" as NULL, this is more practical
+                # and most framworks behave this way.
+                if obj is None or obj == "" and has_default:
                     obj = default
-                if obj is None:
+                if obj is None or obj == "":
                     if required:
                         errors.append((fullkey[4:], "required"))
                     _set_value(value, None, key)

@@ -6,6 +6,13 @@ from datetime import datetime
 from validater import validate, add_validater
 from dateutil import parser
 
+# support py3
+try:
+    basestring
+    unicode
+except NameError:
+    basestring = unicode = str
+
 
 def test_1():
 

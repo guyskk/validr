@@ -4,6 +4,13 @@ from __future__ import unicode_literals
 
 from validater import validate, add_validater
 
+# support py3
+try:
+    basestring
+    unicode
+except NameError:
+    basestring = unicode = str
+
 
 def test_obj_list_schema_not_list():
     schema_outputs = {

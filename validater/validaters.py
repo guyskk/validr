@@ -1,6 +1,8 @@
 # coding:utf-8
 
 from __future__ import unicode_literals
+from __future__ import absolute_import
+
 from bson.objectid import ObjectId
 import re
 from datetime import datetime
@@ -76,6 +78,20 @@ def float_validater(v):
         return (False, None)
 
 
+def basestring_validater(v):
+    """working in both Py2 and Py3"""
+    try:
+        if isinstance(obj, basestring):
+            return (True, v)
+        else:
+            return (False, None)
+    except NameError:
+        if isinstance(v, str):
+            return (True, v)
+        else:
+            return (False, None)
+
+
 def objectid_validater(v):
     """validater for bson.objectid.ObjectId or string"""
     try:
@@ -103,12 +119,13 @@ re_phone = re.compile(r'^(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}
 re_idcard = re.compile(r'^\d{15}|\d{17}[0-9Xx]$')
 re_name = re.compile(r'^[a-zA-Z][a-zA-Z0-9_]{3,15}$')
 # http://daringfireball.net/2010/07/improved_regex_for_matching_urls
-re_url = re.compile(r'^\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))$')
+re_url = re.compile(
+    r'^\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))$')
 
 
 validaters = {
     "any": lambda v: (True, v),
-    "basestring": type_validater(basestring),
+    "basestring": basestring_validater,
     "unicode": type_validater(unicode),
     "str": type_validater(str),
     "list": type_validater(list),

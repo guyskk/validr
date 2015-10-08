@@ -1,7 +1,8 @@
 # coding:utf-8
 
 from __future__ import unicode_literals
-from . import validaters
+from __future__ import absolute_import
+from validater import validaters
 
 
 class SchemaError(Exception):

@@ -2,6 +2,8 @@
 
 validater can validate json/dict/list and **convert value to python object ** by schema, support python 2.7.x and python 3.3+
 
+**support py3 since v0.8.0, tested on py27 and py34**
+
 validater 可以依据 schema 校验 json/dict/list 并将值转换成相应的python对象，支持 python 2.7.x 和 python 3.3+
 
 
@@ -85,7 +87,7 @@ return is `tuple(error,validated_value)`
     |+int           | plus int
 	|float          | float
 	|datetime       | isoformat datetime.datetime
-	|objectid       | bson.objectid.ObjectId
+	|objectid       | bson.objectid.ObjectId, **removed since v0.7.4**
 	|email          | email
 	|ipv4           | ipv4
 	|phone          | phone_number

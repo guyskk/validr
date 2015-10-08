@@ -6,6 +6,12 @@ from datetime import datetime
 from validater import validate, add_validater, re_validater
 from dateutil import parser
 import re
+import six
+
+
+def assert_eqlist(list1, list2):
+    diff = set(list1) - set(list2)
+    assert not diff
 
 
 def test_1():
@@ -39,7 +45,7 @@ def test_2():
     (error, value) = validate(obj2, s2)
     assert error[0][0] == "[0]"
     assert "desc of the key" in error[0][1]
-    assert sorted(value) == sorted([None, 1, 2, 3])
+    assert_eqlist(value, [None, 1, 2, 3])
 
 
 def test_6():
@@ -64,8 +70,10 @@ def test_6():
     (error, value) = validate(obj6, s6)
     assert len(error) == 1
     assert error[0][0] == "[2].key1"
-    assert sorted(value) == sorted([{"key1": 123}, {"key1": 321},
-                                    {"key1": None}, {"key1": 321}, ])
+    # assert_eqlist(value, [{"key1": 123}, {"key1": 321},
+    #                       {"key1": None}, {"key1": 321}, ])
+    vv = [v["key1"] for v in value]
+    assert_eqlist(vv, [123, 321, None, 321, ])
 
 
 def test_3():
@@ -121,7 +129,7 @@ def test_4():
     assert len(error) == 1
     assert error[0][0] == "key1.[2]"
     assert "desc of the key" in error[0][1]
-    assert sorted(value["key1"]) == sorted([123, 32, None])
+    assert_eqlist(value["key1"], [123, 32, None])
 
 
 def test_5():
@@ -175,9 +183,9 @@ def test_5():
     assert "int" in error["key3.key2.[2]"]
     assert "required" in error["key3.key3"]
     assert value["key1"] == 123
-    assert sorted(value["key2"]) == sorted([123, 32, None])
+    assert_eqlist(value["key2"], [123, 32, None])
     assert value["key3"]["key1"] == 123
-    assert sorted(value["key3"]["key2"]) == sorted([123, 32, None])
+    assert_eqlist(value["key3"]["key2"], [123, 32, None])
     assert value["key3"]["key3"] is None
     assert value["key3"]["key4"] is None
 
@@ -202,7 +210,7 @@ def test_addvalidater():
     assert "accept http method name" in error["key.[0]"]
     assert "key.[3]" in error
     assert "accept http method name" in error["key.[3]"]
-    assert sorted(value["key"]) == sorted([None, "get", "post", None])
+    assert_eqlist(value["key"], [None, "get", "post", None])
 
 
 def test_default():
@@ -239,5 +247,5 @@ def test_validate_lamada():
     }
     (error, value) = validate(obj, s)
     assert "desc key2" in dict(error)["key2"]
-    assert isinstance(value["key"], basestring)
+    assert isinstance(value["key"], six.string_types)
     assert value["key2"] is None

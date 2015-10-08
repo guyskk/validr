@@ -92,6 +92,20 @@ def basestring_validater(v):
             return (False, None)
 
 
+def unicode_validater(v):
+    """working in both Py2 and Py3"""
+    try:
+        if isinstance(obj, unicode):
+            return (True, v)
+        else:
+            return (False, None)
+    except NameError:
+        if isinstance(v, str):
+            return (True, v)
+        else:
+            return (False, None)
+
+
 def objectid_validater(v):
     """validater for bson.objectid.ObjectId or string"""
     try:
@@ -126,7 +140,7 @@ re_url = re.compile(
 validaters = {
     "any": lambda v: (True, v),
     "basestring": basestring_validater,
-    "unicode": type_validater(unicode),
+    "unicode": unicode_validater,
     "str": type_validater(str),
     "list": type_validater(list),
     "dict": type_validater(dict),

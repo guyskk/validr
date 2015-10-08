@@ -104,7 +104,7 @@ def safestr_validater(v):
         return (False, None)
 
 # http://stackoverflow.com/questions/2637896/php-regular-expression-for-strong-password-validation
-re_password = re.compile(ur"""^[a-zA-Z0-9`~!@#$%^&*()_\-+=[]\\|{};:'".,/<>?]{6,16}$""")
+re_password = re.compile(r"""^[a-zA-Z0-9`~!@#$%^&*()_\-+=[]\\|{};:'".,/<>?]{6,16}$""")
 # more http://www.cnblogs.com/zxin/archive/2013/01/26/2877765.html
 re_datetime = re.compile(r'^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(.\d+\w?)?$')
 re_email = re.compile(r'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}$')

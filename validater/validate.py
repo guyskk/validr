@@ -2,14 +2,8 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+import six
 from validater import validaters
-
-# support py3
-try:
-    basestring
-    unicode
-except NameError:
-    basestring = unicode = str
 
 
 class SchemaError(Exception):
@@ -28,7 +22,7 @@ def _build_msg(vali, desc):
 def is_schema(obj):
     if isinstance(obj, dict):
         vali = obj.get("validate")
-        if isinstance(vali, basestring) or callable(vali):
+        if isinstance(vali, six.string_types) or six.callable(vali):
             return True
     return False
 
@@ -42,9 +36,9 @@ def schema_info(obj):
     desc = _build_msg(vali, desc)
     has_default = "default" in obj
     default = obj.get("default")
-    if callable(default):
+    if six.callable(default):
         default = default()
-    if callable(vali):
+    if six.callable(vali):
         valier = vali
     else:
         valier = validaters.get(vali)

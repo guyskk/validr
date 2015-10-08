@@ -1,8 +1,8 @@
 # validater 
 
-validater can validate json/dict/list and **convert value to python object ** by schema
+validater can validate json/dict/list and **convert value to python object ** by schema, support python 2.7.x and python 3.3+
 
-validater 可以依据 schema 校验 json/dict/list 并将值转换成相应的python对象
+validater 可以依据 schema 校验 json/dict/list 并将值转换成相应的python对象，支持 python 2.7.x 和 python 3.3+
 
 
 ##install 安装
@@ -67,7 +67,8 @@ return is `tuple(error,validated_value)`
 - validate is required, desc/required/default is optional
 - desc is msg which will add to err_msg
 - default can be value or callable(without args)
-- validate can be basestring or callable(see `add_validater`)
+- validate can be string or callable(see `add_validater`)
+- empty string is treated as missing(NULL,None)
 - nest is supported
 - list should contain (only) one sub_schema(item)
 - built-in validater
@@ -75,24 +76,26 @@ return is `tuple(error,validated_value)`
 	|name           | valid value 
 	|---------------|-----------------------------------
 	|any            | anything
-	|basestring     | basestring
-	|unicode        | unicode
-	|str            | str
+	|str            | six.string_types(basestring on py2, str on py3)
+	|unicode        | six.text_type(unicode on py2, str on py3)
 	|list           | list
 	|dict           | dict
 	|bool           | bool
 	|int            | int
-	|long           | long
+    |+int           | plus int
 	|float          | float
 	|datetime       | isoformat datetime.datetime
 	|objectid       | bson.objectid.ObjectId
-	|re_email       | email
-	|re_ipv4        | ipv4
-	|re_phone       | phone_number
-	|re_idcard      | 身份证号
-	|re_url         | url, support urls without 'http://'
-	|re_name        | common_use_name [a-z or A-Z or 0-9 or _] and 4~16 chars 
-    |safestr        | escape unsafe string
+	|email          | email
+	|ipv4           | ipv4
+	|phone          | phone_number
+	|idcard         | 身份证号
+	|url            | url, support urls without 'http://'
+	|name           | common_use_name [a-z or A-Z or 0-9 or _] and 4~16 chars in total
+    |password       | password combine of letters, numbers, special chars, 6~16 chars in total
+    |safestr        | escape unsafe string: ` & > < ' " `
+
+    `objectid` validater removed since v0.7.4 because it is not common used.
 
 ###some examples
 
@@ -161,8 +164,17 @@ nest schema
 
 ## add_validater
 
+
+
 ```python
+# add a validater
 add_validater(name,validater)
+# build a validater by regex_object
+re_validater(regex_object)
+# build a validater which validate isinstance(v, cls)
+type_validater(cls)
+# get all validaters
+validaters
 ```
 
 validater is a callable object and return a tuple
@@ -173,22 +185,19 @@ def validater(v):
 
 for example
 ```python
-from validater import add_validater
-def plus_int(v):
-    try:
-        return (int(v) > 0, int(v))
-    except:
-        return (False, None)
-add_validater("+int", plus_int)
+import re
+from validater import add_validater, re_validater
+re_http=re.compile(r'^(get|post|put|delete|head|options|trace|patch)$')
+add_validater("http_method", re_validater(re_http))
 
 s = {
     "key": [{
-        "desc": "plus int",
+        "desc": "accept http method name",
         "required": True,
-        "validate": "+int"
+        "validate": "http_method"
     }]
 }
-obj = {"key": ["123", "0", "-123"]}
+obj = {"key": ["123", "get", "post"]}
 (error, value) = validate(obj, s)
 print error
 print value
@@ -223,6 +232,10 @@ error,value = validate(d, schema)
 ## test 测试
 	
 	py.test
+
+    or 
+    
+    tox
 
 ## license 
 

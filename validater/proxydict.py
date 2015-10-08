@@ -2,15 +2,10 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
-
-# support py3
-try:
-    basestring
-    unicode
-except NameError:
-    basestring = unicode = str
+import six
 
 
+@six.python_2_unicode_compatible
 class ProxyDict(dict):
 
     """ProxyDict 将普通对象包装成dict
@@ -70,6 +65,3 @@ class ProxyDict(dict):
 
     def __str__(self):
         return '"%s"' % repr(self)
-
-    def __unicode__(self):
-        return u'"%s"' % repr(self)

@@ -3,15 +3,9 @@ from __future__ import unicode_literals
 
 
 from datetime import datetime
-from validater import validate, add_validater
+from validater import validate, add_validater, re_validater
 from dateutil import parser
-
-# support py3
-try:
-    basestring
-    unicode
-except NameError:
-    basestring = unicode = str
+import re
 
 
 def test_1():
@@ -85,7 +79,7 @@ def test_3():
         "key2": {
             "desc": "desc of the key",
             "required": True,
-            "validate": "str",
+            "validate": "+int",
         },
         "key3": {
             "desc": "desc of the key",
@@ -96,7 +90,7 @@ def test_3():
     }
     obj3 = {
         "key1": "123",
-        "key2": u"haha",
+        "key2": "haha",
         "key3": "2015-09-01 14:42:35"
     }
 
@@ -189,27 +183,26 @@ def test_5():
 
 
 def test_addvalidater():
-    def plus_int(v):
-        try:
-            return (int(v) > 0, int(v))
-        except:
-            return (False, None)
-    add_validater("+int", plus_int)
+
+    re_http = re.compile(r'^(get|post|put|delete|head|options|trace|patch)$')
+    add_validater("http_method", re_validater(re_http))
 
     s = {
         "key": [{
-            "desc": "+int",
+            "desc": "accept http method name",
             "required": True,
-            "validate": "+int"
+            "validate": "http_method"
         }]
     }
-    obj = {"key": ["123", "0", "-123"]}
+    obj = {"key": ["123", "get", "post", object()]}
     (error, value) = validate(obj, s)
     assert len(error) == 2
     error = dict(error)
-    assert "key.[1]" in error
-    assert "+int" in error["key.[2]"]
-    assert sorted(value["key"]) == sorted([123, None, None])
+    assert "key.[0]" in error
+    assert "accept http method name" in error["key.[0]"]
+    assert "key.[3]" in error
+    assert "accept http method name" in error["key.[3]"]
+    assert sorted(value["key"]) == sorted([None, "get", "post", None])
 
 
 def test_default():

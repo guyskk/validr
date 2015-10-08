@@ -2,18 +2,23 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+import six
 
-from bson.objectid import ObjectId
 import re
 from datetime import datetime
 from dateutil.parser import parse as date_parse
 
-# support py3
-try:
-    basestring
-    unicode
-except NameError:
-    basestring = unicode = str
+# remove it because objectid_validater is not common used
+#
+# from bson.objectid import ObjectId
+
+
+# def objectid_validater(v):
+#     """validater for bson.objectid.ObjectId or string"""
+#     try:
+#         return (True, ObjectId(v))
+#     except:
+#         return (False, None)
 
 
 def re_validater(r):
@@ -22,7 +27,7 @@ def re_validater(r):
     :param r: regex object
     """
     def vali(v):
-        if isinstance(v, basestring) and r.match(v):
+        if isinstance(v, six.string_types) and r.match(v):
             return (True, v)
         return (False, None)
     return vali
@@ -46,7 +51,7 @@ def datetime_validater(v):
     if isinstance(v, datetime):
         return (True, v)
     else:
-        if isinstance(v, basestring) and re_datetime.match(v):
+        if isinstance(v, six.string_types) and re_datetime.match(v):
             try:
                 return (True, date_parse(v))
             except:
@@ -69,12 +74,14 @@ def int_validater(v):
         return (False, None)
 
 
-def long_validater(v):
-    """validater for long object or string"""
+def plus_int_validater(v):
     try:
-        return (True, long(v))
+        i = int(v)
+        if i > 0:
+            return (True, i)
     except:
-        return (False, None)
+        pass
+    return (False, None)
 
 
 def float_validater(v):
@@ -85,17 +92,9 @@ def float_validater(v):
         return (False, None)
 
 
-def objectid_validater(v):
-    """validater for bson.objectid.ObjectId or string"""
-    try:
-        return (True, ObjectId(v))
-    except:
-        return (False, None)
-
-
 def safestr_validater(v):
     """validater for string, escape ``'>', '<', "'", '"'``"""
-    if isinstance(v, basestring):
+    if isinstance(v, six.string_types):
         return (True, v.replace('&', '&amp;')
                 .replace('>', '&gt;')
                 .replace('<', '&lt;')
@@ -104,6 +103,8 @@ def safestr_validater(v):
     else:
         return (False, None)
 
+# http://stackoverflow.com/questions/2637896/php-regular-expression-for-strong-password-validation
+re_password = re.compile(ur"""^[a-zA-Z0-9`~!@#$%^&*()_\-+=[]\\|{};:'".,/<>?]{6,16}$""")
 # more http://www.cnblogs.com/zxin/archive/2013/01/26/2877765.html
 re_datetime = re.compile(r'^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(.\d+\w?)?$')
 re_email = re.compile(r'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}$')
@@ -118,23 +119,21 @@ re_url = re.compile(
 
 validaters = {
     "any": lambda v: (True, v),
-    "basestring": type_validater(basestring),
-    "unicode": type_validater(unicode),
-    "str": type_validater(str),
-    "list": type_validater(list),
-    "dict": type_validater(dict),
+    "str": type_validater(six.string_types),
+    "unicode": type_validater(six.text_type),
     "bool": bool_validater,
     "int": int_validater,
-    "long": long_validater,
+    "+int": plus_int_validater,
     "float": float_validater,
     "datetime": datetime_validater,
-    "objectid": objectid_validater,
-    "re_email": re_validater(re_email),
-    "re_ipv4": re_validater(re_ipv4),
-    "re_phone": re_validater(re_phone),
-    "re_idcard": re_validater(re_idcard),
-    "re_url": re_validater(re_url),
-    "re_name": re_validater(re_name),
+    # "objectid": objectid_validater,
+    "email": re_validater(re_email),
+    "ipv4": re_validater(re_ipv4),
+    "phone": re_validater(re_phone),
+    "idcard": re_validater(re_idcard),
+    "url": re_validater(re_url),
+    "name": re_validater(re_name),
+    "password": re_validater(re_password),
     "safestr": safestr_validater,
 }
 

@@ -3,6 +3,13 @@
 from __future__ import unicode_literals
 from __future__ import absolute_import
 
+# support py3
+try:
+    basestring
+    unicode
+except NameError:
+    basestring = unicode = str
+
 
 class ProxyDict(dict):
 

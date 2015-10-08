@@ -4,6 +4,13 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 from validater import validaters
 
+# support py3
+try:
+    basestring
+    unicode
+except NameError:
+    basestring = unicode = str
+
 
 class SchemaError(Exception):
 

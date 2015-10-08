@@ -8,6 +8,13 @@ import re
 from datetime import datetime
 from dateutil.parser import parse as date_parse
 
+# support py3
+try:
+    basestring
+    unicode
+except NameError:
+    basestring = unicode = str
+
 
 def re_validater(r):
     """Return a regex validater
@@ -78,34 +85,6 @@ def float_validater(v):
         return (False, None)
 
 
-def basestring_validater(v):
-    """working in both Py2 and Py3"""
-    try:
-        if isinstance(obj, basestring):
-            return (True, v)
-        else:
-            return (False, None)
-    except NameError:
-        if isinstance(v, str):
-            return (True, v)
-        else:
-            return (False, None)
-
-
-def unicode_validater(v):
-    """working in both Py2 and Py3"""
-    try:
-        if isinstance(obj, unicode):
-            return (True, v)
-        else:
-            return (False, None)
-    except NameError:
-        if isinstance(v, str):
-            return (True, v)
-        else:
-            return (False, None)
-
-
 def objectid_validater(v):
     """validater for bson.objectid.ObjectId or string"""
     try:
@@ -139,8 +118,8 @@ re_url = re.compile(
 
 validaters = {
     "any": lambda v: (True, v),
-    "basestring": basestring_validater,
-    "unicode": unicode_validater,
+    "basestring": type_validater(basestring),
+    "unicode": type_validater(unicode),
     "str": type_validater(str),
     "list": type_validater(list),
     "dict": type_validater(dict),

@@ -103,14 +103,22 @@ def safestr_validater(v):
     else:
         return (False, None)
 
-# http://stackoverflow.com/questions/2637896/php-regular-expression-for-strong-password-validation
-re_password = re.compile(r"""^[a-zA-Z0-9`~!@#$%^&*()_\-+=[]\\|{};:'".,/<>?]{6,16}$""")
+
+def password_validater(v):
+    re_not_space = re.compile(r"^\S{6,16}$")
+    re_ascii = re.compile(r"^[\x00-\x7f]{6,16}$")
+    if isinstance(v, six.string_types) and re_ascii.match(v) and re_not_space.match(v):
+        return (True, v)
+    else:
+        return (False, None)
+
+
 # more http://www.cnblogs.com/zxin/archive/2013/01/26/2877765.html
 re_datetime = re.compile(r'^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(.\d+\w?)?$')
 re_email = re.compile(r'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}$')
 re_ipv4 = re.compile(r'^(\d+)\.(\d+)\.(\d+)\.(\d+)$')
-re_phone = re.compile(r'^(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}$')
-re_idcard = re.compile(r'^\d{15}|\d{17}[0-9Xx]$')
+re_phone = re.compile(r'^(?:13\d|14[57]|15[^4,\D]|17[678]|18\d)(?:\d{8}|170[059]\d{7})$')
+re_idcard = re.compile(r'^\d{15}$|\d{17}[0-9Xx]$')
 re_name = re.compile(r'^[a-zA-Z][a-zA-Z0-9_]{3,15}$')
 # http://daringfireball.net/2010/07/improved_regex_for_matching_urls
 re_url = re.compile(
@@ -133,7 +141,7 @@ validaters = {
     "idcard": re_validater(re_idcard),
     "url": re_validater(re_url),
     "name": re_validater(re_name),
-    "password": re_validater(re_password),
+    "password": password_validater,
     "safestr": safestr_validater,
 }
 

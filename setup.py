@@ -12,6 +12,6 @@ setup(
     packages=['validater'],
     install_requires=[
         'python-dateutil>=2.4',
-        # 'pymongo>=3.0',
+        'six>=1.10.0',
     ],
 )

@@ -249,3 +249,15 @@ def test_validate_lamada():
     assert "desc key2" in dict(error)["key2"]
     assert isinstance(value["key"], six.string_types)
     assert value["key2"] is None
+
+
+def test_keep_list_order():
+    obj = [1, 2, 3, 4]
+    err, data = validate(obj, [{"validate": "int"}])
+    assert data == obj
+    obj = ["1", "xx", "3", "4"]
+    err, data = validate(obj, [{"validate": "int"}])
+    assert data == [1, None, 3, 4]
+    assert err
+    assert "[1]" == err[0][0]
+    assert "int" in err[0][1]

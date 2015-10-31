@@ -49,7 +49,8 @@ def schema_info(obj):
 
 def _set_value(value, val, key):
     if isinstance(value, list):
-        value.append(val)
+        # keep list order
+        value.insert(0, val)
     else:
         value[key] = val
 

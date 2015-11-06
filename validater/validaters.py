@@ -29,7 +29,7 @@ def re_validater(r):
     def vali(v):
         if isinstance(v, six.string_types) and r.match(v):
             return (True, v)
-        return (False, None)
+        return (False, "")
     return vali
 
 
@@ -43,6 +43,19 @@ def type_validater(cls):
             return (True, v)
         else:
             return (False, None)
+    return vali
+
+
+def string_type_validater(cls):
+    """Return a string type validater, convert None to ""
+
+    :param cls: valid class of value
+    """
+    def vali(v):
+        if isinstance(v, cls):
+            return (True, v)
+        else:
+            return (False, "")
     return vali
 
 
@@ -101,7 +114,7 @@ def safestr_validater(v):
                 .replace("'", '&#39;')
                 .replace('"', '&#34;'))
     else:
-        return (False, None)
+        return (False, "")
 
 
 def password_validater(v):
@@ -110,11 +123,11 @@ def password_validater(v):
     if isinstance(v, six.string_types) and re_ascii.match(v) and re_not_space.match(v):
         return (True, v)
     else:
-        return (False, None)
+        return (False, "")
 
 
 # more http://www.cnblogs.com/zxin/archive/2013/01/26/2877765.html
-re_datetime = re.compile(r'^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})(.\d+\w?)?$')
+re_datetime = re.compile(r'^(\d{4})-(\d{1,2})-(\d{1,2})[ T](\d{1,2}):(\d{1,2}):(\d{1,2})(\.\d+.*)?$')
 re_email = re.compile(r'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}$')
 re_ipv4 = re.compile(r'^(\d+)\.(\d+)\.(\d+)\.(\d+)$')
 re_phone = re.compile(r'^(?:13\d|14[57]|15[^4,\D]|17[678]|18\d)(?:\d{8}|170[059]\d{7})$')
@@ -127,8 +140,8 @@ re_url = re.compile(
 
 validaters = {
     "any": lambda v: (True, v),
-    "str": type_validater(six.string_types),
-    "unicode": type_validater(six.text_type),
+    "str": string_type_validater(six.string_types),
+    "unicode": string_type_validater(six.text_type),
     "bool": bool_validater,
     "int": int_validater,
     "+int": plus_int_validater,

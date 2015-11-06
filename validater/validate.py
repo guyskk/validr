@@ -133,17 +133,15 @@ def validate(obj, schema):
                 # and most framworks behave this way.
                 if obj is None or obj == "" and has_default:
                     obj = default
+                # validate obj
+                # also call valier to set NULL value if obj is None or empty
+                ok, val = valier(obj)
+                _set_value(value, val, key)
                 if obj is None or obj == "":
                     if required:
                         errors.append((fullkey[4:], "required"))
-                    _set_value(value, None, key)
                 else:
-                    # validate
-                    ok, val = valier(obj)
-                    if ok:
-                        _set_value(value, val, key)
-                    else:
-                        _set_value(value, None, key)
+                    if not ok:
                         errors.append((fullkey[4:], desc))
 
     return errors, validated_value["obj"]

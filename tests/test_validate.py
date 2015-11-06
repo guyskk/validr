@@ -7,11 +7,18 @@ from validater import validate, add_validater, re_validater
 from dateutil import parser
 import re
 import six
+import inspect
+import os
 
 
 def assert_eqlist(list1, list2):
     diff = set(list1) - set(list2)
-    assert not diff
+    curframe = inspect.currentframe()
+    calframe = inspect.getouterframes(curframe, 2)
+    caller = inspect.stack()[1][3]
+    modu = os.path.basename(calframe[1][1])  # 调用者模块名称
+    line = calframe[1][2]  # 调用代码行号
+    assert not diff, "In %s[%s %s]: \n%s, \n%s" % (caller, modu, line, list1, list2)
 
 
 def test_1():
@@ -210,7 +217,7 @@ def test_addvalidater():
     assert "accept http method name" in error["key.[0]"]
     assert "key.[3]" in error
     assert "accept http method name" in error["key.[3]"]
-    assert_eqlist(value["key"], [None, "get", "post", None])
+    assert_eqlist(value["key"], ["", "get", "post", ""])
 
 
 def test_default():
@@ -246,9 +253,9 @@ def test_validate_lamada():
         "key2": parser.parse("2015-09-06 08:50:50")
     }
     (error, value) = validate(obj, s)
-    assert "desc key2" in dict(error)["key2"]
     assert isinstance(value["key"], six.string_types)
-    assert value["key2"] is None
+    assert "desc key2" in dict(error)["key2"]
+    assert value["key2"] == parser.parse("2015-09-06 08:50:50").isoformat()
 
 
 def test_keep_list_order():

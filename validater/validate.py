@@ -58,6 +58,9 @@ def _set_value(value, val, key):
 def validate(obj, schema):
     """validate
 
+    :param obj: the object to be validate
+    :param schema: dict_like schema
+
     Demand::
 
         1. No modify of obj and schema
@@ -144,3 +147,127 @@ def validate(obj, schema):
                         errors.append((fullkey[4:], desc))
 
     return errors, validated_value["obj"]
+
+
+def parse_schema(info):
+    """convert tuple_like schema to dict_like schema
+
+    tuple_like schema can has 1~3 items: ``(validate&required, default, desc)``
+    validate_required is needed, default and desc is opinion.
+    validate_required is a string like ``"+int&required"``, the ``&required`` is opinion.
+
+    For example::
+
+        "+int&required", 1, "the page number"
+
+    will be converted to::
+
+        {
+            "default": 1,
+            "validate": "+int",
+            "required": True,
+            "desc": "the page number"
+        }
+
+    And::
+
+        "+int", 1
+
+    will be converted to::
+
+        {
+            "default": 1,
+            "validate": "+int",
+            "required": False
+        }
+
+    And::
+
+        "+int", None, "the page number"
+
+    will be converted to::
+
+        {
+            "validate": "+int",
+            "required": False,
+            "desc": "the page number"
+        }
+
+    And if the tuple_like schema is string::
+
+        "+int&required"
+
+    will be converted to::
+
+        {
+            "validate": "+int",
+            "required": True
+        }
+
+    :param info: tuple_like schema
+    """
+    if isinstance(info, six.string_types):
+        info = (info, None, None)
+    else:
+        info = info + (None,) * (3 - len(info))
+    validate_required, default, desc = info
+    validate_required = validate_required.split("&")
+    validate = validate_required[0]
+    if len(validate_required) == 2:
+        if validate_required[1] != "required":
+            raise SchemaError("invalid schema syntax: %s" % validate_required[1])
+        required = True
+    else:
+        required = False
+    schema = {
+        "validate": validate,
+        "required": required,
+    }
+    if default is not None:
+        schema["default"] = default
+    if desc is not None:
+        schema["desc"] = desc
+    return schema
+
+
+def combine_schema(scope, *args):
+    """combine tuple_like validate schema from scope
+
+    :param scope: a dict, such as Class.__dict__
+    :param args: variable names or dicts
+    """
+    node = {}
+    for x in args:
+        # deal with x like: [[["name"]]]
+        list_deep = 0
+        while(isinstance(x, list)):
+            if len(x) != 1:
+                raise SchemaError("invalid schema: list's length must be 1")
+            x = x[0]
+            list_deep += 1
+        info = scope[x]
+
+        if six.callable(info):
+            info = info(scope)
+        elif isinstance(info, dict):
+            info = info
+        else:
+            info = parse_schema(info)
+
+        # wrap info with []
+        if list_deep > 0:
+            if len(args) != 1:
+                raise SchemaError("can't combine list and others")
+            while list_deep > 0:
+                info = [info]
+                list_deep -= 1
+            return info
+        node[x] = info
+    return node
+
+
+def schema(*args):
+    """combine validate schema, return a function for doing combine later"""
+    def lazy_combine(scope):
+        return combine_schema(scope, *args)
+    return lazy_combine

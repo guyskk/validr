@@ -265,7 +265,42 @@ def combine_schema(scope, *args):
 
 
 def schema(*args):
-    """combine validate schema, return a function for doing combine later"""
+    """combine validate schema, return a function for doing combine later
+
+    Run the code below and you will understand it::
+
+        from flask.ext.restaction import schema
+        import json
+
+        leaf1 = "+int&required", 1, "leaf1 desc"
+        leaf2 = "unicode&required"
+        leaf3 = "unicode", None, "article table of content"
+
+        branch1 = schema("leaf1", "leaf2")
+        branch2 = schema("branch1", "leaf3")
+
+        flower = schema(["branch1"])
+        tree = schema(["branch2"])
+
+        forest1 = schema(["tree"])
+        forest2 = schema([["branch2"]])
+        park = schema("tree", "flower")
+
+        scope = locals()
+
+        def pp(obj):
+            print json.dumps(obj, ensure_ascii=False, indent=4)
+
+        pp(branch1(scope))
+        pp(branch2(scope))
+
+        pp(flower(scope))
+        pp(tree(scope))
+
+        pp(forest1(scope))
+        pp(forest2(scope))
+        pp(park(scope))
+    """
     def lazy_combine(scope):
         return combine_schema(scope, *args)
     return lazy_combine

@@ -2,12 +2,12 @@
 
 validater can validate json/dict/list and **convert value to python object ** by schema, support python 2.7.x and python 3.3+
 
-**support py3 since v0.8.0, tested on py27 and py34**
+**support py3 since v0.8.0**
 
 validater 可以依据 schema 校验 json/dict/list 并将值转换成相应的python对象，支持 python 2.7.x 和 python 3.3+
 
 
-##install 安装
+## install 安装
 
 	pip install validater
 
@@ -80,8 +80,6 @@ return is `tuple(error,validated_value)`
 	|any            | anything
 	|str            | six.string_types(basestring on py2, str on py3)
 	|unicode        | six.text_type(unicode on py2, str on py3)
-	|list           | list
-	|dict           | dict
 	|bool           | bool
 	|int            | int
     |+int           | plus int
@@ -97,7 +95,11 @@ return is `tuple(error,validated_value)`
     |password       | password combine of letters, numbers, special chars, 6~16 chars in total
     |safestr        | escape unsafe string: ` & > < ' " `
 
-    `objectid` validater removed since v0.7.4 because it is not common used.
+**Note注意**
+
+- `objectid` validater removed since v0.7.4 because it is not common used.
+- empty string `""` was treated as None. this is more practical and most framworks behave this way.
+- convert None to `""` if validate is string or like string since v0.8.5.
 
 ###some examples
 
@@ -203,6 +205,61 @@ obj = {"key": ["123", "get", "post"]}
 (error, value) = validate(obj, s)
 print error
 print value
+```
+
+### tuple_like schema
+
+support tuple_like schema since v0.8.5.
+
+tuple_like schema
+
+    name = "safestr&required", "world", "you name"
+
+== 等价于
+
+    {
+        "desc": "you name",
+        "required": True,
+        "validate": "safestr",
+        "default": "world"
+    }
+
+schema function is used for combine schemas. Run the code below and you will understand it.
+
+schema 函数用于将 schema 组合，生成一个新的 schema。运行一下下面的代码你就明白了。
+
+```python
+    from validater import schema
+    import json
+
+    leaf1 = "+int&required", 1, "leaf1 desc"
+    leaf2 = "unicode&required"
+    leaf3 = "unicode", None, "article table of content"
+
+    branch1 = schema("leaf1", "leaf2")
+    branch2 = schema("branch1", "leaf3")
+
+    flower = schema(["branch1"])
+    tree = schema(["branch2"])
+
+    forest1 = schema(["tree"])
+    forest2 = schema([["branch2"]])
+    park = schema("tree", "flower")
+
+    scope = locals()
+
+    def pp(obj):
+        print json.dumps(obj, ensure_ascii=False, indent=4)
+
+    pp(branch1(scope))
+    pp(branch2(scope))
+
+    pp(flower(scope))
+    pp(tree(scope))
+
+    pp(forest1(scope))
+    pp(forest2(scope))
+    pp(park(scope))
 ```
 
 ## `ProxyDict` validate custome type 

@@ -211,7 +211,7 @@ print value
 
 support tuple_like schema since v0.8.5.
 
-tuple_like schema
+#### tuple_like schema
 
     name = "safestr&required", "world", "you name"
 
@@ -261,6 +261,36 @@ schema 函数用于将 schema 组合，生成一个新的 schema。运行一下�
     pp(forest2(scope))
     pp(park(scope))
 ```
+
+#### tuple_like with_name schema
+
+In sometimes, we need different schema with the same name
+
+since v0.8.6, we can provide name:
+
+```python
+from validater import schema
+import json
+
+leaf_red = "leaf", ("+int&required", 1, "leaf_red")
+leaf_green = "leaf", ("unicode&required",)
+
+branch1 = "branch", schema("leaf_red")
+branch2 = "branch", schema("branch1", "leaf_green")
+
+scope = locals()
+
+def pp(obj):
+    print json.dumps(obj, ensure_ascii=False, indent=4)
+
+pp(schema("leaf_red")(scope))
+pp(schema("leaf_green")(scope))
+pp(schema("branch1")(scope))
+pp(schema("branch2")(scope))
+```
+
+As you can see, the schema format is `name, ("validate&required", default, desc)`, 
+or `name, schema`.
 
 ## `ProxyDict` validate custome type 
 ###校验自定义类型的对象

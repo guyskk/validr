@@ -245,6 +245,13 @@ def combine_schema(scope, *args):
             list_deep += 1
         info = scope[x]
 
+        # support with_name tuple schema
+        if isinstance(info, tuple) and len(info) >= 2 and\
+                (six.callable(info[1]) or isinstance(info[1], tuple)):
+            if len(info) != 2:
+                raise SchemaError("tuple_like with_name schema'length must be 2")
+            x, info = info
+
         if six.callable(info):
             info = info(scope)
         elif isinstance(info, dict):
@@ -269,7 +276,7 @@ def schema(*args):
 
     Run the code below and you will understand it::
 
-        from flask.ext.restaction import schema
+        from validater import schema
         import json
 
         leaf1 = "+int&required", 1, "leaf1 desc"

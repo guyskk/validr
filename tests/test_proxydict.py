@@ -58,3 +58,15 @@ def test_dict():
     assert "_zz" in out
     assert out.proxy_obj._zz == "zzzz"
     assert out["_zz"] == "zzzz"
+
+
+def test_setdefault():
+    obj = XX("")
+    dd = ProxyDict(obj, [XX])
+    assert "name" not in dd
+    assert None == dd.setdefault("name")
+    assert "name" in dd
+    assert None == dd.setdefault("name", "guyskk")
+    assert None == dd["name"]
+    assert "kk" == dd.setdefault("nick", "kk")
+    assert "kk" == dd["nick"]

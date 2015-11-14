@@ -57,6 +57,13 @@ class ProxyDict(dict):
         except KeyError:
             return default
 
+    def setdefault(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            self[key] = default
+            return default
+
     def __len__(self):
         return len(self.keys())
 

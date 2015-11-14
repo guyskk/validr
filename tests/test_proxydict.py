@@ -41,12 +41,14 @@ def test_dict():
     assert "my" in out
     assert "xx" in out["my"]
     assert out["my"]["xx"] == "haha"
+    assert out["my"].get("xx") == "haha"
     assert "my" in out.keys()
     out.items()
     out.values()
 
     out["yy"] = "yyyy"
-
+    assert out.get("yy") == "yyyy"
+    assert out.get("unknown") is None
     assert "yy" in out
     assert out.proxy_obj.yy == "yyyy"
     assert out["yy"] == "yyyy"

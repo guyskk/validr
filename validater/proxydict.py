@@ -51,6 +51,12 @@ class ProxyDict(dict):
     def items(self):
         return [(k, self.__getitem__(k)) for k in self.keys()]
 
+    def get(self, key, default=None):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
     def __len__(self):
         return len(self.keys())
 

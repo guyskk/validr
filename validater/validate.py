@@ -96,7 +96,7 @@ def validate(obj, schema, proxy_types=None):
         raise SchemaError("schema can't be None")
     obj = {"obj": obj}
     schema = {"obj": schema}
-    validated_value = {}
+    validated_value = {"obj": None}
     errors = []
     # Init state
     # (obj, schema, value, key, fullkey)

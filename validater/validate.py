@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 import six
 from validater import validaters
-
+from validater import ProxyDict
 
 class SchemaError(Exception):
 
@@ -55,11 +55,12 @@ def _set_value(value, val, key):
         value[key] = val
 
 
-def validate(obj, schema):
+def validate(obj, schema, proxy_types=None):
     """validate
 
     :param obj: the object to be validate
     :param schema: dict_like schema
+    :param proxy_types: list of types which should be wraped in ProxyDict
 
     Demand::
 
@@ -78,6 +79,8 @@ def validate(obj, schema):
         6. {key:[{...}]} -> {key:[{...}]}
         7. {key:{...}} -> {key:{...}}
     """
+    if proxy_types is None:
+        proxy_types = []
     # The 7 structs of Obj and Schame actually is 3 structs
     #
     # 1. O -> S
@@ -117,15 +120,19 @@ def validate(obj, schema):
         elif isinstance(schema, dict):
             if not is_schema(schema):
                 new_value = {}
-                _set_value(value, new_value, key)
                 # must aways do _set_value
+                _set_value(value, new_value, key)
                 if not isinstance(obj, dict):
-                    errors.append((fullkey[4:], "must be dict"))
-                else:
-                    # add dict item to stack
-                    for k in schema:
-                        full_k = "%s.%s" % (fullkey, k)
-                        stack.append((obj.get(k), schema[k], new_value, k, full_k))
+                    if not isinstance(obj, tuple(proxy_types)):
+                        errors.append((fullkey[4:], "must be dict"))
+                        continue
+                    else:
+                        # wrap obj in ProxyDict
+                        obj = ProxyDict(obj, proxy_types)
+                # add dict item to stack
+                for k in schema:
+                    full_k = "%s.%s" % (fullkey, k)
+                    stack.append((obj.get(k), schema[k], new_value, k, full_k))
             else:
                 (desc, required, has_default, default, vali, valier) = schema_info(schema)
                 # work with default and required

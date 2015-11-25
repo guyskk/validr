@@ -292,6 +292,36 @@ pp(schema("branch2")(scope))
 As you can see, the schema format is `name, ("validate&required", default, desc)`, 
 or `name, schema`.
 
+#### marked required
+
+Since v0.9.0, You can add required infomation when combine schema.
+
+Use `*` to mark a schema as required. And I am favour of this style.
+
+For example:
+
+```
+from validater import schema
+import json
+
+name = "unicode"
+page = "+int", 1
+
+scope = locals()
+
+s_name1 = schema("name")(scope)
+s_name2 = schema("name*")(scope)
+# s_name1 is not required
+# s_name2 is required
+
+def pp(obj):
+    print json.dumps(obj, ensure_ascii=False, indent=4)
+
+pp(s_name1)
+pp(s_name2)
+```
+
+
 ## `ProxyDict` validate custome type 
 ###校验自定义类型的对象
 

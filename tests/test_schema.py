@@ -115,3 +115,22 @@ def test_schema_with_name():
     park = park(scope)
     assert park["tree"][0]["branch"]["leaf"]["validate"] == "+int"
     assert park["flower"][0]["leaf"]["validate"] == "+int"
+
+
+def test_marked_required():
+    name = "unicode"
+    page = "+int", 1
+    words = "unicode&required"
+    scope = locals()
+    s_name = schema("name")(scope)
+    assert not s_name["name"].get("required")
+    s_name = schema("name*")(scope)
+    assert s_name["name"]["required"]
+    s_page = schema("page")(scope)
+    assert not s_page["page"].get("required")
+    s_page = schema("page*")(scope)
+    assert s_page["page"]["required"]
+    s_words = schema("words")(scope)
+    assert s_words["words"]["required"]
+    s_words = schema("words*")(scope)
+    assert s_words["words"]["required"]

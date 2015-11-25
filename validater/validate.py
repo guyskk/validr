@@ -6,6 +6,7 @@ import six
 from validater import validaters
 from validater import ProxyDict
 
+
 class SchemaError(Exception):
 
     """SchemaError indicate schema invalid"""
@@ -134,7 +135,8 @@ def validate(obj, schema, proxy_types=None):
                     full_k = "%s.%s" % (fullkey, k)
                     stack.append((obj.get(k), schema[k], new_value, k, full_k))
             else:
-                (desc, required, has_default, default, vali, valier) = schema_info(schema)
+                (desc, required, has_default, default,
+                 vali, valier) = schema_info(schema)
                 # work with default and required
                 # treat "" as NULL, this is more practical
                 # and most framworks behave this way.
@@ -159,8 +161,12 @@ def validate(obj, schema, proxy_types=None):
     return errors, validated_value["obj"]
 
 
-def parse_schema(info):
+def parse_schema(info, required=False):
     """convert tuple_like schema to dict_like schema
+
+    :param info: tuple_like schema
+    :param required: required infomation from marked '*' name,
+                     will override tuple_like required.
 
     tuple_like schema can has 1~3 items: ``(validate&required, default, desc)``
     validate_required is needed, default and desc is opinion.
@@ -223,12 +229,14 @@ def parse_schema(info):
     validate_required, default, desc = info
     validate_required = validate_required.split("&")
     validate = validate_required[0]
-    if len(validate_required) == 2:
-        if validate_required[1] != "required":
-            raise SchemaError("invalid schema syntax: %s" % validate_required[1])
-        required = True
-    else:
-        required = False
+    if not required:
+        if len(validate_required) == 2:
+            if validate_required[1] != "required":
+                raise SchemaError("invalid schema syntax: %s" %
+                                  validate_required[1])
+            required = True
+        else:
+            required = False
     schema = {
         "validate": validate,
         "required": required,
@@ -248,6 +256,12 @@ def combine_schema(scope, *args):
     """
     node = {}
     for x in args:
+        # '*' marked required
+        if x[-1] == "*":
+            required = True
+            x = x[:-1]
+        else:
+            required = False
         # deal with x like: [[["name"]]]
         list_deep = 0
         while(isinstance(x, list)):
@@ -261,7 +275,8 @@ def combine_schema(scope, *args):
         if isinstance(info, tuple) and len(info) >= 2 and\
                 (six.callable(info[1]) or isinstance(info[1], tuple)):
             if len(info) != 2:
-                raise SchemaError("tuple_like with_name schema'length must be 2")
+                raise SchemaError(
+                    "tuple_like with_name schema'length must be 2")
             x, info = info
 
         if six.callable(info):
@@ -269,7 +284,7 @@ def combine_schema(scope, *args):
         elif isinstance(info, dict):
             info = info
         else:
-            info = parse_schema(info)
+            info = parse_schema(info, required=required)
 
         # wrap info with []
         if list_deep > 0:

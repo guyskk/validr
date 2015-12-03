@@ -39,21 +39,21 @@ def test_validate_str():
         "validate": "str",
         "required": True
     }
-    err, val = validate(b"haha", schem)
+    err, val = validate(str("haha"), schem)
     assert not err
-    assert val == b"haha"
+    assert val == str("haha")
     err, val = validate(None, schem)
     assert err
-    assert val == b""
-    err, val = validate(b"", schem)
+    assert val == str("")
+    err, val = validate(str(""), schem)
     assert err
-    assert val == b""
+    assert val == str("")
     schem = {
         "validate": "str",
     }
     err, val = validate(None, schem)
     assert not err
-    assert val == b""
+    assert val == str("")
     err, val = validate(b"", schem)
     assert not err
-    assert val == b""
+    assert val == ""

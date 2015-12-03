@@ -138,20 +138,23 @@ def validate(obj, schema, proxy_types=None):
                 (desc, required, has_default, default,
                  vali, valier) = schema_info(schema)
                 # work with default and required
-                # treat "" as NULL, this is more practical
+                # treat "", b"" as NULL, this is more practical
                 # and most framworks behave this way.
 
                 # obj may can't be decode to unicode,
-                # so use b"" to avoid UnicodeWarning:
+                # so use str("") to avoid UnicodeWarning:
                 # Unicode equal comparison failed to convert both arguments to
                 # Unicode - interpreting them as being unequal
-                if obj is None or obj == b"" and has_default:
+                def is_empty(obj):
+                    return obj is None or obj == str("") or obj == b""
+
+                if is_empty(obj) and has_default:
                     obj = default
                 # validate obj
                 # also call valier to set NULL value if obj is None or empty
                 ok, val = valier(obj)
                 _set_value(value, val, key)
-                if obj is None or obj == b"":
+                if is_empty(obj):
                     if required:
                         errors.append((fullkey[4:], "required"))
                 else:

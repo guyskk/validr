@@ -1,72 +1,59 @@
-# coding:utf-8
-
-from __future__ import unicode_literals
+#!/usr/bin/env python
+# coding: utf-8
+from __future__ import unicode_literals, absolute_import, print_function
 
 import collections
 from validater import ProxyDict
 
 
-class My(object):
+class User(object):
 
-    """docstring for My"""
-    mymy = "mymy"
-
-    def __init__(self, my):
-        self.my = my
-        self._perivate = "perivate"
-
-    def func(self):
-        pass
-
-
-class XX(object):
-
-    """docstring for XX"""
-
-    def __init__(self, xx):
-        self.xx = xx
+    def __init__(self, name):
+        self.name = name
 
 
 def test_is_dict():
-    out = ProxyDict(My("my"))
-    assert isinstance(out, dict)
-    assert isinstance(out, collections.Iterable)
+    jack = ProxyDict(User('jack'))
+    assert isinstance(jack, dict)
+    assert isinstance(jack, collections.Iterable)
 
 
 def test_dict():
-    xx = XX("haha")
-    my = My(xx)
-    out = ProxyDict(my, [XX])
+    jack, tom = User('jack'), User('tom')
+    jack.friend = tom
+    proxyjack = ProxyDict(jack, [User])
 
-    assert "my" in out
-    assert "xx" in out["my"]
-    assert out["my"]["xx"] == "haha"
-    assert out["my"].get("xx") == "haha"
-    assert "my" in out.keys()
-    out.items()
-    out.values()
+    assert 'name' in proxyjack
+    assert proxyjack['name'] == 'jack'
+    assert 'friend' in proxyjack
+    assert 'name' in proxyjack.keys()
+    assert ('name', 'jack') in proxyjack.items()
 
-    out["yy"] = "yyyy"
-    assert out.get("yy") == "yyyy"
-    assert out.get("unknown") is None
-    assert "yy" in out
-    assert out.proxy_obj.yy == "yyyy"
-    assert out["yy"] == "yyyy"
+    proxytom = proxyjack['friend']
+    assert 'name' in proxytom
+    assert proxytom['name'] == 'tom'
+    assert proxytom.get('friend') is None
 
-    out["_zz"] = "zzzz"
-
-    assert "_zz" in out
-    assert out.proxy_obj._zz == "zzzz"
-    assert out["_zz"] == "zzzz"
+    proxytom['friend'] = jack
+    assert tom.friend == jack
 
 
 def test_setdefault():
-    obj = XX("")
-    dd = ProxyDict(obj, [XX])
-    assert "name" not in dd
-    assert None == dd.setdefault("name")
-    assert "name" in dd
-    assert None == dd.setdefault("name", "guyskk")
-    assert None == dd["name"]
-    assert "kk" == dd.setdefault("nick", "kk")
-    assert "kk" == dd["nick"]
+    jack = User("jack")
+    proxyjack = ProxyDict(jack, [User])
+    assert "nickname" not in proxyjack
+    assert None == proxyjack.setdefault("nickname")
+    assert "nickname" in proxyjack
+    assert None == proxyjack.setdefault("nickname", "jack_nickname")
+    assert None == proxyjack["nickname"]
+    assert "jack_nick" == proxyjack.setdefault("nick", "jack_nick")
+    assert "jack_nick" == proxyjack["nick"]
+
+
+def test_attrs():
+    jack = User("jack")
+    proxyjack = ProxyDict(jack, [User])
+    assert 'ProxyDict' in repr(proxyjack)
+    assert 'ProxyDict' in str(proxyjack)
+    assert list(proxyjack) == dir(jack)
+    assert len(proxyjack) == len(dir(jack))

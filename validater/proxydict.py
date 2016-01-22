@@ -1,18 +1,17 @@
-# coding:utf-8
-
-from __future__ import unicode_literals
-from __future__ import absolute_import
+#!/usr/bin/env python
+# coding: utf-8
+from __future__ import unicode_literals, absolute_import, print_function
 import six
 
 
 @six.python_2_unicode_compatible
 class ProxyDict(dict):
 
-    """ProxyDict 将普通对象包装成dict
+    """ProxyDict dict proxy for any object
 
-    :param proxy_obj: 要代理的对象
-    :param types: 要代理的类型，list of types needed proxy,
-        若proxy_obj的属性(proxy_obj.xy)的类型在types列表中，将会自动ProxyDict并返回
+    :param proxy_obj: the object need to proxy
+    :param types: list of types need to proxy, if the type of
+    proxy_obj.attribute in types，the attribute will be ProxyDict
     """
 
     def __init__(self, proxy_obj, types=None):

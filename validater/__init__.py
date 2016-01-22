@@ -1,11 +1,22 @@
-# coding:utf-8
+#!/usr/bin/env python
+# coding: utf-8
+from __future__ import absolute_import, print_function
+"""
+validater
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-from __future__ import absolute_import
+.. versionchanged:: 0.9.2
 
+    - rewrite validate
+    - support validater params
+    - ``schema`` removed
+    - ``Schema``, ``parse`` added
+"""
 from validater.proxydict import ProxyDict
-from validater.validaters import (validaters, add_validater,
-                                  re_validater, type_validater)
-from validater.validate import SchemaError, validate, schema
+from validater.validaters import (default_validaters, re_validater, type_validater,
+                                  add_validater, remove_validater)
+from validater.schema import SchemaError, Schema, validate, parse, parse_snippet
 
-__all__ = ["ProxyDict", "validaters", "add_validater", "re_validater",
-           "type_validater", "SchemaError", "validate", "schema"]
+__all__ = ["ProxyDict", "default_validaters", "re_validater", "type_validater",
+           "add_validater", "remove_validater", "SchemaError", "Schema",
+           "validate", "parse", "parse_snippet"]

@@ -1,360 +1,302 @@
 # validater 
 
-validater can validate json/dict/list and **convert value to python object ** by schema, support python 2.7.x and python 3.3+
+validater can validate and convert value to python object by schema, support python 2.7.x and python 3.3+
 
-**support py3 since v0.8.0**
-
-validater 可以依据 schema 校验 json/dict/list 并将值转换成相应的python对象，支持 python 2.7.x 和 python 3.3+
+validater 可以依据 schema 校验数据并将数据转换成相应的 python 对象，支持 python 2.7.x 和 python 3.3+
 
 
-## install 安装
+## install
 
 	pip install validater
 
+## run test
+    
+    py.test
 
-## usage 用法
+    or 
+    
+    tox
+
+## usage
 
 ```python
->>> from validater import validate
->>> schema={
-	"key":{
-		"desc":"input a int value",
-		"required":True,
-		"validate":"int",
-		"default":"123"
-	},
-	"list":[{
-		"desc":"input a int value",
-		"required":True,
-		"validate":"int",
-		"default":"123"
-	}]
-}
->>> obj={
-	"key":"333",
-	"list":["1","23","asd"]
-}
-
+>>> from validater import parse, validate
+>>> validate('5',parse('int(0,9)&required&default=0'))
+([], 5)
+>>> validate('-1',parse('int(0,9)&required&default=0'))
+([(u'', u"must be 'int(0, 9)'")], None)
+>>> validate(None,parse('int(0,9)&required&default=0'))
+([], 0)
+>>> 
+>>> snippet = 'int(0,9)&required&default=0','input a int value, >=0 and <= 9'
+>>> schema = parse({'key':snippet,'list':[snippet]})
+>>> obj={"key":None, "list":["1","23","asd"]}
 >>> error,value=validate(obj,schema)
->>> print error
-[('list.[2]', u"must be 'int': input a int value")]
->>> print value
-{'list': [1, 23, None], 'key': 333}
+>>> error
+[(u'list[1]', u"must be 'int(0, 9)': input a int value, >=0 and <= 9"), 
+(u'list[2]', u"must be 'int(0, 9)': input a int value, >=0 and <= 9")]
+>>> value
+{'list': [1, None, None], 'key': 0}
+>>> 
 ```
+
+
+## parse(schema, validaters)
+
+validaters is a dict contains all validaters, it will be default_validaters by default
+
+schema has 5 styles:
+
+1. string snippet
+    
+    ```
+    'int(0,9)&required&default=0'
+    ```
+
+2. tuple snippet
+
+    ```
+    'int(0,9)&required&default=0', 'desc'
+    ```
+
+3. dict snippet
+
+    ```
+    {
+        'validater':'int',
+        'args':(0,9),
+        'required':True,
+        'default':0,
+        'desc':'desc'
+    }
+    ```
+
+4. list schema
+
+    ```
+    [snippet]
+    ```
+
+5. dict schema
+
+    ```
+    {
+        'key':snippet,
+        'list':[snippet],
+        'inner':{
+            'key':snippet
+        }
+    }
+    ```
+
+string snippet has 3 part
+    
+    ------------------------------------------
+    |validater  |args   |kwargs              |
+    ------------------------------------------
+    |int        |(0,9)  |&required&default=0 |
+    ------------------------------------------
+
+*validater*: the name of validater
+
+*args*: optional, the args passed to validater
+
+*kwargs*: optional, the kwargs passed to validater, it's value is determine by eval()
+
+
+built-in kwargs
+
+*required*: is required or not, empty string is treated as missing
+
+*default*: default value, it can be callable without args(used in dict snippet)
+
+*desc*: desc of the snippet
+
 
 
 ## validate(obj, schema)
 
-obj can be dict, list or just a value, 
+obj can be dict, list or just a value, it should has the same struct as schema
 
-if you want to validate json, you should loads json to dict or list first
+schema is the return value of parse
 
-return is `tuple(error,validated_value)`
+return `tuple(error,value)`
 
-- error is a list of `tupe(key,err_msg)`
-- validated_value is a dict, it's struct is the same as schema, invalid value will be None
+*error*: a list of `tuple(key, msg)`
+
+*value*: a dict, it's struct is the same as schema
 
 
-## schema format
+## built-in validater
+
+|name                         | valid value 
+|---------------              |-----------------------------------
+|any                          | anything
+|str                          | six.string_types(basestring on py2, str on py3)
+|unicode                      | six.text_type(unicode on py2, str on py3)
+|bool                         | bool
+|int(start,end)               | int value >=start and <= end
+|+int                         | int value >=0
+|float(start,end)             | float value >=start and <= end
+|datetime(format,output)      | format is `%Y-%m-%dT%H:%M:%S.%fZ` by default, output means string to datetime, datetime to string otherwise
+|date(format,output)          | format is `%Y-%m-%d` by default, output is the same as datetime
+|email                        | email
+|ipv4                         | ipv4
+|phone                        | phone number
+|idcard                       | idcard number of chinese
+|url                          | url, support urls without 'http://'
+|name(minlength,maxlength)    | name combine of chars in [a-zA-Z0-9_], and start with chars in [a-zA-Z], minlength is 4 and maxlength is 16 by defeault
+|password(minlength,maxlength)| password combine of ascii chars, and don't has space chars, minlength is 6 and maxlength is 16 by defeault
+|safestr                      | escape unsafe string: ` & > < ' " `
+
+
+### examples
+
+string snippet
 
 ```python
-{
-	"desc":"description",
-	"required":True,
-	"validate":"int",
-	"default":"123"
-}
+sche = "unicode&required&default='hello world'"
 ```
 
-- validate is required, desc/required/default is optional
-- desc is msg which will add to err_msg
-- default can be value or callable(without args)
-- validate can be string or callable(see `add_validater`)
-- empty string is treated as missing(NULL,None)
-- nest is supported
-- list should contain (only) one sub_schema(item)
-- built-in validater
+tuple snippet
 
-	|name           | valid value 
-	|---------------|-----------------------------------
-	|any            | anything
-	|str            | six.string_types(basestring on py2, str on py3)
-	|unicode        | six.text_type(unicode on py2, str on py3)
-	|bool           | bool
-	|int            | int
-    |+int           | plus int
-	|float          | float
-	|datetime       | isoformat datetime.datetime
-	|objectid       | bson.objectid.ObjectId, **removed since v0.7.4**
-	|email          | email
-	|ipv4           | ipv4
-	|phone          | phone_number
-	|idcard         | 身份证号
-	|url            | url, support urls without 'http://'
-	|name           | common_use_name [a-z or A-Z or 0-9 or _] and 4~16 chars in total
-    |password       | password combine of letters, numbers, special chars, 6~16 chars in total
-    |safestr        | escape unsafe string: ` & > < ' " `
-
-**Note注意**
-
-- `objectid` validater removed since v0.7.4 because it is not common used.
-- empty string `""` was treated as None. this is more practical and most framworks behave this way.
-- convert None to `""` if validate is string or like string since v0.8.5.
-
-###some examples
-
-value of datetime
 ```python
-{
-    "desc":"desc of the key",
+sche = "unicode&required&default='hello world'", "welcome words"
+```
+
+dict snippet
+
+```python
+from datetime import datetime
+sche = {
+    "desc":"a iso8601 format datetime string",
     "required":True,
     "validate":"datetime",
     "default":datetime.utcnow,
 }
 ```
-list of datetime
+
+list schema
+
 ```python
-[{
-    "desc":"desc of the key",
-    "required":True,
-    "validate":"datetime",
-    "default":"default_value",
-}]
+sche = ["int&required"]
+sche = {'userid_list': ["int&required"]}
 ```
-nest schema
+
+dict schema
+
 ```python
-{
-    "key1":{
-        "desc":"desc of the key",
-        "required":True,
-        "validate":"validater, eg datetime",
-        "default":"default_value",
-    },
-    "key2":{
-        "key_nest":{
-            "desc":"desc of the key",
-            "required":True,
-            "validate":"datetime",
-            "default":"default_value",
-        },
-        ...
-    },
-    "key_list":[{
-            "desc":"desc of the key",
-            "required":True,
-            "validate":"datetime",
-            "default":"default_value",
-        }]
-    ...
+sche = {
+    "page_num": ('+int&required&fefault=1', 'the page num'),
+    "page_size": ('int(1,50)&required&fefault=10', 'the page size')
 }   
 ```
 
-**invalid** schema will cause `SchemaError` (list should contain (only) one item)
-```python
-[{
-    "desc":"desc of the key",
-    "required":True,
-    "validate":"datetime",
-    "default":"default_value",
-},
-{
-    "desc":"desc of the key",
-    "required":True,
-    "validate":"datetime",
-    "default":"default_value",
-}]
-```
-
-
-## add_validater
-
-
+reuse schema
 
 ```python
-# add a validater
-add_validater(name,validater)
-# build a validater by regex_object
-re_validater(regex_object)
-# build a validater which validate isinstance(v, cls)
-type_validater(cls)
-# get all validaters
-validaters
+snippet = {"name": ("safestr","your name")}
+schema = {
+    "user1": snippet,
+    "user2": snippet,
+}
 ```
+
+## custom validater
 
 validater is a callable object and return a tuple
+
 ```python
-def validater(v):
-	return (True/False, validated_value)
+def validater(v, args, kwargs):
+    return (True/False, validated_value)
 ```
+
+re_validater and type_validater
+
+```python
+from validater import re_validater,type_validater
+
+# build a validater by regex_object
+validater = re_validater(regex_object)
+
+# build a validater by type or types
+validater = type_validater(cls, empty='')
+```
+
+custom validaters
+
+```python
+from validater import default_validaters
+
+my_validaters = {}
+my_validaters.update(default_validaters)
+# then you can use my_validaters as params of parse, 
+# add_validater, remove_validater
+```
+
+add_validater and remove_validater
+
+```python
+from validater import add_validater, remove_validater
+
+add_validater('name', validater, validaters=my_validaters)
+remove_validater('name', validaters=my_validaters)
+```
+
+
 
 for example
-```python
-import re
-from validater import add_validater, re_validater
-re_http=re.compile(r'^(get|post|put|delete|head|options|trace|patch)$')
-add_validater("http_method", re_validater(re_http))
-
-s = {
-    "key": [{
-        "desc": "accept http method name",
-        "required": True,
-        "validate": "http_method"
-    }]
-}
-obj = {"key": ["123", "get", "post"]}
-(error, value) = validate(obj, s)
-print error
-print value
-```
-
-### tuple_like schema
-
-support tuple_like schema since v0.8.5.
-
-#### tuple_like schema
-
-    name = "safestr&required", "world", "you name"
-
-== 等价于
-
-    {
-        "desc": "you name",
-        "required": True,
-        "validate": "safestr",
-        "default": "world"
-    }
-
-schema function is used for combine schemas. Run the code below and you will understand it.
-
-schema 函数用于将 schema 组合，生成一个新的 schema。运行一下下面的代码你就明白了。
 
 ```python
-    from validater import schema
-    import json
+from validater import re_validater,type_validater
+from validater import default_validaters
+from validater import add_validater, remove_validater
 
-    leaf1 = "+int&required", 1, "leaf1 desc"
-    leaf2 = "unicode&required"
-    leaf3 = "unicode", None, "article table of content"
+my_validaters = {}
+my_validaters.update(default_validaters)
 
-    branch1 = schema("leaf1", "leaf2")
-    branch2 = schema("branch1", "leaf3")
+year_validater = re_validater(re.compile(r"^\d{4}$"))
+add_validater("year", year_validater, my_validaters)
+add_validater("list", type_validater(list, empty=[]), my_validaters)
 
-    flower = schema(["branch1"])
-    tree = schema(["branch2"])
+def abs_validater(v, debug=False):
+    try:
+        return True, abs(v)
+    except:
+        if debug:
+            raise
+        return False, None
+add_validater('abs', abs_validater, my_validaters)
 
-    forest1 = schema(["tree"])
-    forest2 = schema([["branch2"]])
-    park = schema("tree", "flower")
-
-    scope = locals()
-
-    def pp(obj):
-        print json.dumps(obj, ensure_ascii=False, indent=4)
-
-    pp(branch1(scope))
-    pp(branch2(scope))
-
-    pp(flower(scope))
-    pp(tree(scope))
-
-    pp(forest1(scope))
-    pp(forest2(scope))
-    pp(park(scope))
-```
-
-#### tuple_like with_name schema
-
-In sometimes, we need different schema with the same name
-
-since v0.8.6, we can provide name:
-
-```python
-from validater import schema
-import json
-
-leaf_red = "leaf", ("+int&required", 1, "leaf_red")
-leaf_green = "leaf", ("unicode&required",)
-
-branch1 = "branch", schema("leaf_red")
-branch2 = "branch", schema("branch1", "leaf_green")
-
-scope = locals()
-
-def pp(obj):
-    print json.dumps(obj, ensure_ascii=False, indent=4)
-
-pp(schema("leaf_red")(scope))
-pp(schema("leaf_green")(scope))
-pp(schema("branch1")(scope))
-pp(schema("branch2")(scope))
-```
-
-As you can see, the schema format is `name, ("validate&required", default, desc)`, 
-or `name, schema`.
-
-#### marked required
-
-Since v0.9.0, You can add required infomation when combine schema.
-
-Use `*` to mark a schema as required. And I am favour of this style.
-
-For example:
-
-```
-from validater import schema
-import json
-
-name = "unicode"
-page = "+int", 1
-
-scope = locals()
-
-s_name1 = schema("name")(scope)
-s_name2 = schema("name*")(scope)
-# s_name1 is not required
-# s_name2 is required
-
-def pp(obj):
-    print json.dumps(obj, ensure_ascii=False, indent=4)
-
-pp(s_name1)
-pp(s_name2)
+schema = parse("abs&required&debug", my_validaters)
+err,val = validate(-1, schema)
 ```
 
 
 ## `ProxyDict` validate custome type 
-###校验自定义类型的对象
 
 ProxyDict can wrap custome type object and use it as dict
 
-	ProxyDict(obj, types)
+    ProxyDict(obj, types)
 
-if you custome type object contain other custome type object, you can add custome type to types, then it will be auto proxy 
+validate custome type 
 
 ```python
-class XX(object):
+class User(object):
 
-    """docstring for XX"""
+    def __init__(self, userid):
+        self.userid = userid
 
-    def __init__(self, xx):
-        self.xx = xx
+sche = parse({
+    'userid': "int&required",
+    'friends': [{'userid': "int&required"}]})
 
-xx = XX("haha")
-d = ProxyDict(xx)
-schema={
-	"xx":{"validate":"str"}
-}
-error,value = validate(d, schema)
+jack, f1, f2 = User(0), User(1), User(2)
+jack.friends = [f1, f2]
+err, val = validate(jack, sche, proxy_types=[User])
 ```
 
 
-## test 测试
-	
-	py.test
-
-    or 
-    
-    tox
 
 ## license 
 

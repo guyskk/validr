@@ -1,136 +1,246 @@
-# coding:utf-8
+#!/usr/bin/env python
+# coding: utf-8
+from __future__ import unicode_literals, absolute_import, print_function
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
-from validater import schema
+from validater import validate, parse, parse_snippet, Schema, SchemaError
+import pytest
+
+
+def test_parse_snippet():
+    assert parse_snippet('int') == {
+        'validater': 'int',
+        'args': (),
+    }
+    assert parse_snippet('int(1,10)') == {
+        'validater': 'int',
+        'args': (1, 10),
+    }
+    assert parse_snippet('int&required&default=5') == {
+        'validater': 'int',
+        'args': (),
+        'required': True,
+        'default': 5
+    }
+    assert parse_snippet('int(1,10)&required&default=5') == {
+        'validater': 'int',
+        'args': (1, 10),
+        'required': True,
+        'default': 5
+    }
+    assert parse_snippet(('int(1,10)&required&default=5', 'desc')) == {
+        'validater': 'int',
+        'args': (1, 10),
+        'required': True,
+        'default': 5,
+        'desc': 'desc'
+    }
+
+
+def test_parse():
+
+    snippet = parse_snippet("int&required")
+    sche = parse({'userid': "int&required"})
+    assert sche['userid'].data == snippet
+
+    sche = parse({'userid': ["int&required"]})
+    assert sche['userid'][0].data == snippet
+
+    sche = parse({'userid': {'userid': "int&required"}})
+    assert sche['userid']['userid'].data == snippet
+
+    sche = parse({'userid': [{'userid': "int&required"}]})
+    assert sche['userid'][0]['userid'].data == snippet
+
+    sche = parse({'email': ("email&required", "邮箱地址")})
+    assert sche['email'].data == parse_snippet(("email&required", "邮箱地址"))
+
+    sche = parse([{'userid': "int&required"}])
+    assert sche[0]['userid'].data == snippet
+
+    sche = parse("int&required")
+    assert sche.data == snippet
+
+    sche = parse(["int&required"])
+    assert sche[0].data == snippet
+
+    sche = parse([[["int&required"]]])
+    assert sche[0][0][0].data == snippet
+
+    sche = parse({'validater': 'int'})
+    assert sche.data == {'validater': 'int'}
+
+    sche = parse([{'validater': 'int'}])
+    assert sche[0].data == {'validater': 'int'}
+
+    sche = parse({'userid': {'validater': 'int'}})
+    assert sche['userid'].data == {'validater': 'int'}
+
+
+def test_parse_error():
+    with pytest.raises(SchemaError):
+        parse({'vali': 'int', 'required': True})
+    with pytest.raises(SchemaError):
+        parse("&required")
+    with pytest.raises(SchemaError):
+        parse("int&")
+    with pytest.raises(SchemaError):
+        parse("_unknown_validater")
+    with pytest.raises(SchemaError):
+        parse("int(abc)")
+    with pytest.raises(SchemaError):
+        parse("int&default=abc")
+    with pytest.raises(SchemaError):
+        parse("int&required=true")
+    # note: sche is a tuple
+    sche = {"userid": "int&required=true"},
+    with pytest.raises(SchemaError):
+        parse(sche)
 
 
 def test_schema():
-    """"""
-    leaf1 = "+int&required", 1, "leaf1 desc"
-    leaf2 = "unicode&required"
-    leaf3 = "unicode", None, "article table of content"
-
-    branch1 = schema("leaf1", "leaf2")
-    branch2 = schema("branch1", "leaf3")
-
-    flower = schema(["branch1"])
-    tree = schema(["branch2"])
-
-    forest1 = schema(["tree"])
-    forest2 = schema([["branch2"]])
-    park = schema("tree", "flower")
-
-    scope = locals()
-
-    # import json
-
-    # def pp(obj):
-    #     print json.dumps(obj, ensure_ascii=False, indent=4)
-
-    # pp(branch1(scope))
-    # pp(branch2(scope))
-
-    # pp(flower(scope))
-    # pp(tree(scope))
-
-    # pp(forest1(scope))
-    # pp(forest2(scope))
-    # pp(park(scope))
-
-    branch1 = branch1(scope)
-    assert branch1["leaf1"]["validate"] == "+int"
-    assert branch1["leaf2"]["validate"] == "unicode"
-
-    branch2 = branch2(scope)
-    assert branch2["branch1"]["leaf1"]["validate"] == "+int"
-    assert branch2["leaf3"]["validate"] == "unicode"
-
-    flower = flower(scope)
-    assert len(flower) == 1
-    assert flower[0]["leaf1"]["validate"] == "+int"
-
-    tree = tree(scope)
-    assert len(tree) == 1
-    assert tree[0]["branch1"]["leaf1"]["validate"] == "+int"
-    assert tree[0]["leaf3"]["validate"] == "unicode"
-
-    forest1 = forest1(scope)
-    forest2 = forest2(scope)
-    assert forest1[0][0]["leaf3"]["validate"] == "unicode"
-    assert forest1 == forest2
-
-    park = park(scope)
-    assert park["tree"][0]["branch1"]["leaf1"]["validate"] == "+int"
-    assert park["flower"][0]["leaf1"]["validate"] == "+int"
+    data = {
+        'validater': 'int',
+        'args': (0, 5),
+        'required': True,
+        'default': 0,
+        'desc': 'desc',
+        'somekey': 'somevalue'
+    }
+    sche = Schema(data)
+    assert sche.validater('123') == (True, 123)
+    assert sche.required
+    assert sche.default == 0
+    assert sche.args == (0, 5)
+    assert sche.kwargs == {'somekey': 'somevalue'}
+    assert 'desc' in sche.error
+    assert 'int' in sche.error
+    # test eq and ne
+    assert Schema(data) == Schema(data)
+    assert not (Schema(data) != Schema(data))
 
 
-def test_schema_with_name():
-    leaf_red = "leaf", ("+int&required", 1, "leaf_red")
-    leaf_green = "leaf", ("unicode&required",)
-
-    branch1 = "branch", schema("leaf_red")
-    branch2 = "branch", schema("branch1", "leaf_green")
-
-    flower = schema(["branch1"])
-    tree = schema(["branch2"])
-
-    forest1 = schema(["tree"])
-    forest2 = schema([["branch2"]])
-    park = schema("tree", "flower")
-
-    scope = locals()
-
-    # import json
-
-    # def pp(obj):
-    #     print json.dumps(obj, ensure_ascii=False, indent=4)
-
-    # pp(flower(scope))
-    # pp(tree(scope))
-
-    # pp(forest1(scope))
-    # pp(forest2(scope))
-    # pp(park(scope))
-
-    branch1 = branch1[1](scope)
-    assert branch1["leaf"]["validate"] == "+int"
-
-    branch2 = branch2[1](scope)
-    assert branch2["branch"]["leaf"]["validate"] == "+int"
-
-    flower = flower(scope)
-    assert len(flower) == 1
-    assert flower[0]["leaf"]["validate"] == "+int"
-
-    tree = tree(scope)
-    assert len(tree) == 1
-    assert tree[0]["branch"]["leaf"]["validate"] == "+int"
-
-    forest1 = forest1(scope)
-    forest2 = forest2(scope)
-    assert forest1[0][0]["leaf"]["validate"] == "unicode"
-    assert forest1 == forest2
-
-    park = park(scope)
-    assert park["tree"][0]["branch"]["leaf"]["validate"] == "+int"
-    assert park["flower"][0]["leaf"]["validate"] == "+int"
+def test_reuse_schema_snippet():
+    snippet = {"name": "str"}
+    schema = {
+        "user1": snippet,
+        "user2": snippet,
+    }
+    sche = parse(schema)
+    assert sche['user1']['name'] == parse("str")
+    assert sche['user2']['name'] == parse("str")
+    # parse a parsed schema shouldn't cause exception
+    assert parse(parse(schema)) == parse(schema)
 
 
-def test_marked_required():
-    name = "unicode"
-    page = "+int", 1
-    words = "unicode&required"
-    scope = locals()
-    s_name = schema("name")(scope)
-    assert not s_name["name"].get("required")
-    s_name = schema("name*")(scope)
-    assert s_name["name"]["required"]
-    s_page = schema("page")(scope)
-    assert not s_page["page"].get("required")
-    s_page = schema("page*")(scope)
-    assert s_page["page"]["required"]
-    s_words = schema("words")(scope)
-    assert s_words["words"]["required"]
-    s_words = schema("words*")(scope)
-    assert s_words["words"]["required"]
+def test_validate_single_schema():
+    sche = parse('int&required')
+    err, val = validate('123', sche)
+    assert not err
+    assert val == 123
+    err, val = validate(None, sche)
+    assert err and 'required' in dict(err)['']
+    assert val is None
+    err, val = validate('abc', sche)
+    assert err and 'int' in dict(err)['']
+    assert val is None
+
+
+def test_validate_simple_schema():
+    sche = parse({'userid': 'int&required'})
+    err, val = validate({'userid': '123'}, sche)
+    assert not err
+    assert val['userid'] == 123
+
+    err, val = validate({'userid': None}, sche)
+    assert err and 'required' in dict(err)['userid']
+    assert val == {'userid': None}
+
+    err, val = validate({}, sche)
+    assert err and 'required' in dict(err)['userid']
+    assert val == {'userid': None}
+
+    err, val = validate(None, sche)
+    assert err and 'must be dict' in dict(err)['']
+    assert val == {}
+
+
+def test_validate_deep_schema():
+    sche = parse({"user": {'userid': 'int&required'}})
+    err, val = validate({"user": {"userid": "123"}}, sche)
+    assert not err
+    assert val == {"user": {"userid": 123}}
+
+    err, val = validate({"user": {"userid": None}}, sche)
+    assert err and "required" in dict(err)["user.userid"]
+    assert val == {"user": {"userid": None}}
+
+
+def test_validate_simple_schema_has_default_value():
+    sche = parse({'userid': 'int&required&default=0'})
+    err, val = validate({'userid': None}, sche)
+    assert not err
+    assert val == {'userid': 0}
+    err, val = validate({}, sche)
+    assert not err
+    assert val == {'userid': 0}
+
+    sche = parse({'userid': 'int&default=0'})
+    err, val = validate({'userid': None}, sche)
+    assert not err
+    assert val == {'userid': 0}
+    err, val = validate({}, sche)
+    assert not err
+    assert val == {'userid': 0}
+
+    sche = parse({'userid': 'int&default=None'})
+    err, val = validate({'userid': None}, sche)
+    assert not err
+    assert val == {'userid': None}
+    err, val = validate({}, sche)
+    assert not err
+    assert val == {'userid': None}
+
+
+def test_validate_schema_callable_default():
+    from datetime import datetime
+    now = datetime.now()
+    sche = parse({'validater': 'datetime', 'default': lambda: now})
+    err, val = validate(None, sche)
+    assert not err
+    assert val == now
+
+
+def test_validate_list_schema():
+    sche = parse({'userid': ['int&required']})
+    err, val = validate({'userid': []}, sche)
+    assert not err
+    assert val == {'userid': []}
+
+    err, val = validate({'userid': ['123', '456']}, sche)
+    assert not err
+    assert val == {'userid': [123, 456]}
+
+    err, val = validate({}, sche)
+    assert err and 'must be list' in dict(err)['userid']
+    assert val == {'userid': []}
+
+    err, val = validate({'userid': '123'}, sche)
+    assert err and 'must be list' in dict(err)['userid']
+    assert val == {'userid': []}
+
+
+def test_validate_custom_types():
+    class User(object):
+
+        def __init__(self, userid):
+            self.userid = userid
+
+    sche = parse({
+        'userid': "int&required",
+        'friends': [{'userid': "int&required"}]})
+    jack, f1, f2 = User(0), User(1), User(2)
+    jack.friends = [f1, f2]
+    err, val = validate(jack, sche, proxy_types=[User])
+    assert not err
+    assert val == {'userid': 0,
+                   'friends': [{'userid': 1}, {'userid': 2}]}

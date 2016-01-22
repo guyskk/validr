@@ -1,9 +1,11 @@
-# coding:utf-8
+#!/usr/bin/env python
+# coding: utf-8
+from __future__ import absolute_import, print_function
 
 from setuptools import setup
 setup(
     name="validater",
-    version="0.9.1",
+    version="0.9.2",
     description="a python tool to "
     "validate json/dict/list and convert value by schema",
     author="kk",
@@ -11,7 +13,6 @@ setup(
     license="MIT",
     packages=['validater'],
     install_requires=[
-        'python-dateutil>=2.4',
         'six>=1.10.0',
     ],
     classifiers=[

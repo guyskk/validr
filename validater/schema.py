@@ -15,7 +15,7 @@ class SchemaError(ValueError):
 class Schema(object):
     """Schema
 
-    data::
+    param data's struct::
 
         {
             "validater": "int",
@@ -24,9 +24,14 @@ class Schema(object):
             "default": 10,
             ...
         }
+
+    :param data: a dict contains schema infomations
+    :param validaters: a dict contains all validaters
     """
 
-    def __init__(self, data, validaters=default_validaters):
+    def __init__(self, data, validaters=None):
+        if validaters is None:
+            validaters = default_validaters
         self.data = data
         self.validaters = validaters
         if 'validater' not in self.data or not self.data['validater']:
@@ -100,7 +105,7 @@ def _transform_dict(data, should_call_fn, fn):
                 stack.append(v)
 
 
-def parse(schema, validaters=default_validaters):
+def parse(schema, validaters=None):
     """parse schema, the origin schema will be modified
 
     usage::
@@ -129,6 +134,7 @@ def parse(schema, validaters=default_validaters):
         schema_parsed = parse(copy.deepcopy(schema_inputs))
 
     :param schema: schema snippet or dict/list contains schema snippets
+    :param validaters: a dict contains all validaters
     :return: a dict which endpoint is Schema object
 
     algorithm::
@@ -147,6 +153,9 @@ def parse(schema, validaters=default_validaters):
             # shouldn't call fn
             parse schema's items by using stack
     """
+    if validaters is None:
+        validaters = default_validaters
+
     def should_call_fn(v):
         return (not isinstance(v, dict)) or 'validater' in v
 

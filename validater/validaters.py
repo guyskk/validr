@@ -9,7 +9,7 @@ from functools import partial
 
 
 def re_validater(r):
-    """Return a regex validater
+    """return a regex validater
 
     :param r: regex object
     """
@@ -26,7 +26,7 @@ def re_validater(r):
 
 
 def type_validater(cls, empty=None):
-    """Return a type validater
+    """return a type validater
 
     :param cls: class-or-type-or-tuple
     :param empty: a value represent empty
@@ -181,28 +181,36 @@ default_validaters = {
     "name": name_validater,
 }
 for name, r in regexs.items():
-    vali = re_validater(r)
-    vali.__name__ = str(name + '_validater')
-    default_validaters[name] = vali
+    _vali = re_validater(r)
+    _vali.__name__ = str(name + '_validater')
+    default_validaters[name] = _vali
 
 
-def add_validater(name, fn, validaters=default_validaters):
+def add_validater(name, fn, validaters=None):
     """add validater
 
-    :param name: validater name
-    :param fn: ``validater(v) -> (ok, value)``
+    validater::
 
-        - ok is True or False, indicate valid
-        - value is converted value or None(if ok is False)
-    :validaters: a dict of validaters
+        def validater(v, args, kwargs):
+            # ok is True if v is valid, False otherwise
+            # value is converted value or None(if v is not valid)
+            return ok,value
+
+    :param name: validater name
+    :param fn: validater
+    :param validaters: a dict contains all validaters
     """
+    if validaters is None:
+        validaters = default_validaters
     validaters[name] = fn
 
 
-def remove_validater(name, validaters=default_validaters):
+def remove_validater(name, validaters=None):
     """remove validater
 
     :param name: validater name
-    :validaters: a dict of validaters
+    :param validaters: a dict contains all validaters
     """
+    if validaters is None:
+        validaters = default_validaters
     del validaters[name]

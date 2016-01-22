@@ -11,7 +11,7 @@ class ProxyDict(dict):
 
     :param proxy_obj: the object need to proxy
     :param types: list of types need to proxy, if the type of
-    proxy_obj.attribute in types，the attribute will be ProxyDict
+                  proxy_obj.attribute in types，the attribute will be ProxyDict
     """
 
     def __init__(self, proxy_obj, types=None):

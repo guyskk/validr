@@ -3,6 +3,7 @@
 from __future__ import unicode_literals, absolute_import, print_function
 import six
 import re
+import copy
 from validater import default_validaters, ProxyDict
 pattern_schema = re.compile(r"^([^ \f\n\r\t\v()&]+)(\(.*\))?(&.*)?$")
 
@@ -83,10 +84,13 @@ class Schema(object):
                 return self.error, val
 
     def __eq__(self, other):
-        return self.data == other.data
+        try:
+            return self.data == other.data
+        except:
+            return False
 
     def __ne__(self, other):
-        return self.data != other.data
+        return not self.__eq__(other)
 
     def __repr__(self):
         return "<Schema %s>" % repr(self.data)
@@ -109,7 +113,7 @@ def _transform_dict(data, should_call_fn, fn):
 
 
 def parse(schema, validaters=None):
-    """parse schema, the origin schema will be modified
+    """parse schema, the origin schema will not be modified
 
     usage::
 
@@ -131,10 +135,6 @@ def parse(schema, validaters=None):
             }
         }
         schema_inputs = parse(schema_inputs)
-
-        # to avoid modify the origin schema
-        import copy
-        schema_parsed = parse(copy.deepcopy(schema_inputs))
 
     :param schema: schema snippet or dict/list contains schema snippets
     :param validaters: a dict contains all validaters
@@ -158,6 +158,7 @@ def parse(schema, validaters=None):
     """
     if validaters is None:
         validaters = default_validaters
+    schema = copy.deepcopy(schema)
 
     def should_call_fn(v):
         return (not isinstance(v, dict)) or 'validater' in v

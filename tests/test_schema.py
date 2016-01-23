@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 from validater import validate, parse, parse_snippet, Schema, SchemaError
 import pytest
+import copy
 
 
 def test_parse_snippet():
@@ -97,6 +98,20 @@ def test_parse_error():
         parse(sche)
 
 
+def test_schema_will_not_modified():
+    sche = {'data': ("int&required", "input a number")}
+    origin = copy.deepcopy(sche)
+    parsed = parse(sche)
+    assert sche == origin
+    assert parsed != origin
+
+    sche = [("int&required", "input a number")]
+    origin = copy.deepcopy(sche)
+    parsed = parse(sche)
+    assert sche == origin
+    assert parsed != origin
+
+
 def test_schema():
     data = {
         'validater': 'int',
@@ -117,6 +132,7 @@ def test_schema():
     # test eq and ne
     assert Schema(data) == Schema(data)
     assert not (Schema(data) != Schema(data))
+    assert Schema(data) != object()
 
 
 def test_reuse_schema_snippet():

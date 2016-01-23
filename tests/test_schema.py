@@ -244,3 +244,19 @@ def test_validate_custom_types():
     assert not err
     assert val == {'userid': 0,
                    'friends': [{'userid': 1}, {'userid': 2}]}
+
+
+def test_validate_empty_value():
+    # empty value is not always None, depends on validater
+    # string type's empty value is ""
+    err, val = validate(None, parse('str'))
+    assert not err
+    assert val == str("")
+
+    err, val = validate(None, parse('unicode'))
+    assert not err
+    assert val == ""
+
+    err, val = validate(None, parse('url'))
+    assert not err
+    assert val == ""

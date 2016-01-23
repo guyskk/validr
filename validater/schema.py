@@ -15,7 +15,9 @@ class SchemaError(ValueError):
 class Schema(object):
     """Schema
 
-    param data's struct::
+    :param data: a dict contains schema infomations
+
+    .. code::
 
         {
             "validater": "int",
@@ -25,7 +27,6 @@ class Schema(object):
             ...
         }
 
-    :param data: a dict contains schema infomations
     :param validaters: a dict contains all validaters
     """
 
@@ -62,22 +63,24 @@ class Schema(object):
 
         :return: (error,value)
         """
-        if self._is_empty(obj):
-            if self._is_empty(self.default):
-                if self.required:
-                    return "required", None
-                else:
-                    return None, None
+        if self._is_empty(obj) and not self._is_empty(self.default):
+            if six.callable(self.default):
+                obj = self.default()
             else:
-                if six.callable(self.default):
-                    obj = self.default()
-                else:
-                    obj = self.default
+                obj = self.default
+        # empty value is not always None, depends on validater
         ok, val = self.validater(obj, *self.args, **self.kwargs)
         if ok:
             return None, val
         else:
-            return self.error, val
+            if self._is_empty(obj):
+                if self.required:
+                    return "required", val
+                else:
+                    # val is empty value
+                    return None, val
+            else:
+                return self.error, val
 
     def __eq__(self, other):
         return self.data == other.data

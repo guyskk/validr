@@ -108,9 +108,10 @@ built-in kwargs
 
 *required*: is required or not, empty string is treated as missing
 
-*default*: default value, it can be callable without args(used in dict snippet)
+*default*: default value, it can be callable without args(used in dict snippet). default value will also be validated
 
 *desc*: desc of the snippet
+
 
 
 
@@ -172,6 +173,7 @@ sche = {
     "desc":"a iso8601 format datetime string",
     "required":True,
     "validate":"datetime",
+    "input":True,
     "default":datetime.utcnow,
 }
 ```

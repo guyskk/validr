@@ -60,7 +60,7 @@ class Schema(object):
         return obj is None or obj == str("") or obj == b""
 
     def validate(self, obj):
-        """validate obj
+        """validate obj, the default value will also be validated
 
         :return: (error,value)
         """

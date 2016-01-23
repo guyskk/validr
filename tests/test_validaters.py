@@ -2,7 +2,7 @@
 # coding: utf-8
 from __future__ import unicode_literals, absolute_import, print_function
 
-from datetime import datetime
+import datetime
 import re
 from validater import (validate, parse, re_validater, type_validater,
                        add_validater, remove_validater)
@@ -60,6 +60,63 @@ def test_custom_validaters():
     assert "abs" not in my_validaters
 
 
+def test_datetime():
+    d = datetime.datetime(2016, 1, 1)
+    s = "2016-01-01T00:00:00.000000Z"
+    err, val = validate(d, parse("datetime&output"))
+    assert not err
+    assert val == s
+    err, val = validate(s, parse("datetime&output"))
+    assert err
+
+    err, val = validate(d, parse("datetime&input"))
+    assert not err
+    assert val == d
+    err, val = validate(s, parse("datetime&input"))
+    assert not err
+    assert val == d
+
+    err, val = validate(d, parse("datetime"))
+    assert not err
+    assert val == s
+    err, val = validate(s, parse("datetime"))
+    assert not err
+    assert val == d
+
+
+def test_date():
+    dt = datetime.datetime(2016, 1, 1)
+    d = datetime.datetime(2016, 1, 1).date()
+    s = "2016-01-01"
+    err, val = validate(d, parse("date&output"))
+    assert not err
+    assert val == s
+    err, val = validate(dt, parse("date&output"))
+    assert not err
+    assert val == s
+    err, val = validate(s, parse("date&output"))
+    assert err
+
+    err, val = validate(d, parse("date&input"))
+    assert not err
+    assert val == d
+    err, val = validate(dt, parse("date&input"))
+    assert not err
+    assert val == d
+    err, val = validate(s, parse("date&input"))
+    assert not err
+    assert val == d
+
+    err, val = validate(d, parse("date"))
+    assert not err
+    assert val == s
+    err, val = validate(dt, parse("date"))
+    assert not err
+    assert val == s
+    err, val = validate(s, parse("date"))
+    assert not err
+    assert val == d
+
 data_ok = {
     "any": [123, object(), [{}]],
     "str": ["哈哈", str("123213"), str(">?<*&")],
@@ -73,7 +130,7 @@ data_ok = {
     "float": [1, 0, -1, 0.0, -0.0, -1.0, 1.2,
               "9" * 20 + "." + "9" * 20,
               "0.0", "-0.0", "-1.0", "1.2"],
-    "datetime&output": [datetime.now(), datetime.utcnow()],
+    "datetime&output": [datetime.datetime.now(), datetime.datetime.utcnow()],
     "datetime": ["2015-08-09T15:50:49.0Z",
                  "2013-05-07T05:59:59.999999Z",
                  "2013-05-27T23:35:35.533160Z"],
@@ -132,7 +189,7 @@ data_err = {
                  "a1\t2",
                  "asdfg123\n"
                  "中文"],
-    "safestr": [datetime.now(),
+    "safestr": [datetime.datetime.now(),
                 {},
                 None]
 }

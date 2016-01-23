@@ -218,12 +218,12 @@ def test_validate_simple_schema_has_default_value():
 
 
 def test_validate_schema_callable_default():
-    from datetime import datetime
-    now = datetime.now()
-    sche = parse({'validater': 'datetime', 'default': lambda: now})
+    import random
+    num = random.randint(0, 1)
+    sche = parse({'validater': 'int', 'args': (0, 1), 'default': lambda: num})
     err, val = validate(None, sche)
     assert not err
-    assert val == now
+    assert val == num
 
 
 def test_validate_list_schema():

@@ -45,39 +45,75 @@ def type_validater(cls, empty=None):
     return vali
 
 
-def datetime_validater(v, format='%Y-%m-%dT%H:%M:%S.%fZ', output=False):
+def datetime_validater(v, format='%Y-%m-%dT%H:%M:%S.%fZ', output=False, input=False):
     """validate datetime object or datetime string
 
+    note::
+
+        if both output and input is False:
+            if v is datetime:
+                convert to string
+            else:
+                convert to datetime
+
     :param format: datetime format
-    :param output: whether output value or not
+    :param output: is output value or not
+    :param input: is input value or not
     """
     try:
         if output:
+            # datetime -> string
             return True, v.strftime(format)
-        else:
+        if input:
+            # datetime or string -> datetime
             if isinstance(v, datetime.datetime):
                 return True, v
+            else:
+                return True, datetime.datetime.strptime(v, format)
+        else:
+            # datetime -> string / string -> datetime
+            if isinstance(v, datetime.datetime):
+                return True, v.strftime(format)
             else:
                 return True, datetime.datetime.strptime(v, format)
     except:
         return False, None
 
 
-def date_validater(v, format='%Y-%m-%d', output=False):
+def date_validater(v, format='%Y-%m-%d', output=False, input=False):
     """validate date/datetime object or date string
 
+    note::
+
+        if both output and input is False:
+            if v is date or datetime:
+                convert to string
+            else:
+                convert to date
+
     :param format: date format
-    :param output: whether output value or not
+    :param output: is output value or not
+    :param input: is input value or not
     """
     try:
         if output:
+            # date or datetime -> string
             return True, v.strftime(format)
-        else:
-            if isinstance(v, datetime.date):
-                return True, v
-            elif isinstance(v, datetime.datetime):
+        if input:
+            # datetime or string -> date
+            # note: datetime is subclass of date
+            if isinstance(v, datetime.datetime):
                 return True, v.date()
-            return True, datetime.datetime.strptime(v, format).date()
+            elif isinstance(v, datetime.date):
+                return True, v
+            else:
+                return True, datetime.datetime.strptime(v, format).date()
+        else:
+            # date or datetime -> string / string -> date
+            if isinstance(v, (datetime.date, datetime.datetime)):
+                return True, v.strftime(format)
+            else:
+                return True, datetime.datetime.strptime(v, format).date()
     except:
         return False, None
 

@@ -236,6 +236,10 @@ def test_validate_list_schema():
     assert not err
     assert val == {'userid': [123, 456]}
 
+    err, val = validate({'userid': ['x123', 'x456']}, sche)
+    assert err and set(['userid[0]', 'userid[1]']) == set(dict(err))
+    assert val == {'userid': [None, None]}
+
     err, val = validate({}, sche)
     assert err and 'must be list' in dict(err)['userid']
     assert val == {'userid': []}
@@ -243,6 +247,13 @@ def test_validate_list_schema():
     err, val = validate({'userid': '123'}, sche)
     assert err and 'must be list' in dict(err)['userid']
     assert val == {'userid': []}
+
+
+def test_validate_deep_list_schema_error():
+    sche = parse([{'nums': ['int']}])
+    err, val = validate([{'nums': ['x123', 'x456']}, {'nums': 'x'}, 'x'], sche)
+    expect = set(['[0].nums[0]', '[0].nums[1]', '[1].nums', '[2]'])
+    assert expect == set(dict(err))
 
 
 def test_validate_custom_types():

@@ -255,6 +255,13 @@ def _parse_string(schema, extra=None):
     return result
 
 
+def _merge_err_key(i, key):
+    if key:
+        return '[%d].%s' % (i, key)
+    else:
+        return '[%d]' % i
+
+
 def _validate_fn(obj, schema, proxy_types=None):
     """handle list and Schema object schema"""
     errors = []
@@ -265,7 +272,7 @@ def _validate_fn(obj, schema, proxy_types=None):
         else:
             for i, x in enumerate(obj):
                 err, val = validate(x, schema[0], proxy_types)
-                err = [('%s[%s]' % (fullkey, i), msg) for fullkey, msg in err]
+                err = [(_merge_err_key(i, key), msg) for key, msg in err]
                 errors.extend(err)
                 result.append(val)
     else:
@@ -327,6 +334,7 @@ def validate(obj, schema, proxy_types=None):
             obj_item = obj.get(k)
             if not isinstance(v, dict):
                 err, val = _validate_fn(obj_item, v, proxy_types)
+                # key is '' or start with '[#]'
                 err = [(full_k + key, msg) for key, msg in err]
                 errors.extend(err)
                 value[k] = val

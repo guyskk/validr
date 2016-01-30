@@ -15,6 +15,9 @@ setup(
     install_requires=[
         'six>=1.10.0',
     ],
+    tests_require=[
+        'pytest',
+    ],
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',

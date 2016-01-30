@@ -10,7 +10,6 @@ import copy
 def test_parse_snippet():
     assert parse_snippet('int') == {
         'validater': 'int',
-        'args': (),
     }
     assert parse_snippet('int(1,10)') == {
         'validater': 'int',
@@ -18,7 +17,6 @@ def test_parse_snippet():
     }
     assert parse_snippet('int&required&default=5') == {
         'validater': 'int',
-        'args': (),
         'required': True,
         'default': 5
     }

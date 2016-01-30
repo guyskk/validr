@@ -220,6 +220,7 @@ def _parse_string(schema, extra=None):
         raise SchemaError('invalid schema: %s' % schema)
     validater, args, kwargs = find[0]
 
+    result = {'validater': validater}
     if args:
         try:
             args = eval(args)
@@ -228,10 +229,8 @@ def _parse_string(schema, extra=None):
                 'invalid args: %s, %s\n%s' % (schema, args, repr(e)))
         if not isinstance(args, tuple):
             args = (args,)
-    else:
-        args = tuple()
+        result['args'] = args
 
-    result = {'validater': validater, 'args': args}
     if extra:
         result.update(extra)
 

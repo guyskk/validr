@@ -71,17 +71,16 @@ class Schema(object):
                 obj = self.default
         # empty value is not always None, depends on validater
         ok, val = self.validater(obj, *self.args, **self.kwargs)
-        if ok:
+        if self._is_empty(obj):
+            if self.required:
+                return "required", val
+            else:
+                # val is empty value
+                return None, val
+        elif ok:
             return None, val
         else:
-            if self._is_empty(obj):
-                if self.required:
-                    return "required", val
-                else:
-                    # val is empty value
-                    return None, val
-            else:
-                return self.error, val
+            return self.error, val
 
     def __eq__(self, other):
         try:

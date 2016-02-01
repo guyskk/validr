@@ -285,3 +285,16 @@ def test_validate_empty_value():
     err, val = validate(None, parse('url'))
     assert not err
     assert val == ""
+
+    # treat empty string as None
+    err, val = validate(str(''), parse('str&required'))
+    assert err and err == [('', 'required')]
+    assert val == str("")
+
+    err, val = validate('', parse('unicode&required'))
+    assert err and err == [('', 'required')]
+    assert val == ""
+
+    err, val = validate('', parse('url&required'))
+    assert err and err == [('', 'required')]
+    assert val == ""

@@ -5,9 +5,9 @@ from __future__ import absolute_import, print_function
 from setuptools import setup
 setup(
     name="validater",
-    version="0.9.2",
+    version="0.9.3",
     description="a python tool to "
-    "validate json/dict/list and convert value by schema",
+    "validate and convert value to python object by schema",
     author="kk",
     url="https://github.com/guyskk/validater",
     license="MIT",

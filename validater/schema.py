@@ -155,8 +155,6 @@ def parse(schema, validaters=None):
             # shouldn't call fn
             parse schema's items by using stack
     """
-    if validaters is None:
-        validaters = default_validaters
     schema = copy.deepcopy(schema)
 
     def should_call_fn(v):
@@ -166,7 +164,7 @@ def parse(schema, validaters=None):
         if isinstance(v, dict):
             return Schema(v, validaters)
         elif isinstance(v, list):
-            return [parse(v[0])]
+            return [parse(v[0], validaters)]
         elif isinstance(v, Schema):
             # schema snippet may be parsed more than once,
             # and it will be replace by Schema object at the first time

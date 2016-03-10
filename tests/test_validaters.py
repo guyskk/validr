@@ -31,6 +31,10 @@ def test_custom_validaters():
     assert "year" in my_validaters
     assert "list" in my_validaters
     assert "abs" in my_validaters
+
+    # parse schema with custom_validaters
+    parse([{"year": "year&required"}], my_validaters)
+
     data = {
         'year': ['2016', '1984'],
         'list': [[], [None], [123, 456]],

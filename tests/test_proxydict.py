@@ -4,6 +4,7 @@ from __future__ import unicode_literals, absolute_import, print_function
 
 import collections
 from validater import ProxyDict
+import six
 
 
 class User(object):
@@ -42,10 +43,10 @@ def test_setdefault():
     jack = User("jack")
     proxyjack = ProxyDict(jack, [User])
     assert "nickname" not in proxyjack
-    assert None == proxyjack.setdefault("nickname")
+    assert None is proxyjack.setdefault("nickname")
     assert "nickname" in proxyjack
-    assert None == proxyjack.setdefault("nickname", "jack_nickname")
-    assert None == proxyjack["nickname"]
+    assert None is proxyjack.setdefault("nickname", "jack_nickname")
+    assert None is proxyjack["nickname"]
     assert "jack_nick" == proxyjack.setdefault("nick", "jack_nick")
     assert "jack_nick" == proxyjack["nick"]
 
@@ -57,3 +58,11 @@ def test_attrs():
     assert 'ProxyDict' in str(proxyjack)
     assert list(proxyjack) == dir(jack)
     assert len(proxyjack) == len(dir(jack))
+
+
+def test_str_unicode():
+    jack = User("jack")
+    proxyjack = ProxyDict(jack, [User])
+    assert isinstance(str(proxyjack), str)
+    if six.PY2:
+        assert isinstance(unicode(proxyjack), unicode)

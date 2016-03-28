@@ -141,8 +141,8 @@ return `tuple(error,value)`
 |int(start,end)               | int value >=start and <= end
 |+int                         | int value >=0
 |float(start,end)             | float value >=start and <= end
-|datetime(format,output,input)| format is `%Y-%m-%dT%H:%M:%S.%fZ` by default, **output** means datetime to string, **input** means string to datetime, if **both output and input is False**, convert to string if value is datetime, else convert string to datetime
-|date(format,output,input)    | format is `%Y-%m-%d` by default, **output** means date/datetime to string, **input** means string/datetime to date, if **both output and input is False**, convert to string if value is date/datetime, else convert string/datetime to date
+|datetime(format,output,input)| format is `%Y-%m-%dT%H:%M:%S.%fZ`([ISO 8601](https://en.wikipedia.org/wiki/ISO_8601)) by default, **output** means convert value to string, **input** means convert value to datetime, if **both output and input is False**, convert to string if value is datetime, else convert string to datetime
+|date(format,output,input)    | format is `%Y-%m-%d` by default, **output** means convert value to string, **input** means convert value to date, if **both output and input is False**, convert to string if value is date/datetime, else convert string/datetime to date
 |email                        | email
 |ipv4                         | ipv4
 |phone                        | phone number

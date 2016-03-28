@@ -57,12 +57,14 @@ def datetime_validater(v, format='%Y-%m-%dT%H:%M:%S.%fZ', output=False, input=Fa
                 convert to datetime
 
     :param format: datetime format
-    :param output: is output value or not
-    :param input: is input value or not
+    :param output: convert value to string
+    :param input: convert value to datetime
     """
     try:
         if output:
-            # datetime -> string
+            # datetime or string -> string
+            if not isinstance(v, datetime.datetime):
+                v = datetime.datetime.strptime(v, format)
             return True, v.strftime(format)
         if input:
             # datetime or string -> datetime
@@ -92,12 +94,14 @@ def date_validater(v, format='%Y-%m-%d', output=False, input=False):
                 convert to date
 
     :param format: date format
-    :param output: is output value or not
-    :param input: is input value or not
+    :param output: convert value to string
+    :param input: convert value to date
     """
     try:
         if output:
-            # date or datetime -> string
+            # date or datetime or string -> string
+            if not isinstance(v, (datetime.datetime, datetime.date)):
+                v = datetime.datetime.strptime(v, format).date()
             return True, v.strftime(format)
         if input:
             # datetime or string -> date

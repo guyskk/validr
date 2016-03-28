@@ -71,7 +71,8 @@ def test_datetime():
     assert not err
     assert val == s
     err, val = validate(s, parse("datetime&output"))
-    assert err
+    assert not err
+    assert val == s
 
     err, val = validate(d, parse("datetime&input"))
     assert not err
@@ -99,7 +100,8 @@ def test_date():
     assert not err
     assert val == s
     err, val = validate(s, parse("date&output"))
-    assert err
+    assert not err
+    assert val == s
 
     err, val = validate(d, parse("date&input"))
     assert not err

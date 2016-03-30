@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 from __future__ import unicode_literals, absolute_import, print_function
-
 import datetime
 import re
 from validater import (validate, parse, re_validater, type_validater,
@@ -126,7 +125,8 @@ def test_date():
 data_ok = {
     "any": [123, object(), [{}]],
     "str": ["哈哈", str("123213"), str(">?<*&")],
-    "unicode": ["哈哈", ">?<*&", "123213"],
+    "unicode": ["哈哈", ">?<*&", "123213",
+                str("123213"), str(">?<*&"), "中文".encode('utf-8')],
     "bool": [True, False],
     "int": [-1, 2, 0, "-1", "2", "0", "12434",
             0.1, -1.1, 6.6, 1.0,
@@ -161,7 +161,7 @@ data_ok = {
 
 data_err = {
     "str": [213, 0, 0.1, None],
-    "unicode": [1232, 0, None],
+    "unicode": [1232, 0, None, "中文".encode('gbk')],
     "bool": [0, 1, None, ""],
     "int": ["adf", "fff", "a22", "0x00"],
     "+int": [-1, 0, 0.0, -435, "-414"],

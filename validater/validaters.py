@@ -45,6 +45,17 @@ def type_validater(cls, empty=None):
     return vali
 
 
+def unicode_validater(v):
+    """convert string to unicode"""
+    if isinstance(v, six.text_type):
+        return True, v
+    else:
+        try:
+            return True, v.decode("utf-8")
+        except Exception:
+            return False, ""
+
+
 def datetime_validater(v, format='%Y-%m-%dT%H:%M:%S.%fZ', output=False, input=False):
     """validate datetime object or datetime string
 
@@ -209,7 +220,7 @@ regexs = {
 default_validaters = {
     "any": lambda v, *args, **kwargs: (True, v),
     "str": type_validater(six.string_types, empty=str("")),
-    "unicode": type_validater(six.text_type, empty=""),
+    "unicode": unicode_validater,
     "bool": type_validater(bool),
     "int": int_validater,
     "+int": partial(int_validater, start=1),

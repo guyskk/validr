@@ -5,10 +5,11 @@ from __future__ import absolute_import, print_function
 from setuptools import setup
 setup(
     name="validater",
-    version="0.9.4",
+    version="0.9.5",
     description="a python tool to "
     "validate and convert value to python object by schema",
-    author="kk",
+    author="guyskk",
+    author_email='guyskk@qq.com',
     url="https://github.com/guyskk/validater",
     license="MIT",
     packages=['validater'],

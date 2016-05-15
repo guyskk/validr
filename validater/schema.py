@@ -1,187 +1,80 @@
-#!/usr/bin/env python
-# coding: utf-8
-from __future__ import unicode_literals, absolute_import, print_function
-import six
+import json
 import re
-import copy
-from validater import default_validaters, ProxyDict
+import itertools
+from numbers import Number
+from ijson.backends.python import basic_parse
+from validater import ProxyDict, default_validaters
+
 pattern_schema = re.compile(r"^([^ \f\n\r\t\v()&]+)(\(.*\))?(&.*)?$")
 
 
 class SchemaError(ValueError):
+    pass
 
-    """SchemaError indicate schema invalid"""
 
+class ValidateError(ValueError):
 
-class Schema(object):
-    """Schema
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.value = None
 
-    :param data: a dict contains schema infomations
+    @property
+    def key(self):
+        return '.'.join(self.args[1:][::-1])
 
-    .. code::
-
-        {
-            "validater": "int",
-            "args": (0, 100),
-            "required": True,
-            "default": 10,
-            ...
-        }
-
-    :param validaters: a dict contains all validaters
-    """
-
-    def __init__(self, data, validaters=None):
-        if validaters is None:
-            validaters = default_validaters
-        self.data = data
-        self.validaters = validaters
-        if 'validater' not in self.data or not self.data['validater']:
-            raise SchemaError('validater is missing: %s' % data)
-        if self.data['validater'] not in self.validaters:
-            raise SchemaError(
-                'validater not exists: %s' % self.data['validater'])
-        self.validater = self.validaters[self.data['validater']]
-        self.required = self.data.get('required', False)
-        self.default = self.data.get('default', None)
-        self.args = self.data.get('args', tuple())
-        self.kwargs = {k: v for k, v in self.data.items()
-                       if k not in ['validater', 'args', 'required', 'default', 'desc']}
-        if 'desc' in self.data:
-            desc = ": " + self.data['desc']
-        else:
-            desc = ""
-        name = self.data['validater']
+    @property
+    def reason(self):
         if self.args:
-            name += str(self.args)
-        self.error = "must be '%s'%s" % (name, desc)
+            return self.args[0]
+        return ''
 
-    def _is_empty(self, obj):
-        return obj is None or obj == str("") or obj == b""
+    def __str__(self):
+        return '%s %s' % (self.key, self.reason)
 
-    def validate(self, obj):
-        """validate obj, the default value will also be validated
 
-        :return: (error,value)
-        """
-        if self._is_empty(obj) and not self._is_empty(self.default):
-            if six.callable(self.default):
-                obj = self.default()
-            else:
-                obj = self.default
-        # empty value is not always None, depends on validater
-        ok, val = self.validater(obj, *self.args, **self.kwargs)
-        if self._is_empty(obj):
-            if self.required:
-                return "required", val
-            else:
-                # val is empty value
-                return None, val
-        elif ok:
-            return None, val
+def parse_value(obj, proxy_types=None):
+    if proxy_types is None:
+        proxy_types = []
+    if obj is None:
+        yield ('null', None)
+    elif obj is True:
+        yield ('boolean', True)
+    elif obj is False:
+        yield ('boolean', False)
+    elif isinstance(obj, list):
+        for event in parse_array(obj, proxy_types=proxy_types):
+            yield event
+    elif isinstance(obj, dict):
+        for event in parse_object(obj, proxy_types=proxy_types):
+            yield event
+    elif isinstance(obj, str):
+        yield ('string', obj)
+    elif isinstance(obj, Number):
+        yield ('number', obj)
+    else:
+        if proxy_types and isinstance(obj, tuple(proxy_types)):
+            obj = ProxyDict(obj, types=proxy_types)
+            for event in parse_object(obj, proxy_types=proxy_types):
+                yield event
         else:
-            return self.error, val
-
-    def __eq__(self, other):
-        try:
-            return self.data == other.data
-        except:
-            return False
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __repr__(self):
-        return "<Schema %s>" % repr(self.data)
+            yield ('scalar', obj)
 
 
-def _transform_dict(data, should_call_fn, fn):
-    """modify some value of a dict
-
-    :param should_call_fn: func(v): return bool
-    :param fn: func(v): return new value which will replace v
-    """
-    stack = [data]
-    while stack:
-        data = stack.pop()
-        for k, v in data.items():
-            if should_call_fn(v):
-                data[k] = fn(v)
-            else:
-                stack.append(v)
+def parse_array(obj, proxy_types=None):
+    yield ('start_array', None)
+    for x in obj:
+        for event in parse_value(x, proxy_types=proxy_types):
+            yield event
+    yield ('end_array', None)
 
 
-def parse(schema, validaters=None):
-    """parse schema, the origin schema will not be modified
-
-    usage::
-
-        username = "email&required"
-        password = "password&required"
-        email = "email&required", "your email address"
-        date_modify = "datetime('iso')&required"
-        token = "unicode&required"
-        remember_me = "bool&default=False"
-        message = "unicode"
-        schema_inputs = {
-            'username': username,
-            'password': password,
-            'email': [email],
-            'remember_me': remember_me,
-            'message': [message],
-            'inner': {
-                'username': username
-            }
-        }
-        schema_inputs = parse(schema_inputs)
-
-    :param schema: schema snippet or dict/list contains schema snippets
-    :param validaters: a dict contains all validaters
-    :return: a dict which endpoint is Schema object
-
-    algorithm::
-
-        if (schema is not dict) or (schema is dict and has 'validater' key):
-            # should call fn
-            if schema is dict:
-                # has 'validater' key
-                make a Schema object
-            elif schema is list:
-                parse list[0] recursivity
-            else:
-                # schema_snippet: tuple(string, desc) or string
-                parse_snippet and make a Schema object
-        else:
-            # shouldn't call fn
-            parse schema's items by using stack
-    """
-    schema = copy.deepcopy(schema)
-
-    def should_call_fn(v):
-        return (not isinstance(v, dict)) or 'validater' in v
-
-    def fn(v):
-        if isinstance(v, dict):
-            return Schema(v, validaters)
-        elif isinstance(v, list):
-            return [parse(v[0], validaters)]
-        elif isinstance(v, Schema):
-            # schema snippet may be parsed more than once,
-            # and it will be replace by Schema object at the first time
-            # eg:
-            # snippet = {"name": "str"}
-            # schema = {
-            #     "user1": snippet,
-            #     "user2": snippet,
-            # }
-            return v
-        else:
-            return Schema(parse_snippet(v), validaters)
-
-    if should_call_fn(schema):
-        return fn(schema)
-    _transform_dict(schema, should_call_fn, fn)
-    return schema
+def parse_object(obj, proxy_types=None):
+    yield ('start_map', None)
+    for k, v in obj.items():
+        yield ('map_key', k)
+        for event in parse_value(v, proxy_types=proxy_types):
+            yield event
+    yield ('end_map', None)
 
 
 def parse_snippet(schema):
@@ -247,142 +140,251 @@ def _parse_string(schema, extra=None):
             except Exception as e:
                 raise SchemaError(
                     'invalid kwargs: %s, %s\n%s' % (schema, kv, repr(e)))
-
     return result
 
 
-def _merge_err_key(i, key):
-    if key:
-        return '[%d].%s' % (i, key)
-    else:
-        return '[%d]' % i
+def is_empty(s):
+    return s is None or s == ''
 
 
-def _validate_fn(obj, schema, proxy_types=None):
-    """handle list and Schema object schema"""
-    errors = []
-    if isinstance(schema, list):
-        result = []
-        if not isinstance(obj, list):
-            errors.append(('', 'must be list'))
+class Schema:
+
+    def __init__(self, schema, validaters=None):
+        # self.sub -> Schema/{key:Schema}
+        self.validater_name = None
+        self.validater = None
+        self.args = tuple()
+        self.default = None
+        self.kwargs = {}
+        if isinstance(schema, dict) and 'validater' not in schema:
+            self.type = 'map'
+            self.required = schema.get('$required', True)
+            self.desc = schema.get('$desc', '')
+            self.sub = {k: Schema(v, validaters) for k, v in schema.items()
+                        if k not in ['$required', '$desc']}
+        elif isinstance(schema, list):
+            self.type = 'array'
+            self.required = False
+            self.desc = ''
+            assert len(schema) == 1
+            self.sub = Schema(schema[0], validaters)
         else:
-            for i, x in enumerate(obj):
-                err, val = validate(x, schema[0], proxy_types)
-                err = [(_merge_err_key(i, key), msg) for key, msg in err]
-                errors.extend(err)
-                result.append(val)
-    else:
-        # schema is Schema object
-        err, val = schema.validate(obj)
-        result = val
-        if err:
-            errors.append(('', err))
-    return errors, result
+            self.type = 'scalar'
+            self.sub = None
+            if isinstance(schema, dict):
+                info = schema.copy()
+            else:
+                info = parse_snippet(schema)
+            self.required = info.pop('required', False)
+            self.desc = info.pop('desc', '')
+            self.validater_name = info.pop('validater')
+            if validaters is not None and self.validater_name in validaters:
+                self.validater = validaters[self.validater_name]
+            elif self.validater_name in default_validaters:
+                self.validater = default_validaters[self.validater_name]
+            else:
+                raise SchemaError('validater not exists: %s' %
+                                  self.validater_name)
+            self.args = info.pop('args', tuple())
+            self.default = info.pop('default', None)
+            self.kwargs = info
+        self.data = self.json()
+        self.error = "must be '%s'%s" % (self.validater_name, self.desc)
+
+    def __getitem__(self, key):
+        if self.type == 'map':
+            return self.sub[key]
+        elif self.type == 'array':
+            if key == 0:
+                return self.sub
+        raise KeyError(key)
+
+    def __eq__(self, other):
+        try:
+            return (
+                self.type == other.type and
+                self.required == other.required and
+                self.desc == other.desc and
+                self.sub == other.sub and
+                self.validater_name == other.validater_name and
+                self.validater == other.validater and
+                self.args == other.args and
+                self.default == other.default and
+                self.kwargs == other.kwargs
+            )
+        except AttributeError:
+            return False
+
+    def json(self):
+        if self.type == 'map':
+            sche = {k: v.json() for k, v in self.sub.items()}
+            if not self.required:
+                sche['$required'] = self.required
+            if self.desc:
+                sche['$desc'] = self.desc
+            return sche
+        elif self.type == 'array':
+            return [self.sub.json()]
+        else:
+            sche = {
+                "validater": "%s%s" % (self.validater_name, self.args or ''),
+            }
+            if self.required:
+                sche["required"] = True
+            if self.desc:
+                sche["desc"] = self.desc
+            if not is_empty(self.default):
+                sche["default"] = self.default
+            if self.kwargs:
+                sche["kwargs"] = self.kwargs
+            return sche
+
+    def __repr__(self):
+        return json.dumps(self.json(), indent=2)
+
+    def expect(self, event, exp):
+        if event != exp:
+            raise ValidateError("expect '%s', but get '%s'" % (exp, event))
+
+    def expect_scalar(self, event):
+        exp = ['null', 'boolean', 'number', 'string', 'scalar']
+        if event not in exp:
+            raise ValidateError("expect %s, but get '%s'" % (exp, event))
+
+    def skip_map_key(self, parser):
+        map_count = 0
+        while True:
+            event, value = next(parser)
+            if map_count == 0:
+                if event == 'end_map' or event == 'map_key':
+                    parser = itertools.chain([(event, value)], parser)
+                    break
+                else:
+                    raise ValidateError('invalid event: %s' % event)
+            else:
+                if event == 'start_map':
+                    map_count += 1
+                elif event == 'end_map':
+                    map_count -= 1
+        return parser
+
+    def validate(self, parser):
+        if parser is None:
+            if self.type == 'map':
+                if self.required:
+                    raise ValidateError('required')
+                else:
+                    return None
+            elif self.type == 'array':
+                raise ValidateError('required')
+            else:
+                if not is_empty(self.default):
+                    return self.default
+                elif self.required:
+                    raise ValidateError('required')
+                else:
+                    return None
+        event, value = next(parser)
+        obj = None
+        key = None
+        try:
+            if self.type == 'map':
+                self.expect(event, 'start_map')
+                obj = {}
+                while True:
+                    event, value = next(parser)
+                    if event == 'end_map':
+                        missing = set(self.sub) - set(obj)
+                        err = None
+                        for k in missing:
+                            key = k
+                            try:
+                                obj[k] = self.sub[k].validate(None)
+                            except ValidateError as ex:
+                                obj[k] = ex.value
+                                err = ex
+                        if err is not None:
+                            raise err
+                        break
+                    self.expect(event, 'map_key')
+                    if value in self.sub:
+                        key = value
+                        try:
+                            obj[value] = self.sub[value].validate(parser)
+                        except ValidateError as ex:
+                            obj[value] = ex.value
+                            raise
+                    else:
+                        self.skip_map_key(parser)
+            elif self.type == 'array':
+                self.expect(event, 'start_array')
+                obj = []
+                while True:
+                    event, value = next(parser)
+                    if event == 'end_array':
+                        break
+                    parser = itertools.chain([(event, value)], parser)
+                    key = '[%d]' % len(obj)
+                    obj.append(self.sub.validate(parser))
+            else:
+                self.expect_scalar(event)
+                if is_empty(value):
+                    if callable(self.default):
+                        value = self.default()
+                    else:
+                        value = self.default
+                empty = is_empty(value)
+                valid, value = self.validater(value, *self.args, **self.kwargs)
+                obj = value
+                if empty:
+                    if self.required:
+                        raise ValidateError('required')
+                    else:
+                        return value
+                elif valid:
+                    return value
+                else:
+                    raise ValidateError(self.error)
+            return obj
+        except ValidateError as ex:
+            ex.value = obj
+            if key is not None:
+                ex.args += (key,)
+            raise
+
+
+def parse(schema, validaters=None):
+    if isinstance(schema, Schema):
+        return schema
+    return Schema(schema, validaters)
 
 
 def validate(obj, schema, proxy_types=None):
-    """validate dict/list/object by schema
-
-    :param obj: obj need to validate
-    :param schema: a schema which endpoint is Schema object
-    :param proxy_types: a list of types which need to wrap by ProxyDict
-
-    algorithm::
-
-        fn():
-            if schema is list:
-                call validate for each items
-            else:
-                # schema is Schema object
-                call schema.validate
-
-        validate():
-            if schema is not dict:
-                call fn then return
-            while stack:
-                pop stack
-                # schema is dict
-                wrap obj[k] in ProxyDict if possiable
-                check obj is dict
-                for k,v in schema:
-                    if v is not dict:
-                        call fn then merge errors and result
-                    else:
-                        push stack # obj[k] may not dict
-    """
-    if proxy_types is None:
-        proxy_types = []
-    if not isinstance(schema, dict):
-        return _validate_fn(obj, schema, proxy_types)
-    result = {}
-    errors = []
-    stack = [(obj, schema, result, "")]
-    while stack:
-        (obj, schema, value, fullkey) = stack.pop()
-        if not isinstance(obj, dict):
-            if isinstance(obj, tuple(proxy_types)):
-                obj = ProxyDict(obj, proxy_types)
-            else:
-                errors.append((fullkey, 'must be dict'))
-                continue
-        for k, v in schema.items():
-            full_k = "%s.%s" % (fullkey, k)
-            obj_item = obj.get(k)
-            if not isinstance(v, dict):
-                err, val = _validate_fn(obj_item, v, proxy_types)
-                # key is '' or start with '[#]'
-                err = [(full_k + key, msg) for key, msg in err]
-                errors.extend(err)
-                value[k] = val
-            else:
-                value[k] = {}
-                stack.append((obj_item, v, value[k], full_k))
-    # trim the first '.'
-    errors = [(key[1:], msg) for key, msg in errors]
-    return errors, result
+    if not hasattr(obj, 'read'):
+        parser = parse_value(obj, proxy_types)
+    else:
+        parser = basic_parse(obj)
+    try:
+        val = schema.validate(parser)
+        return None, val
+    except ValidateError as ex:
+        err = [(ex.key, ex.reason)]
+        return err, ex.value
 
 
 if __name__ == '__main__':
-    from pprint import pprint as print
-    data = {
-        "key1": "value1",
-        "key2": {
-            "key21": "value21"
+    sche = {
+        "array": ["int&required"],
+        "map": {
+            "key": "str&required"
         }
     }
-    should_call_fn = lambda x: not isinstance(x, dict)
-    _transform_dict(data, should_call_fn, fn=lambda x: x.upper())
-    print(data)
-    print('-' * 60)
-
-    print(parse_snippet(("int(0,100)&required&default=10")))
-    print(parse_snippet(("int(0,100)&required&default=10", 'desc')))
-    print('-' * 60)
-
-    userid = "int&required", "用户账号"
-    schema = {
-        'userid': userid,
-        'userid_list': [userid],
-        'inner': {'userid': userid},
-        'inner_list': [{'userid': userid}]
-    }
-
-    sche = parse(schema)
-    print(sche)
-    print('-' * 60)
-
     obj = {
-        'userid': '123',
-        'userid_list': ['123', '456'],
-        'inner': {'userid': '123'},
-        'inner_list': [{'userid': '123'}]
+        "array": [1, 2],
+        "map": {
+            "key": "value"
+        }
     }
-    err, val = validate(obj, sche)
-
-    print(dict(err))
-    print(val)
-    print("-" * 60)
-
-    import cProfile
-    cProfile.run("""for i in range(100000):
-                        validate(obj, sche)""")
+    schema = parse(sche)
+    result = validate(obj, schema)
+    print(result)

@@ -1,18 +1,18 @@
 import json
 import re
-import itertools
 from numbers import Number
+from collections import defaultdict
 from ijson.backends.python import basic_parse
-from validater import ProxyDict, default_validaters
+from validater import default_validaters
 
 pattern_schema = re.compile(r"^([^ \f\n\r\t\v()&]+)(\(.*\))?(&.*)?$")
 
 
-class SchemaError(ValueError):
+class SchemaError(Exception):
     pass
 
 
-class ValidateError(ValueError):
+class Invalid(Exception):
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -32,49 +32,64 @@ class ValidateError(ValueError):
         return '%s %s' % (self.key, self.reason)
 
 
-def parse_value(obj, proxy_types=None):
-    if proxy_types is None:
-        proxy_types = []
-    if obj is None:
-        yield ('null', None)
-    elif obj is True:
-        yield ('boolean', True)
-    elif obj is False:
-        yield ('boolean', False)
-    elif isinstance(obj, list):
-        for event in parse_array(obj, proxy_types=proxy_types):
-            yield event
-    elif isinstance(obj, dict):
-        for event in parse_object(obj, proxy_types=proxy_types):
-            yield event
-    elif isinstance(obj, str):
-        yield ('string', obj)
-    elif isinstance(obj, Number):
-        yield ('number', obj)
-    else:
-        if proxy_types and isinstance(obj, tuple(proxy_types)):
-            obj = ProxyDict(obj, types=proxy_types)
-            for event in parse_object(obj, proxy_types=proxy_types):
-                yield event
+class Parser:
+
+    def __init__(self, schema):
+        self.schema = schema
+
+    def parse_value(self, obj):
+        expect = self.schema.expect()
+        if expect is None:
+            if obj is None:
+                yield ('null', None)
+            elif obj is True:
+                yield ('boolean', True)
+            elif obj is False:
+                yield ('boolean', False)
+            elif isinstance(obj, str):
+                yield ('string', obj)
+            elif isinstance(obj, Number):
+                yield ('number', obj)
+            elif isinstance(obj, list):
+                for event in self.parse_array(obj):
+                    yield event
+            elif isinstance(obj, dict):
+                for event in self.parse_object(obj):
+                    yield event
+            else:
+                yield ('scalar', obj)
         else:
-            yield ('scalar', obj)
+            for event in self.parse_object(obj):
+                yield event
 
+    def parse_array(self, obj):
+        yield ('start_array', None)
+        for x in obj:
+            for event in self.parse_value(x):
+                yield event
+        yield ('end_array', None)
 
-def parse_array(obj, proxy_types=None):
-    yield ('start_array', None)
-    for x in obj:
-        for event in parse_value(x, proxy_types=proxy_types):
-            yield event
-    yield ('end_array', None)
-
-
-def parse_object(obj, proxy_types=None):
-    yield ('start_map', None)
-    for k, v in obj.items():
-        yield ('map_key', k)
-        for event in parse_value(v, proxy_types=proxy_types):
-            yield event
-    yield ('end_map', None)
+    def parse_object(self, obj):
+        expect = self.schema.expect()
+        yield ('start_map', None)
+        if expect is None:
+            if isinstance(obj, dict):
+                for k, v in obj.items():
+                    yield ('map_key', k)
+                    for event in self.parse_value(v):
+                        yield event
+            else:
+                pass
+        else:
+            for k in expect:
+                yield ('map_key', k)
+                if isinstance(obj, dict):
+                    v = obj.get(k, None)
+                else:
+                    v = getattr(obj, k, None)
+                for event in self.parse_value(v):
+                    yield event
+        yield ('end_map', None)
 
 
 def parse_snippet(schema):
@@ -150,13 +165,17 @@ def is_empty(s):
 class Schema:
 
     def __init__(self, schema, validaters=None):
-        # self.sub -> Schema/{key:Schema}
-        self.validater_name = None
         self.validater = None
+        self.fn = None
         self.args = tuple()
         self.default = None
         self.kwargs = {}
-        if isinstance(schema, dict) and 'validater' not in schema:
+        if isinstance(schema, Schema):
+            for k in ['validater', 'fn', 'args', 'default', 'kwargs',
+                      'type', 'required', 'desc', 'sub']:
+                if hasattr(schema, k):
+                    setattr(self, k, getattr(schema, k))
+        elif isinstance(schema, dict) and 'validater' not in schema:
             self.type = 'map'
             self.required = schema.get('$required', True)
             self.desc = schema.get('$desc', '')
@@ -169,27 +188,36 @@ class Schema:
             assert len(schema) == 1
             self.sub = Schema(schema[0], validaters)
         else:
-            self.type = 'scalar'
-            self.sub = None
             if isinstance(schema, dict):
                 info = schema.copy()
             else:
                 info = parse_snippet(schema)
             self.required = info.pop('required', False)
             self.desc = info.pop('desc', '')
-            self.validater_name = info.pop('validater')
-            if validaters is not None and self.validater_name in validaters:
-                self.validater = validaters[self.validater_name]
-            elif self.validater_name in default_validaters:
-                self.validater = default_validaters[self.validater_name]
+            self.validater = info.pop('validater')
+            if validaters is not None and self.validater in validaters:
+                self.fn = validaters[self.validater]
+            elif self.validater in default_validaters:
+                self.fn = default_validaters[self.validater]
             else:
-                raise SchemaError('validater not exists: %s' %
-                                  self.validater_name)
+                raise SchemaError('validater not exists: %s' % self.validater)
             self.args = info.pop('args', tuple())
             self.default = info.pop('default', None)
             self.kwargs = info
+            self.sub = None
+            if self.validater in ['dict', 'list', 'any']:
+                self.type = 'any'
+            else:
+                self.type = 'scalar'
         self.data = self.json()
-        self.error = "must be '%s'%s" % (self.validater_name, self.desc)
+        self.error = "must be '%s': %s" % (self.validater, self.desc)
+        # state machine
+        self.obj = None
+        self.state = 'scalar'
+        self.data_type = self.type if self.type != 'any' else None
+        self.key = None
+        self.skip_count = 0
+        self.inner = None
 
     def __getitem__(self, key):
         if self.type == 'map':
@@ -206,8 +234,8 @@ class Schema:
                 self.required == other.required and
                 self.desc == other.desc and
                 self.sub == other.sub and
-                self.validater_name == other.validater_name and
                 self.validater == other.validater and
+                self.fn == other.fn and
                 self.args == other.args and
                 self.default == other.default and
                 self.kwargs == other.kwargs
@@ -227,7 +255,7 @@ class Schema:
             return [self.sub.json()]
         else:
             sche = {
-                "validater": "%s%s" % (self.validater_name, self.args or ''),
+                "validater": "%s%s" % (self.validater, self.args or ''),
             }
             if self.required:
                 sche["required"] = True
@@ -240,141 +268,199 @@ class Schema:
             return sche
 
     def __repr__(self):
-        return json.dumps(self.json(), indent=2)
+        return 'Schema(%s)' % json.dumps(self.data, indent=2)
 
-    def expect(self, event, exp):
-        if event != exp:
-            raise ValidateError("expect '%s', but get '%s'" % (exp, event))
+    def validate(self, value):
+        if is_empty(value):
+            if callable(self.default):
+                value = self.default()
+            else:
+                value = self.default
+        empty = is_empty(value)
+        valid, value = self.fn(value, *self.args, **self.kwargs)
+        if empty:
+            if self.required:
+                return 'required', value
+            else:
+                return None, value
+        elif valid:
+            return None, value
+        else:
+            return self.error, value
 
-    def expect_scalar(self, event):
-        exp = ['null', 'boolean', 'number', 'string', 'scalar']
-        if event not in exp:
-            raise ValidateError("expect %s, but get '%s'" % (exp, event))
-
-    def skip_map_key(self, parser):
-        map_count = 0
-        while True:
-            event, value = next(parser)
-            if map_count == 0:
-                if event == 'end_map' or event == 'map_key':
-                    parser = itertools.chain([(event, value)], parser)
-                    break
+    def on_scalar(self, event, value):
+        if self.type == 'any':
+            if self.validater == 'dict':
+                if event == 'start_map':
+                    self.data_type = 'map'
+                    self.sub = defaultdict(lambda: Schema('any'))
                 else:
-                    raise ValidateError('invalid event: %s' % event)
+                    raise Invalid('expect start_map')
+            elif self.validater == 'list':
+                if event == 'start_array':
+                    self.data_type = 'array'
+                    self.sub = Schema('any')
+                else:
+                    raise Invalid('expect start_array')
             else:
                 if event == 'start_map':
-                    map_count += 1
-                elif event == 'end_map':
-                    map_count -= 1
-        return parser
+                    self.data_type = 'map'
+                    self.sub = defaultdict(lambda: Schema('any'))
+                elif event == 'start_array':
+                    self.data_type = 'array'
+                    self.sub = Schema('any')
+                elif event == 'scalar':
+                    self.data_type = 'scalar'
+                else:
+                    raise Invalid('expect start_map/start_array/scalar')
+        else:
+            self.data_type = self.type
+        if self.data_type == 'map':
+            if event == 'start_map':
+                self.state = 'map'
+                self.obj = {}
+            else:
+                raise Invalid('expect start_map')
+        elif self.data_type == 'array':
+            if event == 'start_array':
+                self.state = 'array'
+                self.obj = []
+                self.inner = self.sub
+            else:
+                raise Invalid('expect start_array')
+        else:
+            if event == 'scalar':
+                self.state = 'stop'
+                err, val = self.validate(value)
+                self.obj = val
+                if err is not None:
+                    raise Invalid(err)
+            else:
+                raise Invalid('expect scalar')
 
-    def validate(self, parser):
-        if parser is None:
-            if self.type == 'map':
-                if self.required:
-                    raise ValidateError('required')
-                else:
-                    return None
-            elif self.type == 'array':
-                raise ValidateError('required')
+    def on_map(self, event, value):
+        if event == 'map_key':
+            if value in self.sub:
+                self.state = 'map_key'
+                self.key = value
+                self.inner = self.sub[self.key]
             else:
-                if not is_empty(self.default):
-                    return self.default
-                elif self.required:
-                    raise ValidateError('required')
-                else:
-                    return None
-        event, value = next(parser)
-        obj = None
-        key = None
+                self.state = 'skip'
+                self.key = None
+                self.skip_count = 0
+        elif event == 'end_map':
+            self.state = 'stop'
+            missing = set(self.sub) - set(self.obj)
+            for k in missing:
+                self.obj[k] = self.sub[k].validate(None)
+        else:
+            raise Invalid('expect map_key or end_map')
+
+    def on_map_key(self, event, value):
+        self.inner.reset()
+        state = self.inner.feed(event, value)
+        self.obj[self.key] = self.inner.obj
+        if state == 'stop':
+            self.state = 'map'
+        else:
+            self.state = 'inner'
+
+    def on_array(self, event, value):
+        if event == 'end_array':
+            self.state = 'stop'
+        else:
+            self.inner.reset()
+            self.key = '[%d]' % len(self.obj)
+            state = self.inner.feed(event, value)
+            self.obj.append(self.inner.obj)
+            if state == 'stop':
+                self.state = 'array'
+            else:
+                self.state = 'inner'
+
+    def on_inner(self, event, value):
+        state = self.inner.feed(event, value)
+        if state == 'stop':
+            self.state = self.data_type
+
+    def on_stop(self, event, value):
+        raise Invalid('stop')
+
+    def on_skip(self, event, value):
+        if self.skip_count == 0 and event == 'end_map':
+            self.state = 'map'
+        else:
+            if event == 'start_map' or event == 'start_array':
+                self.skip_count += 1
+            elif event == 'end_map' or event == 'end_array':
+                self.skip_count -= 1
+            else:
+                pass
+
+    def reset(self):
+        self.obj = None
+        self.state = 'scalar'
+        self.data_type = None
+        self.key = None
+        self.skip_count = 0
+        self.inner = None
+
+    def feed(self, event, value):
+        state_fn = {
+            'scalar': self.on_scalar,
+            'map': self.on_map,
+            'map_key': self.on_map_key,
+            'array': self.on_array,
+            'inner': self.on_inner,
+            'stop': self.on_stop,
+            'skip': self.on_skip
+        }
         try:
-            if self.type == 'map':
-                self.expect(event, 'start_map')
-                obj = {}
-                while True:
-                    event, value = next(parser)
-                    if event == 'end_map':
-                        missing = set(self.sub) - set(obj)
-                        err = None
-                        for k in missing:
-                            key = k
-                            try:
-                                obj[k] = self.sub[k].validate(None)
-                            except ValidateError as ex:
-                                obj[k] = ex.value
-                                err = ex
-                        if err is not None:
-                            raise err
-                        break
-                    self.expect(event, 'map_key')
-                    if value in self.sub:
-                        key = value
-                        try:
-                            obj[value] = self.sub[value].validate(parser)
-                        except ValidateError as ex:
-                            obj[value] = ex.value
-                            raise
-                    else:
-                        self.skip_map_key(parser)
-            elif self.type == 'array':
-                self.expect(event, 'start_array')
-                obj = []
-                while True:
-                    event, value = next(parser)
-                    if event == 'end_array':
-                        break
-                    parser = itertools.chain([(event, value)], parser)
-                    key = '[%d]' % len(obj)
-                    obj.append(self.sub.validate(parser))
-            else:
-                self.expect_scalar(event)
-                if is_empty(value):
-                    if callable(self.default):
-                        value = self.default()
-                    else:
-                        value = self.default
-                empty = is_empty(value)
-                valid, value = self.validater(value, *self.args, **self.kwargs)
-                obj = value
-                if empty:
-                    if self.required:
-                        raise ValidateError('required')
-                    else:
-                        return value
-                elif valid:
-                    return value
-                else:
-                    raise ValidateError(self.error)
-            return obj
-        except ValidateError as ex:
-            ex.value = obj
-            if key is not None:
-                ex.args += (key,)
+            state_fn[self.state](event, value)
+        except Invalid as ex:
+            if self.key is not None:
+                ex.args += (self.key,)
             raise
+        return self.state
+
+    def expect(self):
+        if self.state in ['inner', 'array', 'map_key']:
+            return self.inner.expect()
+        else:
+            if self.type == 'map':
+                return self.sub.keys()
+            else:
+                return None
 
 
 def parse(schema, validaters=None):
-    if isinstance(schema, Schema):
-        return schema
     return Schema(schema, validaters)
 
 
 def validate(obj, schema, proxy_types=None):
     if not hasattr(obj, 'read'):
-        parser = parse_value(obj, proxy_types)
+        p = Parser(schema)
+        parser = p.parse_value(obj)
     else:
         parser = basic_parse(obj)
+    err = None
     try:
-        val = schema.validate(parser)
-        return None, val
-    except ValidateError as ex:
+        for event, value in parser:
+            if event in ['null', 'boolean', 'number', 'string']:
+                event = 'scalar'
+            schema.feed(event, value)
+            if schema.state == 'stop':
+                break
+    except Invalid as ex:
         err = [(ex.key, ex.reason)]
-        return err, ex.value
+    val = schema.obj
+    schema.reset()
+    return err, val
 
 
 if __name__ == '__main__':
     sche = {
-        "array": ["int&required"],
+        "array": 'any',
         "map": {
             "key": "str&required"
         }
@@ -385,6 +471,8 @@ if __name__ == '__main__':
             "key": "value"
         }
     }
-    schema = parse(sche)
+    schema = Schema(sche)
     result = validate(obj, schema)
+    print(result)
+    result = validate([{}], parse('any'))
     print(result)

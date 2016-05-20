@@ -1,5 +1,8 @@
-import json
+#!/usr/bin/env python
+# coding: utf-8
+from __future__ import unicode_literals, absolute_import, print_function
 import re
+import json
 from numbers import Number
 from collections import defaultdict
 from ijson.backends.python import basic_parse
@@ -16,7 +19,7 @@ class Invalid(Exception):
     """Invalid data error"""
 
     def __init__(self, *args):
-        super().__init__(*args)
+        super(Exception, self).__init__(*args)
         self.value = None
 
     @property
@@ -180,7 +183,7 @@ def _parse_string(schema, extra=None):
 
 
 def is_empty(s):
-    return s is None or s == ''
+    return s is None or s == str('')
 
 
 class Schema:

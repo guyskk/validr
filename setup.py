@@ -15,6 +15,7 @@ setup(
     packages=['validater'],
     install_requires=[
         'six>=1.10.0',
+        'ijson>=2.3',
     ],
     tests_require=[
         'pytest',

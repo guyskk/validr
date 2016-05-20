@@ -329,6 +329,9 @@ class Schema:
         except AttributeError:
             return False
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def json(self):
         if self.type == 'map':
             sche = {k: v.json() for k, v in self.sub.items()}
@@ -382,13 +385,13 @@ class Schema:
                     self.data_type = 'map'
                     self.sub = defaultdict(lambda: Schema('any'))
                 else:
-                    raise Invalid('expect start_map')
+                    raise Invalid('must be dict')
             elif self.validater == 'list':
                 if event == 'start_array':
                     self.data_type = 'array'
                     self.sub = Schema('any')
                 else:
-                    raise Invalid('expect start_array')
+                    raise Invalid('must be list')
             else:
                 if event == 'start_map':
                     self.data_type = 'map'
@@ -399,7 +402,7 @@ class Schema:
                 elif event == 'scalar':
                     self.data_type = 'scalar'
                 else:
-                    raise Invalid('expect start_map/start_array/scalar')
+                    raise Invalid('must be dict/list/scalar')
         else:
             self.data_type = self.type
         if self.data_type == 'map':
@@ -407,14 +410,14 @@ class Schema:
                 self.state = 'map'
                 self.obj = {}
             else:
-                raise Invalid('expect start_map')
+                raise Invalid('must be dict')
         elif self.data_type == 'array':
             if event == 'start_array':
                 self.state = 'array'
                 self.obj = []
                 self.inner = self.sub
             else:
-                raise Invalid('expect start_array')
+                raise Invalid('must be list')
         else:
             if event == 'scalar':
                 self.state = 'stop'

@@ -120,7 +120,7 @@ def test_schema():
         'somekey': 'somevalue'
     }
     sche = Schema(data)
-    assert sche.validater('123') == (True, 123)
+    assert sche.fn('123') == (True, 123)
     assert sche.required
     assert sche.default == 0
     assert sche.args == (0, 5)
@@ -167,14 +167,14 @@ def test_validate_simple_schema():
 
     err, val = validate({'userid': None}, sche)
     assert err and 'required' in dict(err)['userid']
-    assert val == {'userid': None}
+    assert val == {}
 
     err, val = validate({}, sche)
     assert err and 'required' in dict(err)['userid']
-    assert val == {'userid': None}
+    assert val == {}
 
     err, val = validate(None, sche)
-    assert err and 'must be dict' in dict(err)['']
+    assert err and 'required' in dict(err)['userid']
     assert val == {}
 
 
@@ -186,7 +186,7 @@ def test_validate_deep_schema():
 
     err, val = validate({"user": {"userid": None}}, sche)
     assert err and "required" in dict(err)["user.userid"]
-    assert val == {"user": {"userid": None}}
+    assert val == {"user": {}}
 
 
 def test_validate_simple_schema_has_default_value():
@@ -235,23 +235,25 @@ def test_validate_list_schema():
     assert val == {'userid': [123, 456]}
 
     err, val = validate({'userid': ['x123', 'x456']}, sche)
-    assert err and set(['userid[0]', 'userid[1]']) == set(dict(err))
-    assert val == {'userid': [None, None]}
+    assert err
+    key, reason = err[0]
+    assert key in ['userid.[0]', 'userid.[1]']
+    assert 'int' in reason
 
     err, val = validate({}, sche)
-    assert err and 'must be list' in dict(err)['userid']
-    assert val == {'userid': []}
+    assert err and 'list' in dict(err)['userid']
 
     err, val = validate({'userid': '123'}, sche)
-    assert err and 'must be list' in dict(err)['userid']
-    assert val == {'userid': []}
+    assert err and 'list' in dict(err)['userid']
 
 
 def test_validate_deep_list_schema_error():
     sche = parse([{'nums': ['int']}])
     err, val = validate([{'nums': ['x123', 'x456']}, {'nums': 'x'}, 'x'], sche)
-    expect = set(['[0].nums[0]', '[0].nums[1]', '[1].nums', '[2]'])
-    assert expect == set(dict(err))
+    expect = set(['[0].nums.[0]', '[0].nums.[1]', '[1].nums', '[2]'])
+    assert err
+    key, reason = err[0]
+    assert key in expect
 
 
 def test_validate_custom_types():

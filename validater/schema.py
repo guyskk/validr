@@ -9,10 +9,11 @@ pattern_schema = re.compile(r"^([^ \f\n\r\t\v()&]+)(\(.*\))?(&.*)?$")
 
 
 class SchemaError(Exception):
-    pass
+    """Schema error"""
 
 
 class Invalid(Exception):
+    """Invalid data error"""
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -33,6 +34,26 @@ class Invalid(Exception):
 
 
 class Parser:
+    """Parse dict,list,scalar value,python object, yield (event, value)
+
+    Usage::
+
+        parser = Parser(schema).parse_value(obj)
+        for event,value in parser:
+            # do somthing
+
+    The (event, value) has the same means as ijson.basic_parse. In addition,
+    event can be 'scalar', which means scalar value.
+
+    This parser will call schema.expect() to get expected keys of the schema,
+    if expected keys exists, parser will yield expected keys other than
+    all keys.
+
+    When parse raw python object, the expected keys is attribute names of
+    the object, parser will call getattr of the object. If no expected keys
+    from schema, parser won't yield anything, because raw python object has
+    lots of built-in attrs, most of them are not expectd.
+    """
 
     def __init__(self, schema):
         self.schema = schema
@@ -163,6 +184,59 @@ def is_empty(s):
 
 
 class Schema:
+    """Schema describe the struct of data, and keep validate state
+
+    Usage::
+
+        sche = Schema({"userid": "int"})
+        # tell which keys it need
+        print(sche.expect())  # ["userid"]
+        sche.feed(('start_map', None))
+        sche.feed(('map_key', 'userid'))
+        sche.feed(('scalar', '123'))
+        sche.feed(('end_map', None))
+        print(sche.state)  # "stop"
+        # print the result
+        print(sche.obj)  # {"userid": 123}
+        sche.reset()
+        # the schema can be feed again
+
+    Schema has a tree struct which is the same of the struct of data,
+    every schema object is a node. Schema.data and Schema.json() can
+    tell the struct of schema.
+
+    There are 4 types of schema:
+
+    - map, dict or key-value struct
+    - array, list or array struct
+    - scalar, scalar value
+    - any, data struct determined after receive data
+
+    Schema.sub is sub schema of this schema, for 'map' type schema, it's a
+    dict of key:schema, for other type, it's schema object. for 'any' type
+    schema, it's sub determined after receive data.
+
+    Each schema is a state machine, there 7 state, see the figure on this
+    folder. You can imagine each schema as a bag, the bag may has a hole
+    (Schema.inner) pipe to another bag, and anything the bag received will
+    drop into the inner bag until the inner bag is full.
+
+    Once a bag received invalid data, it will raise a Invalid exception
+    which contains error message and position(Schema.key).The outter bag
+    catch the exception, append it's position then reraise, when the root
+    schema catch the exception, looks it's positions and known where the
+    invalid data in.
+
+    'scalar' state will determined the actual data type, 'skip' state is
+    used to skip(ignore) undesired key-value in 'map' type schema, 'inner'
+    state will pipe any event to inner schema until inner schema stoped.
+    In 'map_key' state and 'array' state, will link current Schema.obj
+    with Schema.inner.obj, so the root schema's obj can link to all sub
+    schema's obj.
+
+    In addition, Schema.expect() can tell which keys it currently need,
+    this allow outsides to choose better action.
+    """
 
     def __init__(self, schema, validaters=None):
         self.validater = None
@@ -218,6 +292,15 @@ class Schema:
         self.key = None
         self.skip_count = 0
         self.inner = None
+        self.state_fn = {
+            'scalar': self.on_scalar,
+            'map': self.on_map,
+            'map_key': self.on_map_key,
+            'array': self.on_array,
+            'inner': self.on_inner,
+            'stop': self.on_stop,
+            'skip': self.on_skip
+        }
 
     def __getitem__(self, key):
         if self.type == 'map':
@@ -271,6 +354,7 @@ class Schema:
         return 'Schema(%s)' % json.dumps(self.data, indent=2)
 
     def validate(self, value):
+        """validate scalar value"""
         if is_empty(value):
             if callable(self.default):
                 value = self.default()
@@ -398,6 +482,7 @@ class Schema:
                 pass
 
     def reset(self):
+        """reset the state machine"""
         self.obj = None
         self.state = 'scalar'
         self.data_type = None
@@ -406,17 +491,9 @@ class Schema:
         self.inner = None
 
     def feed(self, event, value):
-        state_fn = {
-            'scalar': self.on_scalar,
-            'map': self.on_map,
-            'map_key': self.on_map_key,
-            'array': self.on_array,
-            'inner': self.on_inner,
-            'stop': self.on_stop,
-            'skip': self.on_skip
-        }
+        """feed (event, value) to build struct data"""
         try:
-            state_fn[self.state](event, value)
+            self.state_fn[self.state](event, value)
         except Invalid as ex:
             if self.key is not None:
                 ex.args += (self.key,)
@@ -424,6 +501,7 @@ class Schema:
         return self.state
 
     def expect(self):
+        """tell which keys current needed"""
         if self.state in ['inner', 'array', 'map_key']:
             return self.inner.expect()
         else:
@@ -434,10 +512,30 @@ class Schema:
 
 
 def parse(schema, validaters=None):
+    """parse schema, return Schema object"""
     return Schema(schema, validaters)
 
 
 def validate(obj, schema, proxy_types=None):
+    """
+    validate obj by schema, return (error, value)
+
+    Usage::
+        sche = parse({"userid": "int&required"})
+        err, val = validate({"userid": "abc"})
+        key, reason = err[0]  # "userid", "must be int"
+        err, val = validate({"userid": "123"})
+        # err is None
+        print(val)  # {"userid": 123}
+
+    Note the error is a list of tuple(key, reason), in validater<=0.9
+    it contains all errors, now it only contains one error.
+
+    :param obj: file-like object(has 'read' attribute) is parsed by ijson,
+                dict, list, scalar value, raw object is parsed by Parser
+    :param schema: Schema object which could tell which keys it need
+    :proxy_types: not used, place here to keep compat with validater<=0.9
+    """
     if not hasattr(obj, 'read'):
         p = Parser(schema)
         parser = p.parse_value(obj)

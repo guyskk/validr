@@ -174,8 +174,8 @@ def test_validate_simple_schema():
     assert val == {}
 
     err, val = validate(None, sche)
-    assert err and 'required' in dict(err)['userid']
-    assert val == {}
+    assert err and 'must be dict' in dict(err)['']
+    assert val is None
 
 
 def test_validate_deep_schema():
@@ -300,3 +300,24 @@ def test_validate_empty_value():
     err, val = validate('', parse('url&required'))
     assert err and err == [('', 'required')]
     assert val == ""
+
+
+def test_dict_not_required():
+    schema = parse({
+        "user": {
+            "userid": "int&required",
+            "name": "str&required",
+            "$required": False
+        }
+    })
+    err, val = validate({"user": None}, schema)
+    assert not err
+    assert val == {"user": None}
+    err, val = validate({}, schema)
+    assert not err
+    assert val == {"user": None}
+    err, val = validate({"user": {}}, schema)
+    assert err
+    key, reason = err[0]
+    assert key in ['user.userid', 'user.name']
+    assert 'required' in reason

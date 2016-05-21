@@ -62,29 +62,30 @@ class Parser:
         self.schema = schema
 
     def parse_value(self, obj):
-        expect = self.schema.expect()
-        if expect is None:
-            if obj is None:
-                yield ('null', None)
-            elif obj is True:
-                yield ('boolean', True)
-            elif obj is False:
-                yield ('boolean', False)
-            elif isinstance(obj, str):
-                yield ('string', obj)
-            elif isinstance(obj, Number):
-                yield ('number', obj)
-            elif isinstance(obj, list):
-                for event in self.parse_array(obj):
-                    yield event
-            elif isinstance(obj, dict):
+        if obj is None:
+            yield ('null', None)
+        elif obj is True:
+            yield ('boolean', True)
+        elif obj is False:
+            yield ('boolean', False)
+        elif isinstance(obj, str):
+            yield ('string', obj)
+        elif isinstance(obj, Number):
+            yield ('number', obj)
+        else:
+            expect = self.schema.expect()
+            if expect is None:
+                if isinstance(obj, list):
+                    for event in self.parse_array(obj):
+                        yield event
+                elif isinstance(obj, dict):
+                    for event in self.parse_object(obj):
+                        yield event
+                else:
+                    yield ('scalar', obj)
+            else:
                 for event in self.parse_object(obj):
                     yield event
-            else:
-                yield ('scalar', obj)
-        else:
-            for event in self.parse_object(obj):
-                yield event
 
     def parse_array(self, obj):
         yield ('start_array', None)
@@ -361,22 +362,28 @@ class Schema:
 
     def validate(self, value):
         """validate scalar value"""
-        if is_empty(value):
-            if callable(self.default):
-                value = self.default()
+        if self.type == 'map':
+            if not self.required and value is None:
+                return None, None
             else:
-                value = self.default
-        empty = is_empty(value)
-        valid, value = self.fn(value, *self.args, **self.kwargs)
-        if empty:
-            if self.required:
-                return 'required', value
-            else:
-                return None, value
-        elif valid:
-            return None, value
+                return 'required', None
         else:
-            return self.error, value
+            if is_empty(value):
+                if callable(self.default):
+                    value = self.default()
+                else:
+                    value = self.default
+            empty = is_empty(value)
+            valid, value = self.fn(value, *self.args, **self.kwargs)
+            if empty:
+                if self.required:
+                    return 'required', value
+                else:
+                    return None, value
+            elif valid:
+                return None, value
+            else:
+                return self.error, value
 
     def on_scalar(self, event, value):
         if self.type == 'any':
@@ -410,7 +417,11 @@ class Schema:
                 self.state = 'map'
                 self.obj = {}
             else:
-                raise Invalid('must be dict')
+                if (not self.required) and event == 'scalar' and value is None:
+                    self.state = 'stop'
+                    self.obj = None
+                else:
+                    raise Invalid('must be dict')
         elif self.data_type == 'array':
             if event == 'start_array':
                 self.state = 'array'

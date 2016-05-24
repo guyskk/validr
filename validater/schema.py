@@ -571,7 +571,6 @@ def validate(obj, schema, proxy_types=None):
         for event, value in parser:
             if event in ['null', 'boolean', 'number', 'string']:
                 event = 'scalar'
-            print((event, value))
             schema.feed(event, value)
             if schema.state == 'stop':
                 break

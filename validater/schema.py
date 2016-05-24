@@ -374,7 +374,11 @@ class Schema:
                 else:
                     value = self.default
             empty = is_empty(value)
-            valid, value = self.fn(value, *self.args, **self.kwargs)
+            if self.fn is None:
+                # when type == 'map'
+                valid, value = False, None
+            else:
+                valid, value = self.fn(value, *self.args, **self.kwargs)
             if empty:
                 if self.required:
                     return 'required', value
@@ -437,7 +441,7 @@ class Schema:
                 if err is not None:
                     raise Invalid(err)
             else:
-                raise Invalid('expect scalar')
+                raise Invalid(self.error)
 
     def on_map(self, event, value):
         if event == 'map_key':
@@ -452,8 +456,12 @@ class Schema:
         elif event == 'end_map':
             self.state = 'stop'
             missing = set(self.sub) - set(self.obj)
+            err = None
             for k in missing:
-                self.obj[k] = self.sub[k].validate(None)
+                err, val = self.sub[k].validate(None)
+                self.obj[k] = val
+            if err is not None:
+                raise Invalid(err)
         else:
             raise Invalid('expect map_key or end_map')
 
@@ -563,6 +571,7 @@ def validate(obj, schema, proxy_types=None):
         for event, value in parser:
             if event in ['null', 'boolean', 'number', 'string']:
                 event = 'scalar'
+            print((event, value))
             schema.feed(event, value)
             if schema.state == 'stop':
                 break

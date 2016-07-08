@@ -1,3 +1,4 @@
+# coding:utf-8
 from validater import SchemaError, Invalid, SchemaParser
 from validater.schema import ValidaterString
 import pytest
@@ -22,6 +23,8 @@ validater_string = {
     "()": {},
     "(0)": {"args": tuple([0])},
     "(0,10)": {"args": tuple([0, 10])},
+    "&optional": {"kwargs": {"optional": True}},
+    "&default=5&optional": {"kwargs": {"default": 5, "optional": True}},
     "(0,10)&minlen=1": {"args": tuple([0, 10]), "kwargs": {"minlen": 1}},
     "key?int(0,10)&optional": {
         "key": "key",
@@ -104,3 +107,108 @@ def test_scalar_fail(schema, value):
     f = sp.parse(schema)
     with pytest.raises(Invalid):
         print("value is: %s" % f(value))
+
+
+class User:
+
+    def __init__(self, userid):
+        self.userid = userid
+
+
+def test_dict_pre_described_error():
+    # validater string should preposition
+    with pytest.raises(SchemaError):
+        sp.parse({"userid": "int(0,9)"})
+
+
+def test_dict_self_optional_error():
+    # 'optional' is treated as desc
+    f = sp.parse({"$self": "optional"})
+    with pytest.raises(Invalid):
+        f(None)
+
+
+def test_dict_preposition_optional_error():
+    # should self-described
+    with pytest.raises(SchemaError):
+        sp.parse({"user?&optional": {"userid?int(0,9)": "UserID"}})
+
+
+@pytest.mark.parametrize("value", [{"userid": 5}, User(5)])
+def test_dict(value):
+    expect = {"userid": 5}
+    f = sp.parse({"userid?int(0,9)": "用户ID"})
+    assert f(value) == expect
+
+
+@pytest.mark.parametrize("value", [{"user": {"userid": 5}}, {"user": User(5)}])
+def test_dict_inner(value):
+    expect = {"user": {"userid": 5}}
+    f = sp.parse({"user": {"userid?int(0,9)": "用户ID"}})
+    assert f(value) == expect
+
+
+def test_dict_optional():
+    f = sp.parse({"$self?&optional": "User"})
+    assert f(None) is None
+    assert f({"userid": 5}) == {}
+
+
+def test_dict_inner_optional():
+    f = sp.parse({"user": {"$self?&optional": "User"}})
+    assert f({"user": None}) == {"user": None}
+    assert f({"user": {"userid": 5}}) == {"user": {}}
+
+
+def test_list_length_0_error():
+    with pytest.raises(SchemaError):
+        sp.parse([])
+
+
+def test_list_length_3_error():
+    with pytest.raises(SchemaError):
+        sp.parse(["&unique", "int(0,9)", "xxxx"])
+
+
+def test_list_pre_described_error():
+    with pytest.raises(SchemaError):
+        sp.parse({"items?&unique": ["int(0,9)"]})
+
+
+@pytest.mark.parametrize("value,expect", [
+    ([1], [1]),
+    ([1, 2, "3"], [1, 2, 3])])
+def test_list(value, expect):
+    f = sp.parse(["(1,3)&unique", "int(0,9)"])
+    assert f(value) == expect
+
+
+@pytest.mark.parametrize("value,expect", [
+    ([], []),
+    ([1, 2, "2", 3], [1, 2, 2, 3])])
+def test_list_length_1(value, expect):
+    f = sp.parse(["int(0,9)"])
+    assert f(value) == expect
+
+
+@pytest.mark.parametrize("value", [None, [], [1, 2, "3", 4], [1, 2, 2]])
+def test_list_fail(value):
+    f = sp.parse(["(1,3)&unique", "int(0,9)"])
+    with pytest.raises(Invalid):
+        f(value)
+
+
+def test_list_optional():
+    f = sp.parse(["&optional", "int"])
+    assert f(None) is None
+    assert f([]) == []
+
+
+def test_list_dict():
+    f = sp.parse([{"userid?int(0,9)": "UserID"}])
+    assert f([User(0), {"userid": 1}]) == [{"userid": 0}, {"userid": 1}]
+
+
+def test_dict_list():
+    f = sp.parse({"group": ["&unique", "int"]})
+    assert f({"group": [1, "2"]}) == {"group": [1, 2]}

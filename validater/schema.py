@@ -15,11 +15,13 @@ class ValidaterString:
                 is_refer = True
             else:
                 is_refer = False
-        if cut >= 0:
+        if cut > 0:
             key = text[:cut]
             text = text[cut + 1:]
         else:
             key = None
+            if cut == 0:
+                text = text[cut + 1:]
 
         cut = text.find("(")
         if cut >= 0:

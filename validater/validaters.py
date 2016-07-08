@@ -1,3 +1,4 @@
+import sys
 from .exceptions import Invalid
 
 
@@ -24,11 +25,11 @@ def handle_default_optional_desc(some_validater):
 
 
 @handle_default_optional_desc
-def int_validater(min=0, max=1024):
+def int_validater(min=-sys.maxsize, max=sys.maxsize):
     def validater(value):
         try:
             v = int(value)
-        except ValueError:
+        except (ValueError, OverflowError):
             raise Invalid("invalid int")
         if v < min:
             raise Invalid("value must >= %d" % min)

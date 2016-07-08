@@ -1,7 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-from __future__ import absolute_import, print_function
-
 from setuptools import setup
 setup(
     name="validater",
@@ -13,10 +9,7 @@ setup(
     url="https://github.com/guyskk/validater",
     license="MIT",
     packages=['validater'],
-    install_requires=[
-        'six>=1.10.0',
-        'ijson>=2.3',
-    ],
+    install_requires=[],
     tests_require=[
         'pytest',
     ],

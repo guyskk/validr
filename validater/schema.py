@@ -1,5 +1,5 @@
-# coding:utf-8
 import json
+from contextlib import contextmanager
 from .exceptions import Invalid, SchemaError
 from .validaters import builtin_validaters
 
@@ -46,6 +46,10 @@ class ValidaterString:
             if name is None:
                 name = text
             kwargs = None
+
+        if is_refer:
+            if (not name) or args or kwargs:
+                raise SchemaError("invalid refer syntax")
         self.key = key
         self.is_refer = is_refer
         self.name = name
@@ -55,7 +59,7 @@ class ValidaterString:
                 try:
                     self_args.append(json.loads(x))
                 except ValueError:
-                    raise SchemaError("invalid JSON value in args: %s" % x)
+                    raise SchemaError("invalid JSON value '%s'" % x)
         self.args = tuple(self_args)
         self.kwargs = {}
         if kwargs:
@@ -66,7 +70,7 @@ class ValidaterString:
                         self.kwargs[kv[:cut]] = json.loads(kv[cut + 1:])
                     except ValueError:
                         raise SchemaError(
-                            "invalid JSON value in kwargs: %s" % kv)
+                            "invalid JSON value '%s'" % kv)
                 else:
                     self.kwargs[kv] = True
 
@@ -80,7 +84,45 @@ class ValidaterString:
         })
 
 
+def cut_schema_key(k):
+    cut = k.find("?")
+    if cut < 0:
+        cut = k.find("@")
+    if cut > 0:
+        return k[:cut]
+    else:
+        return k
+
+
+@contextmanager
+def mark_index(items):
+    """Add current index to Invalid exception"""
+    try:
+        yield
+    except (Invalid, SchemaError) as ex:
+        if items is None:
+            ex.mark_index(None)
+        else:
+            ex.mark_index(len(items))
+        raise
+
+
+@contextmanager
+def mark_key(key):
+    """Add current key to Invalid exception"""
+    try:
+        yield
+    except (Invalid, SchemaError) as ex:
+        ex.mark_key(key)
+        raise
+
+
 class SchemaParser:
+    """SchemaParser
+
+    :param validaters: custom validaters
+    :param shared" shared schema
+    """
 
     def __init__(self, validaters=None, shared=None):
         if validaters is None:
@@ -93,6 +135,7 @@ class SchemaParser:
             self.shared = {k: self.parse(v) for k, v in shared.items()}
 
     def parse(self, schema):
+        """Parse schema"""
         return self._parse(schema)
 
     def _parse(self, schema, vs=None):
@@ -104,28 +147,30 @@ class SchemaParser:
         if isinstance(schema, dict):
             inner = {}
             for k, v in schema.items():
-                if k[:5] == "$self":
-                    # $self: 前置描述
-                    vs = ValidaterString(k)
-                    vs.kwargs["desc"] = v
-                else:
-                    if isinstance(v, (dict, list)):
-                        # 自描述
-                        if "?" in k or "@" in k:
-                            raise SchemaError(
-                                "%s should be self-described" % k)
-                        inner[k] = self._parse(v)
+                with mark_key(cut_schema_key(k)):
+                    if k[:5] == "$self":
+                        # $self: 前置描述
+                        vs = ValidaterString(k)
+                        vs.kwargs["desc"] = v
                     else:
-                        # k-标量和k-引用：前置描述
-                        if "?" not in k and "@" not in k:
-                            raise SchemaError("%s should be pre-described" % k)
-                        inner_vs = ValidaterString(k)
-                        inner[inner_vs.key] = self._parse(v, inner_vs)
+                        if isinstance(v, (dict, list)):
+                            # 自描述
+                            if any(char in k for char in"?@&()"):
+                                raise SchemaError("should be self-described")
+                            inner[k] = self._parse(v)
+                        else:
+                            # k-标量和k-引用：前置描述
+                            if "?" not in k and "@" not in k:
+                                raise SchemaError("should be pre-described")
+                            inner_vs = ValidaterString(k)
+                            inner[inner_vs.key] = self._parse(v, inner_vs)
             if vs:
-                _validater = self.dict_validater(inner, *vs.args, **vs.kwargs)
+                _validater = self.dict_validater(
+                    inner, *vs.args, **vs.kwargs)
                 if vs.is_refer:
                     if vs.name not in self.shared:
-                        raise SchemaError("shared not found: %s" % vs.name)
+                        raise SchemaError(
+                            "shared '%s' not found" % vs.name)
                     refer = self.shared[vs.name]
 
                     def validater(value):
@@ -145,11 +190,12 @@ class SchemaParser:
                 schema = schema[1]
             else:
                 raise SchemaError("invalid length of list schema")
-            inner = self._parse(schema)
-            if vs:
-                return self.list_validater(inner, *vs.args, **vs.kwargs)
-            else:
-                return self.list_validater(inner)
+            with mark_index(None):
+                inner = self._parse(schema)
+                if vs:
+                    return self.list_validater(inner, *vs.args, **vs.kwargs)
+                else:
+                    return self.list_validater(inner)
         else:
             if vs:
                 vs.kwargs["desc"] = schema
@@ -157,7 +203,7 @@ class SchemaParser:
                 vs = ValidaterString(schema)
             if vs.is_refer:
                 if vs.name not in self.shared:
-                    raise SchemaError("shared not found: %s" % vs.name)
+                    raise SchemaError("shared '%s' not found" % vs.name)
                 return self.shared[vs.name]
             else:
                 if vs.name in self.validaters:
@@ -165,7 +211,7 @@ class SchemaParser:
                 elif vs.name in builtin_validaters:
                     validater = builtin_validaters[vs.name]
                 else:
-                    raise SchemaError("validater not found: %s" % vs.name)
+                    raise SchemaError("validater '%s' not found" % vs.name)
                 return validater(*vs.args, **vs.kwargs)
 
     def dict_validater(self, inners, optional=False, desc=None):
@@ -181,11 +227,13 @@ class SchemaParser:
             result = {}
             if isinstance(value, dict):
                 for k, inner in inners:
-                    v = inner(value.get(k, None))
+                    with mark_key(k):
+                        v = inner(value.get(k, None))
                     result[k] = v
             else:
                 for k, inner in inners:
-                    v = inner(getattr(value, k, None))
+                    with mark_key(k):
+                        v = inner(getattr(value, k, None))
                     result[k] = v
             return result
         return validater
@@ -204,9 +252,10 @@ class SchemaParser:
             for x in value:
                 if len(result) >= maxlen:
                     raise Invalid("list length must <= %d" % maxlen)
-                v = inner(x)
-                if unique and v in result:
-                    raise Invalid("not unique")
+                with mark_index(result):
+                    v = inner(x)
+                    if unique and v in result:
+                        raise Invalid("not unique")
                 result.append(v)
             if len(result) < minlen:
                 raise Invalid("list length must >= %d" % minlen)

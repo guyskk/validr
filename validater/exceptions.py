@@ -2,7 +2,7 @@ class ValidaterError(ValueError):
     """Mark invalid position"""
 
     def __init__(self, args=None):
-        super().__init__(args)
+        super().__init__(self, args)
         # marks' item: (is_key, index_or_key)
         self.marks = []
 

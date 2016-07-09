@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 # coding:utf-8
 import re
 import datetime
-=======
->>>>>>> a24c1a14046ee7649833dc5b449b59b51a77d111
 import sys
 from .exceptions import Invalid
 

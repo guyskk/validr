@@ -36,7 +36,7 @@
 - 如果arg1, arg2...都是默认值，则括号可以省略。
 - 如果key对应的value为true，只需写&key，不需要写&key=true。
 
-因为Schema和JSON数据是同构的，所以这3种结构都需要是自己描述自己(自描述)，即：
+因为Schema和JSON数据是同构的，所以这3种结构都需要是自己描述自己(**自描述**)，即：
 
 映射结构用特殊的key描述自身，其余key描述字典里的内容：
 
@@ -57,6 +57,12 @@
 
 	"ValidaterString"
 
+在映射结构中，如果value是标量，则在key中描述value(用？分隔key和ValidaterString)，value的位置写关于这个value介绍，即**前置描述**：
+
+    {
+        "key?ValidaterString": "desc"
+    }
+
 下面来用一下这种语法，这是实际数据：
 
     {
@@ -66,29 +72,16 @@
         "tags": ["home", "green"]
     }
 
-这是Schema：
+这是对应的Schema:
 
     {
-    	"$self":"&desc=\"某种产品的信息\""
-        "id": "int&desc=\"产品ID\"",
-        "name": "str&desc=\"名称\"",
-        "price": "float&min=0&desc=\"价格\"",
-        "tags": ["&minlen=1&unique", "str&desc=\"标签\""]
-    }
-
-主要不足是&desc的值是字符串且比较长，这里可以使用前置描述来优化。
-
-在映射结构中，在上层描述下一层，即前置描述：
-
-	{
-		"$self": "某种产品的信息",
+        "$self": "某种产品的信息",
         "id？int": "产品ID",
         "name?str": "名称",
         "price?float&min=0&exmin": "价格",
         "tags": ["&minlen=1&unique", "str&desc=\"标签\""]
     }
 
-这里用？分隔key和ValidaterString，$self和标量都是前置描述。
 注意tags是序列结构，为了避免歧义（后面说明）只能用自描述。
 
 
@@ -156,7 +149,7 @@
 ### 内置的校验函数
     
     序列
-    list(minlen=0, maxlen=1024*1024, unique=false, default=null, optional=false)
+    list(minlen=0, maxlen=1024, unique=false, default=null, optional=false)
 
     映射
     dict(optional=false)

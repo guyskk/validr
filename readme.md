@@ -2,9 +2,9 @@
 
 ![travis-ci](https://api.travis-ci.org/guyskk/validater.svg)
 
-validater can validate and convert value to python object by schema, support python 2.7.x and python 3.3+
+validater can validate and convert value to python object by schema, only support python 3.3+ and pypy.
 
-validater 可以依据 schema 校验数据并将数据转换成相应的 python 对象，支持 python 2.7.x 和 python 3.3+
+validater 可以依据 schema 校验数据并将数据转换成相应的 python 对象，仅支持 python 3.3+ 和 pypy。
 
 ## install
 

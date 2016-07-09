@@ -1,4 +1,3 @@
-# coding:utf-8
 from validater import SchemaError, Invalid, SchemaParser
 from validater.schema import ValidaterString
 import pytest

@@ -45,6 +45,10 @@ class ValidaterString:
             if name is None:
                 name = text
             kwargs = None
+
+        if is_refer:
+            if (not name) or args or kwargs:
+                raise SchemaError("invalid refer syntax")
         self.key = key
         self.is_refer = is_refer
         self.name = name
@@ -80,6 +84,11 @@ class ValidaterString:
 
 
 class SchemaParser:
+    """SchemaParser
+
+    :param validaters: custom validaters
+    :param shared" shared schema
+    """
 
     def __init__(self, validaters=None, shared=None):
         if validaters is None:
@@ -92,6 +101,7 @@ class SchemaParser:
             self.shared = {k: self.parse(v) for k, v in shared.items()}
 
     def parse(self, schema):
+        """Parse schema"""
         return self._parse(schema)
 
     def _parse(self, schema, vs=None):

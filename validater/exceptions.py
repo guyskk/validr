@@ -1,16 +1,18 @@
 class ValidaterError(ValueError):
     """Mark invalid position"""
 
-    def __init__(self, args=None):
-        super().__init__(self, args)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         # marks' item: (is_key, index_or_key)
         self.marks = []
 
     def mark_index(self, index):
         self.marks.insert(0, (False, index))
+        return self
 
     def mark_key(self, key):
         self.marks.insert(0, (True, key))
+        return self
 
     @property
     def position(self):
@@ -39,11 +41,26 @@ class ValidaterError(ValueError):
             text = text[1:]
         return text
 
-    def __str__(self):
+    @property
+    def message(self):
+        """Error message"""
         if self.args:
-            return "%s in %s" % (self.args[0], self.position)
+            return self.args[0]
         else:
-            return "in %s" % self.position
+            return None
+
+    def __str__(self):
+        position = self.position
+        if self.args:
+            if position:
+                return "%s in %s" % (self.args[0], position)
+            else:
+                return self.args[0]
+        else:
+            if position:
+                return "in %s" % position
+            else:
+                return super().__str__()
 
 
 class Invalid(ValidaterError):

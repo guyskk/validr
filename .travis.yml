@@ -8,6 +8,7 @@ python:
 
 install:
     - pip install pytest
+    - pip install .
 
 script:
     - py.test 

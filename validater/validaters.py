@@ -2,7 +2,6 @@
 import re
 import datetime
 import sys
-import six
 from .exceptions import Invalid
 
 
@@ -60,20 +59,6 @@ def bool_validater():
 
 
 @handle_default_optional_desc
-def unicode_validater():
-    """validate unicode, if not, decode by utf-8"""
-    def validater(value):
-        if isinstance(value, six.text_type):
-            return value
-        else:
-            try:
-                return value.decode("utf-8")
-            except Exception:
-                raise Invalid("invalid unicode")
-    return validater
-
-
-@handle_default_optional_desc
 def str_validater(minlen=0, maxlen=1024 * 1024, escape=False):
     """validate string, if not, force convert
 
@@ -82,7 +67,7 @@ def str_validater(minlen=0, maxlen=1024 * 1024, escape=False):
     :param escape: if escape to safe string, default false
     """
     def validater(value):
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             try:
                 value = str(value)
             except Exception:
@@ -131,29 +116,20 @@ def float_validater(min=sys.float_info.min, max=sys.float_info.max,
 
 
 @handle_default_optional_desc
-def list_validater(minlen=0, maxlen=1024 * 1024, unique=False):
-    def valiter(value):
-        if isinstance(value, list):
-            length = len(value)
-            if length < minlen:
-                raise Invalid("list size must >= %d" % minlen)
-            elif length > maxlen:
-                raise Invalid("list size must <= %d" % maxlen)
-            if unique:
-                if len(set(value)) != length:
-                    raise Invalid("list value must be unique")
-            return value
-        else:
-            raise Invalid("invalid list")
-    return valiter
+def enum_validater(items=None):
+    """validate enum string
 
+    :param items: enum list, default []
+    """
+    if items is None:
+        items = []
 
-def dict_validater(optional=False):
     def validater(value):
-        if isinstance(value, dict):
+
+        if value in items:
             return value
         else:
-            raise Invalid("invalid dict")
+            raise Invalid("invalid string")
     return validater
 
 
@@ -178,7 +154,7 @@ def date_validater(format="%Y-%m-%d", output=False, input=False):
             if output:
                 # date or datetime or string -> string
                 if not isinstance(value, (datetime.datetime, datetime.date)):
-                    v = datetime.datetime.striptime(value, format).date()
+                    v = datetime.datetime.strftime(value, format).date()
                 return v.striptime(format)
             if input:
                 # datetime or string -> date
@@ -251,7 +227,7 @@ def password_validater(minlen=6, maxlen=16):
     :param maxlen: max length of password, default 16
     """
     def validater(value):
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             raise Invalid("value must be string")
         if minlen <= len(value) <= maxlen:
             v = value
@@ -272,7 +248,7 @@ def name_validater(minlen=4, maxlen=16):
     :param maxlen: max length of name, default 16
     """
     def validater(value):
-        if not isinstance(value, six.string_types):
+        if not isinstance(value, str):
             raise Invalid("value must be string")
         if minlen <= len(value) <= maxlen:
             v = value
@@ -289,7 +265,7 @@ def build_re_validater(name, r):
     @handle_default_optional_desc
     def re_validater():
         def validater(value):
-            if not isinstance(value, six.string_types):
+            if not isinstance(value, str):
                 raise Invalid("value must be string")
             if r.match(value):
                 return value
@@ -312,45 +288,16 @@ builtin_validaters = {
     "any": lambda value, *args, **kwargs: value,
     "int": int_validater,
     "bool": bool_validater,
-    "unicode": unicode_validater,
     "str": str_validater,
     "float": float_validater,
     'date': date_validater,
+    'enum': enum_validater,
     'datetime': datetime_validater,
     "password": password_validater,
     "name": name_validater,
 }
+
 for name, r in regexs.items():
     _vali = build_re_validater(name, r)
     _vali.__name__ = str(name) + '_validater'
     builtin_validaters[name] = _vali
-
-
-def add_validater(name, fn, validaters=None):
-    """add validater
-
-    validater::
-
-        def validater(v, args, kwargs):
-            # ok is True if v is valid, False otherwise
-            # value is converted value or None(if v is not valid)
-            return ok,value
-
-    :param name: validater name
-    :param fn: validater
-    :param validaters: a dict contains all validaters
-    """
-    if validaters is None:
-        validaters = builtin_validaters
-    validaters[name] = fn
-
-
-def remove_validater(name, validaters=None):
-    """remove validater
-
-    :param name: validater name
-    :param validaters: a dict contains all validaters
-    """
-    if validaters is None:
-        validaters = builtin_validaters
-    del validaters[name]

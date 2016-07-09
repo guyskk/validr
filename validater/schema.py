@@ -155,7 +155,7 @@ class SchemaParser:
                     else:
                         if isinstance(v, (dict, list)):
                             # 自描述
-                            if "?" in k or "@" in k:
+                            if any(char in k for char in"?@&()"):
                                 raise SchemaError("should be self-described")
                             inner[k] = self._parse(v)
                         else:

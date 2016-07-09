@@ -120,10 +120,22 @@ def test_scalar_fail(schema, value):
         print("value is: %s" % f(value))
 
 
-def test_dict_pre_described_error():
+@pytest.mark.parametrize("schema", [{"userid": "int(0,9)"}])
+def test_dict_pre_described_error(schema):
     # should be pre-described
     with pytest.raises(SchemaError):
-        sp.parse({"userid": "int(0,9)"})
+        sp.parse(schema)
+
+
+@pytest.mark.parametrize("schema", [
+    {"user&optional": {}},
+    {"user?&optional": {}},
+    {"user(1,3)": []},
+])
+def test_dict_self_described_error(schema):
+    # should be self-described
+    with pytest.raises(SchemaError):
+        sp.parse(schema)
 
 
 def test_dict_self_optional_error():
@@ -131,12 +143,6 @@ def test_dict_self_optional_error():
     f = sp.parse({"$self": "optional"})
     with pytest.raises(Invalid):
         f(None)
-
-
-def test_dict_preposition_optional_error():
-    # should be self-described
-    with pytest.raises(SchemaError):
-        sp.parse({"user?&optional": {"userid?int(0,9)": "UserID"}})
 
 
 def test_list_preposition_optional_error():
@@ -293,3 +299,54 @@ def test_list_shared_fail(value):
     f = sp.parse("@numbers")
     with pytest.raises(Invalid):
         f(value)
+
+
+@pytest.mark.parametrize("schema,expect", [
+    ("int(0,9)&desc='number'", ""),
+    ({"user?&optional": {}}, "user"),
+    ({"user?&optional": []}, "user"),
+    ({"userid@userid&optional": "UserID"}, "userid"),
+    ({"user": {"userid": "int"}}, "user.userid"),
+    ({"user": {"tags?&uniqie": ["int"]}}, "user.tags"),
+    ({"user": {"tags": ["&uniqie", "int("]}}, "user.tags[]"),
+    (["int("], "[]"),
+    ([{"userid": "int"}], "[].userid"),
+])
+def test_schema_error_position(schema, expect):
+    with pytest.raises(SchemaError) as exinfo:
+        sp.parse(schema)
+    assert exinfo.value.position == expect
+
+
+@pytest.mark.parametrize("value,expect", [
+    (None, ""),
+    ({"user": None}, "user"),
+    ({"user": {"userid": "abc", "tags": [1]}}, "user.userid"),
+    ({"user": {"userid": 1, "tags": []}}, "user.tags"),
+    ({"user": {"userid": 1, "tags": [0, 0]}}, "user.tags[1]"),
+])
+def test_dict_invalid_position(value, expect):
+    f = sp.parse({
+        "user": {
+            "userid?int": "UserID",
+            "tags": ["(1,2)&unique", "int"]
+        }
+    })
+    with pytest.raises(Invalid) as exinfo:
+        f(value)
+    assert exinfo.value.position == expect
+
+
+@pytest.mark.parametrize("value,expect", [
+    (None, ""),
+    ({}, ""),
+    ([[User(0)], None], "[1]"),
+    ([[User(0)], [User(0)]], "[1]"),
+    ([[User(0), User(0)]], "[0][1]"),
+    ([[User("a")]], "[0][0].userid"),
+])
+def test_list_invalid_position(value, expect):
+    f = sp.parse(["&unique", ["&unique", {"userid?int": "UserID"}]])
+    with pytest.raises(Invalid) as exinfo:
+        f(value)
+    assert exinfo.value.position == expect

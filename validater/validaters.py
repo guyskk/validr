@@ -152,7 +152,7 @@ def build_re_validater(name, r):
         def validater(value):
             if not isinstance(value, str):
                 raise Invalid("value must be string")
-            if r.fullmatch(value):
+            if r.match(value):
                 return value
             else:
                 raise Invalid("invalid %s" % name)
@@ -162,11 +162,11 @@ def build_re_validater(name, r):
 
 
 regexs = {
-    'email': re.compile(r'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}$'),
-    'phone': re.compile(r'^((\+86)|(86))?(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}$'),
-    'ipv4': re.compile(r'^(\d+)\.(\d+)\.(\d+)\.(\d+)$'),
-    'idcard': re.compile(r'^\d{15}|\d{17}[0-9Xx]$'),
-    'url': re.compile(r'^\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))$')
+    'email': r'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}$',
+    'phone': r'^((\+86)|(86))?(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}$',
+    'ipv4': r'^(\d+)\.(\d+)\.(\d+)\.(\d+)$',
+    'idcard': r'^\d{15}|\d{17}[0-9Xx]$',
+    'url': r'^\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))$'
 }
 
 
@@ -179,5 +179,7 @@ builtin_validaters = {
     'datetime': datetime_validater,
 }
 
-for name, r in regexs.items():
+for name, regex in regexs.items():
+    # To make sure that the entire string matches
+    r = re.compile(r"(?:%s)\Z" % regex)
     builtin_validaters[name] = build_re_validater(name, r)

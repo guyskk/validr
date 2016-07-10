@@ -212,7 +212,14 @@ class SchemaParser:
                     validater = builtin_validaters[vs.name]
                 else:
                     raise SchemaError("validater '%s' not found" % vs.name)
-                return validater(*vs.args, **vs.kwargs)
+                _validater = validater(*vs.args, **vs.kwargs)
+                default = vs.kwargs.get("default", None)
+                if default is not None:
+                    try:
+                        _validater(default)
+                    except Invalid:
+                        raise SchemaError("invalid default value")
+                return _validater
 
     def dict_validater(self, inners, optional=False, desc=None):
 

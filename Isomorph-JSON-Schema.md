@@ -154,27 +154,24 @@
     映射
     dict(optional=false)
 
-    布尔值
-    bool(default=null, optional=false)
-
     整数
     int(min=-sys.maxsize, max=sys.maxsize, default=null, optional=false)
 
-    实数，exmin:是否不包括最小值, exmax:是否不包括最大值
-    float(min=sys.float_info.min, max=sys.float_info.max,
-          exmin=false, exmax=false, default=null, optional=false)
+    布尔值
+    bool(default=null, optional=false)
 
-    日期和时间，格式为ISO8601，与JSON标准一致
-    date(format="%Y-%m-%d", default=null, optional=false)
-    datetime(format="%Y-%m-%dT%H:%M:%S.%fZ", default=null, optional=false)
+    实数，exmin:是否不包括最小值, exmax:是否不包括最大值
+    float(min=-sys.float_info.max, max=sys.float_info.max,
+          exmin=false, exmax=false, default=null, optional=false)
 
     字符串
     str(minlen=0, maxlen=1024*1024, escape=false,
         default=null, optional=false)
 
-    枚举，items为字符串列表
-    enum(items, default=null, optional=false)
-    
+    日期和时间，格式为ISO8601，与Javascript中JSON.stringify输出格式一致
+    date(format="%Y-%m-%d", default=null, optional=false)
+    datetime(format="%Y-%m-%dT%H:%M:%S.%fZ", default=null, optional=false)
+
     邮箱地址
     email(default=null, optional=false)
 
@@ -189,9 +186,6 @@
 
     网址
     url(default=null, optional=false)
-
-    密码
-    password(minlen=6, maxlen=16, default=null, optional=false)
 
 所有布尔型默认值都是false，自定义校验函数需遵守此规定。
 

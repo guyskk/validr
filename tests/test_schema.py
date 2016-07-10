@@ -120,6 +120,11 @@ def test_scalar_fail(schema, value):
         print("value is: %s" % f(value))
 
 
+def test_default_invalid():
+    with pytest.raises(SchemaError):
+        sp.parse("int(0,9)&default=10")
+
+
 @pytest.mark.parametrize("schema", [{"userid": "int(0,9)"}])
 def test_dict_pre_described_error(schema):
     # should be pre-described

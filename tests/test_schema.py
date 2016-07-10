@@ -267,7 +267,8 @@ def test_shared_dict(value, expect):
 
 @pytest.mark.parametrize("value,expect", [
     (User(0), {"userid": 0, "age": 18}),
-    ({"userid": 1, "age": 20}, {"userid": 1, "age": 20})])
+    ({"userid": 1, "age": 20}, {"userid": 1, "age": 20})
+])
 def test_shared_dict_addition(value, expect):
     sp = SchemaParser(shared={"user": {"userid?int(0,9)": "UserID"}})
     f = sp.parse({"group": {
@@ -276,6 +277,22 @@ def test_shared_dict_addition(value, expect):
     }})
     value = {"group": value}
     expect = {"group": expect}
+    assert f(value) == expect
+
+
+@pytest.mark.parametrize("value,expect", [
+    ({"userid": 1, "age": 20}, {"userid": 1, "age": 20})
+])
+def test_shared_2(value, expect):
+    shared = {
+        "userid": "int(0,9)",
+        "age": "int(10,99)"
+    }
+    sp = SchemaParser(shared=shared)
+    f = sp.parse({
+        "userid@userid": "UserID",
+        "age@age": "Age"
+    })
     assert f(value) == expect
 
 

@@ -5,7 +5,7 @@ from .exceptions import Invalid
 
 
 def handle_default_optional_desc(some_validater):
-    """装饰器，自动处理default,optional,desc这3个参数"""
+    """Decorator for handling params: default,optional,desc"""
     def wrapped_validater(*args, **kwargs):
         default = kwargs.pop("default", None)
         optional = kwargs.pop("optional", False)
@@ -133,82 +133,32 @@ def enum_validater(items=None):
 
 
 @handle_default_optional_desc
-def date_validater(format="%Y-%m-%d", output=False, input=False):
-    """Validate date/datetime object or date string
+def date_validater(format="%Y-%m-%d"):
+    """Validate date string, convert value to string
 
-    note::
-
-        if both output and input is False:
-            if v is date or datetime:
-                convert to string
-            else:
-                convert to date
-
-    :param format: date format
-    :param output: convert value to string
-    :param input: convert value to date
+    :param format: date format, default ISO8601
     """
     def validater(value):
         try:
-            if output:
-                # date or datetime or string -> string
-                if not isinstance(value, (datetime.datetime, datetime.date)):
-                    v = datetime.datetime.strftime(value, format).date()
-                return v.striptime(format)
-            if input:
-                # datetime or string -> date
-                if isinstance(value, datetime.datetime):
-                    return value.date()
-                elif isinstance(value, datetime.date):
-                    return value
-                else:
-                    return datetime.datetime.strftime(value, format).date
-            else:
-                # date or datetime -> string / string -> date
-                if isinstance(value, (datetime.date, datetime.datetime)):
-                    return value.strftime(format)
-                else:
-                    return datetime.datetime.striptime(value, format).date()
+            if not isinstance(value, (datetime.datetime, datetime.date)):
+                value = datetime.datetime.strptime(value, format)
+            return value.striptime(format)
         except Exception:
             raise Invalid("invalid date")
     return validater
 
 
 @handle_default_optional_desc
-def datetime_validater(format="%Y-%m-%dT%H:%M:%S.%fZ", output=False, input=False):
-    """Validate datetime object or datetime string
+def datetime_validater(format="%Y-%m-%dT%H:%M:%S.%fZ"):
+    """Validate datetime string, convert value to string
 
-    note::
-
-        if both output and input is False:
-            if v is datetime:
-                convert to string
-            else:
-                convert to datetime
-
-    :param format: datetime format
-    :param output: convert value to string
-    :param input: convert value to datetime
+    :param format: datetime format, default ISO8601
     """
     def validater(value):
         try:
-            if output:
-                # datetime or string -> string
-                if not isinstance(value, datetime.datetime):
-                    value = datetime.datetime.strptime(value, format)
-                return value.strftime(format)
-            if input:
-                # datetime or string -> datetime
-                if isinstance(value, datetime.datetime):
-                    return value
-                else:
-                    return datetime.datetime.strptime(value, format)
-            else:
-                # datetime -> string / string -> datetime
-                if isinstance(value, datetime.datetime):
-                    return value.strftime(format)
-                else:
-                    return datetime.datetime.strptime(value, format)
+            if not isinstance(value, datetime.datetime):
+                value = datetime.datetime.strptime(value, format)
+            return value.striptime(format)
         except Exception:
             raise Invalid("invalid datetime")
     return validater
@@ -285,7 +235,6 @@ regexs = {
 
 
 builtin_validaters = {
-    "any": lambda value, *args, **kwargs: value,
     "int": int_validater,
     "bool": bool_validater,
     "str": str_validater,
@@ -299,5 +248,5 @@ builtin_validaters = {
 
 for name, r in regexs.items():
     _vali = build_re_validater(name, r)
-    _vali.__name__ = str(name) + '_validater'
+    _vali.__name__ = name + '_validater'
     builtin_validaters[name] = _vali

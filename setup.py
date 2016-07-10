@@ -1,7 +1,7 @@
 from setuptools import setup
 setup(
     name="validater",
-    version="0.9.5",
+    version="0.10.0",
     description="a python tool to "
     "validate and convert value to python object by schema",
     author="guyskk",
@@ -19,5 +19,5 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python :: 3 :: Only',
         'Topic :: Software Development :: Libraries :: Python Modules'
-    ],
+    ]
 )

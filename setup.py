@@ -2,8 +2,8 @@ from setuptools import setup
 setup(
     name="validater",
     version="0.10.0",
-    description="a python tool to "
-    "validate and convert value to python object by schema",
+    description="a python tool to"
+                "validate json/dict/list and convert value by schema",
     author="guyskk",
     author_email='guyskk@qq.com',
     url="https://github.com/guyskk/validater",

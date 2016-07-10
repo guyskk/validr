@@ -1,5 +1,4 @@
 import json
-from contextlib import contextmanager
 from .exceptions import Invalid, SchemaError
 from .validaters import builtin_validaters
 
@@ -94,27 +93,39 @@ def cut_schema_key(k):
         return k
 
 
-@contextmanager
-def mark_index(items):
-    """Add current index to Invalid exception"""
-    try:
-        yield
-    except (Invalid, SchemaError) as ex:
-        if items is None:
-            ex.mark_index(None)
-        else:
-            ex.mark_index(len(items))
-        raise
+class MarkIndex:
+    """Add current index to Invalid/SchemaError"""
+
+    def __init__(self, items):
+        self.items = items
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is Invalid or exc_type is SchemaError:
+            if self.items is None:
+                exc_val.mark_index(None)
+            else:
+                exc_val.mark_index(len(self.items))
+        if exc_type is not None:
+            return False
 
 
-@contextmanager
-def mark_key(key):
-    """Add current key to Invalid exception"""
-    try:
-        yield
-    except (Invalid, SchemaError) as ex:
-        ex.mark_key(key)
-        raise
+class MarkKey:
+    """Add current key to Invalid/SchemaError"""
+
+    def __init__(self, key):
+        self.key = key
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is Invalid or exc_type is SchemaError:
+            exc_val.mark_key(self.key)
+        if exc_type is not None:
+            return False
 
 
 class SchemaParser:
@@ -147,7 +158,7 @@ class SchemaParser:
         if isinstance(schema, dict):
             inner = {}
             for k, v in schema.items():
-                with mark_key(cut_schema_key(k)):
+                with MarkKey(cut_schema_key(k)):
                     if k[:5] == "$self":
                         # $self: 前置描述
                         vs = ValidaterString(k)
@@ -165,8 +176,7 @@ class SchemaParser:
                             inner_vs = ValidaterString(k)
                             inner[inner_vs.key] = self._parse(v, inner_vs)
             if vs:
-                _validater = self.dict_validater(
-                    inner, *vs.args, **vs.kwargs)
+                _validater = self.dict_validater(inner, *vs.args, **vs.kwargs)
                 if vs.is_refer:
                     if vs.name not in self.shared:
                         raise SchemaError(
@@ -190,7 +200,7 @@ class SchemaParser:
                 schema = schema[1]
             else:
                 raise SchemaError("invalid length of list schema")
-            with mark_index(None):
+            with MarkIndex(None):
                 inner = self._parse(schema)
                 if vs:
                     return self.list_validater(inner, *vs.args, **vs.kwargs)
@@ -234,12 +244,12 @@ class SchemaParser:
             result = {}
             if isinstance(value, dict):
                 for k, inner in inners:
-                    with mark_key(k):
+                    with MarkKey(k):
                         v = inner(value.get(k, None))
                     result[k] = v
             else:
                 for k, inner in inners:
-                    with mark_key(k):
+                    with MarkKey(k):
                         v = inner(getattr(value, k, None))
                     result[k] = v
             return result
@@ -259,7 +269,7 @@ class SchemaParser:
             for x in value:
                 if len(result) >= maxlen:
                     raise Invalid("list length must <= %d" % maxlen)
-                with mark_index(result):
+                with MarkIndex(result):
                     v = inner(x)
                     if unique and v in result:
                         raise Invalid("not unique")

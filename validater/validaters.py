@@ -1,4 +1,3 @@
-# coding:utf-8
 import re
 import datetime
 import sys
@@ -10,7 +9,7 @@ def handle_default_optional_desc(some_validater):
     def wrapped_validater(*args, **kwargs):
         default = kwargs.pop("default", None)
         optional = kwargs.pop("optional", False)
-        desc = kwargs.pop("desc", None)
+        kwargs.pop("desc", None)
         origin_validater = some_validater(*args, **kwargs)
 
         def validater(value):
@@ -29,7 +28,7 @@ def handle_default_optional_desc(some_validater):
 
 @handle_default_optional_desc
 def int_validater(min=-sys.maxsize, max=sys.maxsize):
-    """validate int string
+    """Validate int string
 
     :param min: the min value, default -sys.maxsize
     :param max: the max value, default sys.maxsize
@@ -49,7 +48,7 @@ def int_validater(min=-sys.maxsize, max=sys.maxsize):
 
 @handle_default_optional_desc
 def bool_validater():
-    """validate bool"""
+    """Validate bool"""
     def validater(value):
         if isinstance(value, bool):
             return value
@@ -60,11 +59,11 @@ def bool_validater():
 
 @handle_default_optional_desc
 def str_validater(minlen=0, maxlen=1024 * 1024, escape=False):
-    """validate string, if not, force convert
+    """Validate string, if not, force convert
 
     :param minlen: min length of string, default 0
     :param maxlen: max length of string, default 1024*1024
-    :param escape: if escape to safe string, default false
+    :param escape: escape to safe string or not, default false
     """
     def validater(value):
         if not isinstance(value, str):
@@ -73,9 +72,9 @@ def str_validater(minlen=0, maxlen=1024 * 1024, escape=False):
             except Exception:
                 raise Invalid("invalid string")
         if len(value) < minlen:
-            raise Invalid("value must >= %d" % minlen)
+            raise Invalid("string length must >= %d" % minlen)
         elif len(value) > maxlen:
-            raise Invalid("value must <= %d" % maxlen)
+            raise Invalid("string length must <= %d" % maxlen)
         if escape:
             try:
                 return (value.replace("&", "&amp;")
@@ -92,11 +91,12 @@ def str_validater(minlen=0, maxlen=1024 * 1024, escape=False):
 @handle_default_optional_desc
 def float_validater(min=sys.float_info.min, max=sys.float_info.max,
                     exmin=False, exmax=False):
-    """validate float string
+    """Validate float string
+
     :param min: the min value, default sys.float_info.min
     :param max: the max value, default sys.float_info.max
-    :param exmin: if equel the min, value default false
-    :param exmax: if equel the max, value default false
+    :param exmin: exclude min value or not, default false
+    :param exmax: exclude max value or not, default false
     """
     def validater(value):
         try:
@@ -117,25 +117,24 @@ def float_validater(min=sys.float_info.min, max=sys.float_info.max,
 
 @handle_default_optional_desc
 def enum_validater(items=None):
-    """validate enum string
+    """Validate enum string
 
-    :param items: enum list, default []
+    :param items: enum items, default []
     """
     if items is None:
         items = []
 
     def validater(value):
-
         if value in items:
             return value
         else:
-            raise Invalid("invalid string")
+            raise Invalid("invalid enum")
     return validater
 
 
 @handle_default_optional_desc
 def date_validater(format="%Y-%m-%d", output=False, input=False):
-    """validate date/datetime object or date string
+    """Validate date/datetime object or date string
 
     note::
 
@@ -177,7 +176,7 @@ def date_validater(format="%Y-%m-%d", output=False, input=False):
 
 @handle_default_optional_desc
 def datetime_validater(format="%Y-%m-%dT%H:%M:%S.%fZ", output=False, input=False):
-    """validate datetime object or datetime string
+    """Validate datetime object or datetime string
 
     note::
 
@@ -221,7 +220,7 @@ re_name = re.compile(r'^[a-zA-Z][a-zA-Z0-9_]*$')
 
 @handle_default_optional_desc
 def password_validater(minlen=6, maxlen=16):
-    """validate password
+    """Validate password
 
     :param minlen: min length of password, default 6
     :param maxlen: max length of password, default 16
@@ -242,7 +241,7 @@ def password_validater(minlen=6, maxlen=16):
 
 @handle_default_optional_desc
 def name_validater(minlen=4, maxlen=16):
-    """validate password
+    """Validate password
 
     :param minlen: min length of name, default 4
     :param maxlen: max length of name, default 16
@@ -253,7 +252,8 @@ def name_validater(minlen=4, maxlen=16):
         if minlen <= len(value) <= maxlen:
             v = value
         else:
-            raise Invalid("value must >= %d and <= %d" % (minlen, maxlen))
+            raise Invalid("name length must >= %d and <= %d" %
+                          (minlen, maxlen))
         if re_name.match(v):
             return v
         else:

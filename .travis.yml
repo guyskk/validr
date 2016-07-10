@@ -8,8 +8,12 @@ python:
 
 install:
     - pip install pytest
+    - pip install pytest-cov
+    - pip install codecov
     - pip install .
 
 script:
-    - py.test 
+    - py.test --cov=validater
 
+after_success:
+    - codecov

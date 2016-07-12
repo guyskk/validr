@@ -160,12 +160,17 @@ def build_re_validater(name, r):
     re_validater.__name__ = name + '_validater'
     return re_validater
 
-
+# Notes
+# email: http://tool.lu/regex/
+# phone: http://tool.lu/regex/ [modified]
+# ipv4: https://segmentfault.com/a/1190000004622152 [modified]
+# idcard: https://segmentfault.com/a/1190000004622152 [modified]
+# url: unknown
 regexs = {
     'email': r'^\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}$',
     'phone': r'^((\+86)|(86))?(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}$',
     'ipv4': r"^(1\d{2}|2[0-4]\d|25[0-5]|[1-9]\d|[0-9])\.(1\d{2}|2[0-4]\d|25[0-5]|[0-9]\d|\d)\.(1\d{2}|2[0-4]\d|25[0-5]|[0-9]\d|\d)\.(1\d{2}|2[0-4]\d|25[0-5]|[0-9]\d|\d)$",
-    'idcard': r'^\d{15}|\d{17}[0-9Xx]$',
+    'idcard': r'^\d{17}[\d|x|X]|\d{15}',
     'url': r'^\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))$'
 }
 

@@ -98,7 +98,7 @@ friends[0].userid
 >>> 
 ```
 
-自定义校验器:
+自定义校验函数:
 
 ```python
 >>> from validater.validaters import handle_default_optional_desc
@@ -124,6 +124,36 @@ validater.exceptions.Invalid: 不是 3 的倍数
 3
 >>> 
 ```
+
+## 关于内置校验函数
+
+### email
+
+参考：http://tool.lu/regex/
+
+### idcard
+
+完整校验身份证号的正则表达式非常复杂(还不一定正确)，如果通过代码逻辑判断结果能很准确，但(我感觉)没这种必要。内置的idcard校验函数只校验数字长度和xX，不校验地址码和日期。
+
+验证身份证号的正则，可以参考这个(有Bug)：
+http://blog.sina.com.cn/s/blog_491997ee0100avd2.html
+
+如果需要解析身份证号信息，可以参考这个：
+https://github.com/mc-zone/IDValidator
+
+### phone
+
+支持 `+86` 开头，支持校验手机号段，只支持11位手机号，不支持固定电话号码。
+参考：http://tool.lu/regex/
+
+### ipv4
+
+支持完整校验IPv4地址。
+参考：https://segmentfault.com/a/1190000004622152
+
+### 其他
+
+见Schema语法。
 
 
 ## 测试

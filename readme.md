@@ -101,7 +101,7 @@ friends[0].userid
 自定义校验函数:
 
 ```python
->>> from validater.validaters import handle_default_optional_desc
+>>> from validater import handle_default_optional_desc
 >>> @handle_default_optional_desc
 ... def multiple_validater(n):
 ...     def validater(value):
@@ -124,6 +124,9 @@ validater.exceptions.Invalid: 不是 3 的倍数
 3
 >>> 
 ```
+
+`handle_default_optional_desc` 装饰器能让自定义的validater支持default,optional,desc这几个参数。
+
 
 ## 关于内置校验函数
 

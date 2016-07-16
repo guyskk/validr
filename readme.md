@@ -100,6 +100,9 @@ friends[0].userid
 >>> 
 ```
 
+注意：引用之间不能相互引用。
+
+
 #### 自定义校验函数:
 
 `handle_default_optional_desc` 装饰器能让自定义的validater支持 `default`, `optional`, `desc` 这几个参数。

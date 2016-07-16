@@ -340,6 +340,13 @@ def test_schema_error_position(schema, expect):
     assert exinfo.value.position == expect
 
 
+def test_shared_schema_error_position():
+    shared = {"name": [{"key?xxx": "value"}]}
+    with pytest.raises(SchemaError) as exinfo:
+        SchemaParser(shared=shared)
+    assert exinfo.value.position == "name[].key"
+
+
 @pytest.mark.parametrize("value,expect", [
     (None, ""),
     ({"user": None}, "user"),

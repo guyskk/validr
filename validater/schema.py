@@ -140,10 +140,11 @@ class SchemaParser:
             self.validaters = {}
         else:
             self.validaters = validaters
-        if shared is None:
-            self.shared = {}
-        else:
-            self.shared = {k: self.parse(v) for k, v in shared.items()}
+        self.shared = {}
+        if shared is not None:
+            for k, v in shared.items():
+                with MarkKey(k):
+                    self.shared[k] = self.parse(v)
 
     def parse(self, schema):
         """Parse schema"""

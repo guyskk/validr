@@ -23,7 +23,8 @@
 
 ## 用法
 
-校验简单数据:
+#### 校验简单数据:
+
 ```python
 >>> from validater import SchemaParser,Invalid
 >>> sp = SchemaParser()
@@ -39,7 +40,8 @@ validater.exceptions.Invalid: invalid int
 >>> 
 ```
 
-校验复杂结构的数据:
+#### 校验复杂结构的数据:
+
 ```python
 >>> f = sp.parse({"userid?int(0,9)": "UserID"})
 >>> user = {"userid": 15}
@@ -66,7 +68,7 @@ validater.exceptions.Invalid: value must <= 9 in friends[0].userid
 >>> 
 ```
 
-处理校验错误:
+#### 处理校验错误:
 
 ```python
 >>> user.userid = 15
@@ -81,7 +83,7 @@ friends[0].userid
 >>> 
 ```
 
-引用:
+#### 引用:
 
 ```python
 >>> shared = {"userid": "int(0,9)"}
@@ -98,10 +100,12 @@ friends[0].userid
 >>> 
 ```
 
-自定义校验函数:
+#### 自定义校验函数:
+
+`handle_default_optional_desc` 装饰器能让自定义的validater支持 `default`, `optional`, `desc` 这几个参数。
 
 ```python
->>> from validater import handle_default_optional_desc
+>>> from validater.validaters import handle_default_optional_desc
 >>> @handle_default_optional_desc
 ... def multiple_validater(n):
 ...     def validater(value):
@@ -125,7 +129,24 @@ validater.exceptions.Invalid: 不是 3 的倍数
 >>> 
 ```
 
-`handle_default_optional_desc` 装饰器能让自定义的validater支持default,optional,desc这几个参数。
+
+#### 使用正则表达式构建校验函数：
+
+```python
+>>> from validater.validaters import build_re_validater
+>>> regex_time = r'([01]?\d|2[0-3]):[0-5]?\d:[0-5]?\d'
+>>> time_validater = build_re_validater("time", regex_time)
+>>> sp = SchemaParser(validaters={"time":time_validater})
+>>> f = sp.parse('time&default="00:00:00"')
+>>> f("12:00:00")
+'12:00:00'
+>>> f("12:00:00123")
+...
+validater.exceptions.Invalid: invalid time
+>>> f(None)
+'00:00:00'
+>>> 
+```
 
 
 ## 关于内置校验函数

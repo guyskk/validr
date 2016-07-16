@@ -147,6 +147,16 @@ def datetime_validater(format="%Y-%m-%dT%H:%M:%S.%fZ"):
 
 
 def build_re_validater(name, r):
+    """Build validater by regex string
+
+    The regex string will be compiled make sure that the entire string matches
+
+    :param name: validater name, used in error message
+    :param r: regex string
+    """
+    # To make sure that the entire string matches
+    r = re.compile(r"(?:%s)\Z" % r)
+
     @handle_default_optional_desc
     def re_validater():
         def validater(value):
@@ -183,7 +193,5 @@ builtin_validaters = {
     'datetime': datetime_validater,
 }
 
-for name, regex in regexs.items():
-    # To make sure that the entire string matches
-    r = re.compile(r"(?:%s)\Z" % regex)
+for name, r in regexs.items():
     builtin_validaters[name] = build_re_validater(name, r)

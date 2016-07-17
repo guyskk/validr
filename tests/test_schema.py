@@ -347,6 +347,17 @@ def test_shared_schema_error_position():
     assert exinfo.value.position == "name[].key"
 
 
+@pytest.mark.parametrize("schema,expect", [
+    ("int&required", ""),
+    ({"userid": "int&required"}, "userid"),
+    ({"friends": [{"userid": "int&required"}]}, "friends[].userid"),
+])
+def test_invalid_validater_params_error_position(schema, expect):
+    with pytest.raises(SchemaError) as exinfo:
+        sp.parse(schema)
+    assert exinfo.value.position == expect
+
+
 @pytest.mark.parametrize("value,expect", [
     (None, ""),
     ({"user": None}, "user"),

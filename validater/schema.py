@@ -217,13 +217,17 @@ class SchemaParser:
                     raise SchemaError("shared '%s' not found" % vs.name)
                 return self.shared[vs.name]
             else:
+
                 if vs.name in self.validaters:
                     validater = self.validaters[vs.name]
                 elif vs.name in builtin_validaters:
                     validater = builtin_validaters[vs.name]
                 else:
                     raise SchemaError("validater '%s' not found" % vs.name)
-                _validater = validater(*vs.args, **vs.kwargs)
+                try:
+                    _validater = validater(*vs.args, **vs.kwargs)
+                except TypeError as ex:
+                    raise SchemaError(str(ex))
                 default = vs.kwargs.get("default", None)
                 if default is not None:
                     try:

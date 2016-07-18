@@ -74,8 +74,8 @@ schema_value_expects = {
     "float": [("0", 0.0), ("0.0", 0.0), (1.0, 1.0), (-1, -1.0), (-1.0, -1.0)],
     "float&default=1.0": [(None, 1.0), (2.0, 2.0)],
     "float(0,1)": [(0.5, 0.5), (0.0, 0.0), (1.0, 1.0)],
-    "str": [("", ""), ("中文", "中文"), ("123", "123"), (str("abc"), "abc")],
-    "str&default=\"中文\"": [(None, "中文"), ("abc", "abc")],
+    "str": [("中文", "中文"), ("123", "123"), (str("abc"), "abc")],
+    "str&default=\"中文\"": [(None, "中文"), ("", "中文"), ("abc", "abc")],
     "str&minlen=1&maxlen=1": [("中", "中"), ("a", "a")],
     "str&maxlen=5&escape": [
         ("中文", "中文"),
@@ -128,11 +128,12 @@ schema_value_expects = {
 schema_value_fails = {
     "bool": [None, "", "true", "false", 0, 1],
     "float": ["1.0.0", None, "", "a.b"],
+    "float&default=1.0": ["", b""],
     "float(0,1)": [-0.01, 1.01],
     "float(0,1)&exmin": [0, 0.0],
     "float(0,1)&exmax": [1, 1.0],
     "float(0,1)&exmin&exmax": [0.0, 1.0],
-    "str": [None, 123, b"abc", "中文".encode("utf-8")],
+    "str": [None, "", b"", 123, b"abc", "中文".encode("utf-8")],
     "str&minlen=1&maxlen=1": ["中文", "ab", ""],
     "datetime": [
         "2016-07-09T00:00:00.000000",

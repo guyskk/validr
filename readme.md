@@ -109,7 +109,7 @@ friends[0].userid
 
 ```python
 >>> from validater.validaters import handle_default_optional_desc
->>> @handle_default_optional_desc
+>>> @handle_default_optional_desc()
 ... def multiple_validater(n):
 ...     def validater(value):
 ...         if value%n==0:
@@ -131,6 +131,9 @@ validater.exceptions.Invalid: 不是 3 的倍数
 3
 >>> 
 ```
+
+字符串类型的校验器请用 `@handle_default_optional_desc(string=True)` 装饰器，
+这样会将空字符串视为null，更符合default和optional的语义。
 
 
 #### 使用正则表达式构建校验函数：

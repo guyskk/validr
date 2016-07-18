@@ -4,29 +4,44 @@ import sys
 from .exceptions import Invalid
 
 
-def handle_default_optional_desc(some_validater):
-    """Decorator for handling params: default,optional,desc"""
-    def wrapped_validater(*args, **kwargs):
-        default = kwargs.pop("default", None)
-        optional = kwargs.pop("optional", False)
-        kwargs.pop("desc", None)
-        origin_validater = some_validater(*args, **kwargs)
+def handle_default_optional_desc(string=False):
+    """
+    Decorator for handling params: default,optional,desc
 
-        def validater(value):
-            if value is None:
-                if default is not None:
-                    return default
-                elif optional:
-                    return None
-                else:
-                    raise Invalid("required")
-            return origin_validater(value)
-        return validater
+    :param string: if the value to be validated is string or not
+    """
+    def handler(some_validater):
+        def wrapped_validater(*args, **kwargs):
+            default = kwargs.pop("default", None)
+            optional = kwargs.pop("optional", False)
+            kwargs.pop("desc", None)
+            origin_validater = some_validater(*args, **kwargs)
+            if string:
+                def validater(value):
+                    if value is None or value == "":
+                        if not (default is None or default == ""):
+                            return default
+                        elif optional:
+                            return ""
+                        else:
+                            raise Invalid("required")
+                    return origin_validater(value)
+            else:
+                def validater(value):
+                    if value is None:
+                        if default is not None:
+                            return default
+                        elif optional:
+                            return None
+                        else:
+                            raise Invalid("required")
+                    return origin_validater(value)
+            return validater
+        return wrapped_validater
+    return handler
 
-    return wrapped_validater
 
-
-@handle_default_optional_desc
+@handle_default_optional_desc()
 def int_validater(min=-sys.maxsize, max=sys.maxsize):
     """Validate int string
 
@@ -46,7 +61,7 @@ def int_validater(min=-sys.maxsize, max=sys.maxsize):
     return validater
 
 
-@handle_default_optional_desc
+@handle_default_optional_desc()
 def bool_validater():
     """Validate bool"""
     def validater(value):
@@ -57,7 +72,7 @@ def bool_validater():
     return validater
 
 
-@handle_default_optional_desc
+@handle_default_optional_desc()
 def float_validater(min=-sys.float_info.max, max=sys.float_info.max,
                     exmin=False, exmax=False):
     """Validate float string
@@ -88,7 +103,7 @@ def float_validater(min=-sys.float_info.max, max=sys.float_info.max,
     return validater
 
 
-@handle_default_optional_desc
+@handle_default_optional_desc(string=True)
 def str_validater(minlen=0, maxlen=1024 * 1024, escape=False):
     """Validate string
 
@@ -114,7 +129,7 @@ def str_validater(minlen=0, maxlen=1024 * 1024, escape=False):
     return validater
 
 
-@handle_default_optional_desc
+@handle_default_optional_desc(string=True)
 def date_validater(format="%Y-%m-%d"):
     """Validate date string, convert value to string
 
@@ -130,7 +145,7 @@ def date_validater(format="%Y-%m-%d"):
     return validater
 
 
-@handle_default_optional_desc
+@handle_default_optional_desc(string=True)
 def datetime_validater(format="%Y-%m-%dT%H:%M:%S.%fZ"):
     """Validate datetime string, convert value to string
 
@@ -157,7 +172,7 @@ def build_re_validater(name, r):
     # To make sure that the entire string matches
     r = re.compile(r"(?:%s)\Z" % r)
 
-    @handle_default_optional_desc
+    @handle_default_optional_desc(string=True)
     def re_validater():
         def validater(value):
             if not isinstance(value, str):

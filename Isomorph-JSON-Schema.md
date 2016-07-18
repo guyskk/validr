@@ -168,7 +168,8 @@
     str(minlen=0, maxlen=1024*1024, escape=false,
         default=null, optional=false)
 
-    日期和时间，格式为ISO8601，与Javascript中JSON.stringify输出格式一致
+    日期和时间，输出结果为字符串
+    格式为ISO8601，与Javascript中JSON.stringify输出格式一致
     date(format="%Y-%m-%d", default=null, optional=false)
     datetime(format="%Y-%m-%dT%H:%M:%S.%fZ", default=null, optional=false)
 
@@ -187,6 +188,7 @@
     网址
     url(default=null, optional=false)
 
-所有布尔型默认值都是false，自定义校验函数需遵守此规定。
+所有字符串类型的校验器(str,date,datetime,email...)，将空字符串视为null。
+所有布尔型参数默认值都是false，自定义校验函数需遵守此规定。
 
 

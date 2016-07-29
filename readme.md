@@ -73,17 +73,19 @@ validater.exceptions.Invalid: value must <= 9 in friends[0].userid
 ```python
 >>> user.userid = 15
 >>> try:
-...     f({"friends":[user,user]})
-... except Invalid as ex:
-...     print(ex.message)
-...     print(ex.position)
-... 
+        f({"friends":[user,user]})
+    except Invalid as ex:
+        print(ex.message)
+        print(ex.position)
+>>> 
 value must <= 9
 friends[0].userid
 >>> 
 ```
 
 #### 引用:
+
+简单用法:
 
 ```python
 >>> shared = {"userid": "int(0,9)"}
@@ -100,7 +102,31 @@ friends[0].userid
 >>> 
 ```
 
-注意：引用之间不能相互引用。
+引用内部相互引用:
+
+```python
+>>> from collections import OrderedDict
+>>> shared = OrderedDict([
+    ("userid", "int(0,9)"),
+    ("user", {"userid@userid":"UserID"}),
+])
+>>> sp = SchemaParser(shared=shared)
+>>> f = sp.parse("@user")
+>>> f({"userid":5})
+{'userid': 5}
+```
+
+注意：只能后面的引用前面的，并且要使用OrderedDict代替dict。
+
+```python
+>>> shared = OrderedDict([
+    ("user", {"userid@userid":"UserID"}),
+    ("userid", "int(0,9)"),
+])
+>>> sp = SchemaParser(shared=shared)
+...
+validater.exceptions.SchemaError: shared 'userid' not found in user.userid
+```
 
 
 #### 自定义校验函数:

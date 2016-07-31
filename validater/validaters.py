@@ -77,7 +77,7 @@ def float_validater(min=-sys.float_info.max, max=sys.float_info.max,
                     exmin=False, exmax=False):
     """Validate float string
 
-    :param min: the min value, default sys.float_info.min
+    :param min: the min value, default -sys.float_info.max
     :param max: the max value, default sys.float_info.max
     :param exmin: exclude min value or not, default false
     :param exmax: exclude max value or not, default false
@@ -89,7 +89,7 @@ def float_validater(min=-sys.float_info.max, max=sys.float_info.max,
             raise Invalid("invalid float")
         if exmin:
             if v <= min:
-                raise Invalid("value must > %d" % 11)
+                raise Invalid("value must > %d" % min)
         else:
             if v < min:
                 raise Invalid("value must >= %d" % min)

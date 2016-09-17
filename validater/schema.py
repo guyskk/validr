@@ -4,80 +4,92 @@ from .validaters import builtin_validaters
 
 
 class ValidaterString:
+    """ValidaterString
+
+    eg::
+
+        key?validater(args,args)&k&k=v
+        key@xx@yy(args,args)&k&k=v
+
+    Note: don't contain ',)' in args and '&=' in kwargs
+    """
 
     def __init__(self, text):
-        cut = text.find("?")
-        if cut >= 0:
-            is_refer = False
-        else:
-            cut = text.find("@")
-            if cut >= 0:
-                is_refer = True
-            else:
-                is_refer = False
-        if cut > 0:
-            key = text[:cut]
-            text = text[cut + 1:]
-        else:
-            key = None
-            if cut == 0:
-                text = text[cut + 1:]
 
-        cut = text.find("(")
-        if cut >= 0:
-            name = text[:cut]
-            text = text[cut + 1:]
-            cut = text.find(")")
+        if text is None:
+            raise SchemaError("can't parse None")
+
+        # first: name, key?name, @refer or key@refer@refer
+        # last: (args,args)&k&k=v or &k&k=v
+        cuts = [text.find("("), text.find("&"), len(text)]
+        cut = min([x for x in cuts if x >= 0])
+        first, last = text[:cut], text[cut:]
+        key = name = refers = None
+        if first:
+            if ("?" in first and "@" in first)\
+                    or first[-1] in "?@":
+                raise SchemaError("invalid syntax %s" % repr(first))
+
+            if "@" in first:
+                # key@refer@refer / key@@refer
+                items = first.split("@")
+                if items[0]:
+                    key = items[0]
+                refers = items[1:]
+                if not all(refers):
+                    raise SchemaError("invalid syntax %s" % repr(first))
+            else:
+                # key, key?name / key?name?name
+                items = first.split("?")
+                if len(items) == 2:
+                    key, name = items
+                elif len(items) == 1:
+                    name = items[0]
+                else:
+                    raise SchemaError("invalid syntax %s" % repr(first))
+        self.key = key
+        self.name = name
+        self.refers = refers
+
+        text_args = text_kwargs = None
+        if last and last[0] == "(":
+            cut = last.find(")")
             if cut < 0:
                 raise SchemaError("missing ')'")
-            args = text[:cut]
-            text = text[cut + 1:]
-        else:
-            name = None
-            args = None
+            text_args = last[1:cut].rstrip(' ,')
+            last = last[cut + 1:]
+        if last:
+            text_kwargs = last[1:]
 
-        cut = text.find("&")
-        if cut >= 0:
-            if name is None:
-                name = text[:cut]
-            kwargs = text[cut + 1:]
-        else:
-            if name is None:
-                name = text
-            kwargs = None
-
-        if is_refer:
-            if (not name) or args or kwargs:
-                raise SchemaError("invalid refer syntax")
-        self.key = key
-        self.is_refer = is_refer
-        self.name = name
-        self_args = []
-        if args:
-            for x in args.split(","):
+        args = []
+        if text_args:
+            for x in text_args.split(","):
                 try:
-                    self_args.append(json.loads(x))
+                    args.append(json.loads(x))
                 except ValueError:
-                    raise SchemaError("invalid JSON value '%s'" % x)
-        self.args = tuple(self_args)
-        self.kwargs = {}
-        if kwargs:
-            for kv in kwargs.split("&"):
+                    raise SchemaError(
+                        "invalid JSON value in %s" % repr(text_args))
+        self.args = tuple(args)
+
+        kwargs = {}
+        if text_kwargs:
+            for kv in text_kwargs.split("&"):
                 cut = kv.find("=")
                 if cut >= 0:
                     try:
-                        self.kwargs[kv[:cut]] = json.loads(kv[cut + 1:])
+                        kwargs[kv[:cut]] = json.loads(kv[cut + 1:])
                     except ValueError:
                         raise SchemaError(
-                            "invalid JSON value '%s'" % kv)
+                            "invalid JSON value in %s" % repr(kv))
                 else:
-                    self.kwargs[kv] = True
+                    kwargs[kv] = True
+        self.kwargs = kwargs
 
     def __repr__(self):
         return repr({
             "key": self.key,
-            "is_refer": self.is_refer,
             "name": self.name,
+            "refers": self.refers,
             "args": self.args,
             "kwargs": self.kwargs
         })
@@ -146,6 +158,14 @@ class SchemaParser:
                 with MarkKey(k):
                     self.shared[k] = self.parse(v)
 
+    def merge_validaters(self, validaters):
+        def merged_validater(value):
+            result = {}
+            for v in validaters:
+                result.update(v(value))
+            return result
+        return merged_validater
+
     def parse(self, schema):
         """Parse schema"""
         return self._parse(schema)
@@ -178,19 +198,16 @@ class SchemaParser:
                             inner[inner_vs.key] = self._parse(v, inner_vs)
             if vs:
                 _validater = self.dict_validater(inner, *vs.args, **vs.kwargs)
-                if vs.is_refer:
-                    if vs.name not in self.shared:
-                        raise SchemaError(
-                            "shared '%s' not found" % vs.name)
-                    refer = self.shared[vs.name]
-
-                    def validater(value):
-                        result = refer(value)
-                        result.update(_validater(value))
-                        return result
-                    return validater
-                else:
+                if not vs.refers:
                     return _validater
+                else:
+                    _validaters = []
+                    for refer in vs.refers:
+                        if refer not in self.shared:
+                            raise SchemaError("shared '%s' not found" % refer)
+                        _validaters.append(self.shared[refer])
+                    _validaters.append(_validater)
+                    return self.merge_validaters(_validaters)
             else:
                 return self.dict_validater(inner)
         elif isinstance(schema, list):
@@ -212,12 +229,23 @@ class SchemaParser:
                 vs.kwargs["desc"] = schema
             else:
                 vs = ValidaterString(schema)
-            if vs.is_refer:
-                if vs.name not in self.shared:
-                    raise SchemaError("shared '%s' not found" % vs.name)
-                return self.shared[vs.name]
+            if vs.refers:
+                if len(vs.refers) >= 2:
+                    raise SchemaError("multi refer not allowed")
+                refer = vs.refers[0]
+                if refer not in self.shared:
+                    raise SchemaError("shared '%s' not found" % refer)
+                _validater = self.shared[refer]
+                if not vs.kwargs.get("optional"):
+                    return _validater
+                else:
+                    def optional_shared_validater(value):
+                        if value is None:
+                            return None
+                        else:
+                            return _validater(value)
+                    return optional_shared_validater
             else:
-
                 if vs.name in self.validaters:
                     validater = self.validaters[vs.name]
                 elif vs.name in builtin_validaters:

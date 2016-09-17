@@ -38,10 +38,23 @@ validater_string = {
         "args": tuple([0, 10]),
         "kwargs": {"optional": True}
     },
-    "key@shared": {"key": "key", "is_refer": True, "name": "shared"},
-    "$self@shared": {"key": "$self", "is_refer": True, "name": "shared"},
-    "@shared": {"is_refer": True, "name": "shared"},
+    "key@shared": {"key": "key", "refers": ["shared"], "name": None},
+    "$self@shared": {"key": "$self", "refers": ["shared"], "name": None},
+    "@shared": {"refers": ["shared"], "name": None},
     "": {},
+    "@user(0,9)": {"refers": ["user"], "args": (0, 9)},
+    "@user&optional": {"refers": ["user"], "kwargs": {"optional": True}},
+    "key@user(0,9)&optional": {
+        "key": "key",
+        "refers": ["user"],
+        "args": (0, 9),
+        "kwargs": {"optional": True}
+    },
+    "key@user&optional": {
+        "key": "key",
+        "refers": ["user"],
+        "kwargs": {"optional": True}
+    },
 }
 
 validater_string_fail = [
@@ -50,16 +63,12 @@ validater_string_fail = [
     "int&default=abc",
     "int&desc='a number'",
     "(0,10",
-    "@user(0,9)",
-    "@user&optional",
-    "@user(0,9)",
-    "key@user(0,9)&optional",
-    "key@user&optional",
+    None
 ]
 default_vs = {
     "key": None,
-    "is_refer": False,
-    "name": "",
+    "refers": None,
+    "name": None,
     "args": tuple(),
     "kwargs": {}
 }
@@ -171,13 +180,13 @@ def test_dict_inner(value):
 
 
 def test_dict_optional():
-    f = sp.parse({"$self?&optional": "User"})
+    f = sp.parse({"$self&optional": "User"})
     assert f(None) is None
     assert f({"userid": 5}) == {}
 
 
 def test_dict_inner_optional():
-    f = sp.parse({"user": {"$self?&optional": "User"}})
+    f = sp.parse({"user": {"$self&optional": "User"}})
     assert f({"user": None}) == {"user": None}
     assert f({"user": {"userid": 5}}) == {"user": {}}
 

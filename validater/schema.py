@@ -320,18 +320,21 @@ class SchemaParser:
                     return None
                 else:
                     raise Invalid("required")
-            if not isinstance(value, list):
+            try:
+                value = enumerate(value)
+            except TypeError:
                 raise Invalid("not list")
             result = []
-            for x in value:
-                if len(result) >= maxlen:
+            i = -1
+            for i, x in value:
+                if i >= maxlen:
                     raise Invalid("list length must <= %d" % maxlen)
                 with MarkIndex(result):
                     v = inner(x)
                     if unique and v in result:
                         raise Invalid("not unique")
                 result.append(v)
-            if len(result) < minlen:
+            if i + 1 < minlen:
                 raise Invalid("list length must >= %d" % minlen)
             return result
         return validater

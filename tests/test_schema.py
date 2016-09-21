@@ -432,7 +432,7 @@ def test_dict_invalid_position(value, expect):
 
 @pytest.mark.parametrize("value,expect", [
     (None, ""),
-    ({}, ""),
+    (0, ""),
     ([[User(0)], None], "[1]"),
     ([[User(0)], [User(0)]], "[1]"),
     ([[User(0), User(0)]], "[0][1]"),

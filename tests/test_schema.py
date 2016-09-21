@@ -346,11 +346,6 @@ def test_multi_self_described_error(schema):
 @pytest.mark.parametrize("schema,value,expect", [
     ({"$self@user1": "desc"}, {"userid": "123"}, {"userid": 123}),
     ({"$self@user1": "desc"}, User(123), {"userid": 123}),
-    (
-        {"$self@user1": "desc", "userid?str": "override"},
-        {"userid": "123"},
-        {"userid": "123"}
-    ),
     ({"$self@user1&optional": "desc"}, {"userid": "123"}, {"userid": 123}),
     ({"$self@user1&optional": "desc"}, None, None),
     ({"$self@user1@user2&optional": "desc"}, None, None),
@@ -371,6 +366,14 @@ def test_mixins(schema, value, expect):
         "user2": {"name?str": "name", "age?int": "age"},
     })
     assert sp.parse(schema)(value) == expect
+
+
+def test_merge_non_dict_value_error():
+    sp = SchemaParser(shared={"a": "int", "b": "str"})
+    f = sp.parse({"key": {"$self@a@b": "invalid mixins"}})
+    with pytest.raises(SchemaError) as exinfo:
+        f({"key": "123"})
+    assert exinfo.value.position == "key"
 
 
 @pytest.mark.parametrize("schema,expect", [

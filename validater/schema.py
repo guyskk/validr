@@ -167,7 +167,11 @@ class SchemaParser:
                     raise Invalid("required")
             result = {}
             for v in validaters:
-                result.update(v(value))
+                data = v(value)
+                try:
+                    result.update(data)
+                except TypeError:
+                    raise SchemaError("can't merge non-dict value")
             return result
         return merged_validater
 

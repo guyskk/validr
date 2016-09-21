@@ -1,4 +1,4 @@
-# Validater 
+# Validater
 
 ![travis-ci](https://api.travis-ci.org/guyskk/validater.svg) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
 
@@ -37,7 +37,7 @@ validater.exceptions.Invalid: value must >= 0
 >>> f("abc")
 ...
 validater.exceptions.Invalid: invalid int
->>> 
+>>>
 ```
 
 #### 校验复杂结构的数据:
@@ -49,7 +49,7 @@ validater.exceptions.Invalid: invalid int
 ...
 validater.exceptions.Invalid: value must <= 9 in userid
 >>> class User:pass
-... 
+...
 >>> user = User()
 >>> user.userid=5
 >>> f(user)
@@ -65,7 +65,7 @@ validater.exceptions.Invalid: value must <= 9 in friends[0].userid
 >>> user.userid=5
 >>> f({"friends":[user,user]})
 {'friends': [{'userid': 5}, {'userid': 5}]}
->>> 
+>>>
 ```
 
 #### 处理校验错误:
@@ -77,10 +77,10 @@ validater.exceptions.Invalid: value must <= 9 in friends[0].userid
     except Invalid as ex:
         print(ex.message)
         print(ex.position)
->>> 
+>>>
 value must <= 9
 friends[0].userid
->>> 
+>>>
 ```
 
 #### 引用:
@@ -99,7 +99,10 @@ friends[0].userid
 >>> f = sp.parse(["@userid"])
 >>> f([1,2])
 [1, 2]
->>> 
+>>> f = sp.parse({"userid@userid&optional":"UserID"})
+>>> f({"userid":None})
+{'userid': None}
+>>>
 ```
 
 引用内部相互引用:
@@ -128,6 +131,33 @@ friends[0].userid
 validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 ```
 
+#### 混合(Mixins):
+
+```python
+>>> shared = {
+      "size": {
+        "width?int": "width",
+        "height?int": "height"
+      },
+      "border": {
+        "border-width?int": "border-width",
+        "border-style?str": "border-style",
+        "border-color?str": "border-color"
+      }
+    }
+>>> sp = SchemaParser(shared=shared)
+>>> f = sp.parse({"$self@size@border": "mixins"})
+>>> value = {
+        "width": "400",
+        "height": "400",
+        "border-width": "5",
+        "border-style": "solid",
+        "border-color": "red"
+    }
+>>> f(value)
+{'height': 400, 'border-width': 5, 'border-color': 'red', 'border-style': 'solid', 'width': 400}
+>>>
+```
 
 #### 自定义校验函数:
 
@@ -143,7 +173,7 @@ validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 ...         else:
 ...             raise Invalid("不是 %d 的倍数"%n)
 ...     return validater
-... 
+...
 >>> validaters={"multiple":multiple_validater}
 >>> sp = SchemaParser(validaters=validaters)
 >>> f = sp.parse("multiple(3)")
@@ -155,7 +185,7 @@ validater.exceptions.Invalid: 不是 3 的倍数
 >>> f = sp.parse("multiple(3)&default=3")
 >>> f(None)
 3
->>> 
+>>>
 ```
 
 字符串类型的校验器请用 `@handle_default_optional_desc(string=True)` 装饰器，
@@ -177,7 +207,7 @@ validater.exceptions.Invalid: 不是 3 的倍数
 validater.exceptions.Invalid: invalid time
 >>> f(None)
 '00:00:00'
->>> 
+>>>
 ```
 
 
@@ -230,6 +260,6 @@ https://github.com/mc-zone/IDValidator
 validater是拼写错误的单词，正确的拼写是validator，但是validator这个名字已经被用掉了，所以继续用validater这个名字。
 
 
-## License 
+## License
 
 MIT License

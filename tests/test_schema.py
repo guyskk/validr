@@ -185,16 +185,14 @@ def test_dict_inner(value):
     assert f(value) == expect
 
 
-@pytest.mark.parametrize("key", ["$self&optional", "&optional"])
-def test_dict_optional(key):
-    f = sp.parse({key: "User"})
+def test_dict_optional():
+    f = sp.parse({"$self&optional": "User"})
     assert f(None) is None
     assert f({"userid": 5}) == {}
 
 
-@pytest.mark.parametrize("key", ["$self&optional", "&optional"])
-def test_dict_inner_optional(key):
-    f = sp.parse({"user": {key: "User"}})
+def test_dict_inner_optional():
+    f = sp.parse({"user": {"$self&optional": "User"}})
     assert f({"user": None}) == {"user": None}
     assert f({"user": {"userid": 5}}) == {"user": {}}
 
@@ -283,37 +281,6 @@ def test_shared_dict(value, expect):
 
 
 @pytest.mark.parametrize("value,expect", [
-    (User(0), {"userid": 0, "age": 18}),
-    ({"userid": 1, "age": 20}, {"userid": 1, "age": 20})
-])
-def test_shared_dict_addition(value, expect):
-    sp = SchemaParser(shared={"user": {"userid?int(0,9)": "UserID"}})
-    f = sp.parse({"group": {
-        "$self@user": "User",
-        "age?int(0,100)&default=18": "Age"
-    }})
-    value = {"group": value}
-    expect = {"group": expect}
-    assert f(value) == expect
-
-
-@pytest.mark.parametrize("value,expect", [
-    ({"userid": 1, "age": 20}, {"userid": 1, "age": 20})
-])
-def test_shared_2(value, expect):
-    shared = {
-        "userid": "int(0,9)",
-        "age": "int(10,99)"
-    }
-    sp = SchemaParser(shared=shared)
-    f = sp.parse({
-        "userid@userid": "UserID",
-        "age@age": "Age"
-    })
-    assert f(value) == expect
-
-
-@pytest.mark.parametrize("value,expect", [
     ([User(0), {"userid": 1}], [{"userid": 0}, {"userid": 1}])])
 def test_shared_list(value, expect):
     sp = SchemaParser(shared={"user": {"userid?int(0,9)": "UserID"}})
@@ -377,19 +344,23 @@ def test_multi_self_described_error(schema):
 
 
 @pytest.mark.parametrize("schema,value,expect", [
-    ({"@user1": "desc"}, {"userid": "123"}, {"userid": 123}),
-    ({"@user1": "desc", "userid?str": "override"},
-     {"userid": "123"}, {"userid": "123"}),
-    ({"@user1&optional": "desc"}, {"userid": "123"}, {"userid": 123}),
-    ({"@user1&optional": "desc"}, None, None),
-    ({"@user1@user2&optional": "desc"}, None, None),
+    ({"$self@user1": "desc"}, {"userid": "123"}, {"userid": 123}),
+    ({"$self@user1": "desc"}, User(123), {"userid": 123}),
     (
-        {"@user1@user2&optional": "desc"},
+        {"$self@user1": "desc", "userid?str": "override"},
+        {"userid": "123"},
+        {"userid": "123"}
+    ),
+    ({"$self@user1&optional": "desc"}, {"userid": "123"}, {"userid": 123}),
+    ({"$self@user1&optional": "desc"}, None, None),
+    ({"$self@user1@user2&optional": "desc"}, None, None),
+    (
+        {"$self@user1@user2&optional": "desc"},
         {"userid": "123", "name": "kk", "age": 0, "xxx": "abc"},
         {"userid": 123, "name": "kk", "age": 0}
     ),
     (
-        {"@user2@user1": "desc"},
+        {"$self@user2@user1": "desc"},
         {"userid": "123", "name": "kk", "age": 0, "xxx": "abc"},
         {"userid": 123, "name": "kk", "age": 0}
     ),

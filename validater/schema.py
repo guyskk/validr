@@ -180,7 +180,7 @@ class SchemaParser:
         vs = None
         for k, v in schema.items():
             with MarkKey(cut_schema_key(k)):
-                if k[:5] == "$self" or k[:1] in "@(&":
+                if k[:5] == "$self":
                     # $self: 前置描述
                     if vs is not None:
                         raise SchemaError("multi self-described not allowed")

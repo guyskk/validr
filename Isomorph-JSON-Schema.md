@@ -16,7 +16,7 @@
 > 第三种类型是映射（mapping），也就是一个名/值对（Name/value），即数据有一个名称，还有一个与之相对应的值，这又称作散列（hash）或字典（dictionary），比如"首都：北京"。
 
 
-### 校验函数
+### 校验函数validater
 
 如果用一种通用的方式同时描述3种结构，这种方式只有函数，即**校验函数**。
 在JSON中，可以用一个字符串表示校验函数，例如：
@@ -36,7 +36,7 @@
 - 如果arg1, arg2...都是默认值，则括号可以省略。
 - 如果key对应的value为true，只需写&key，不需要写&key=true。
 
-因为Schema和JSON数据是同构的，所以这3种结构都需要是自己描述自己(**自描述**)，即：
+因为Schema和JSON数据是同构的，所以这3种结构都需要能够自己描述自己(**自描述**)，即：
 
 映射结构用特殊的key描述自身，其余key描述字典里的内容：
 
@@ -45,11 +45,11 @@
 		"key": "value"
 	}
 
-序列结构用第一个元素描述自身，第二个元素描述列表里的内容：
+序列结构用第一个元素描述自身，第二个元素描述序列里的内容：
 
 	["ValidaterString", Item]
 
-序列结构也可以省略第一个元素，即只描述列表里的内容，不描述自身。
+序列结构也可以省略第一个元素，即只描述序列里的内容，不描述自身。
 
     [Item]
 
@@ -85,11 +85,9 @@
 注意tags是序列结构，为了避免歧义（后面说明）只能用自描述。
 
 
-### 引用
+### 引用refer
 
 不同的Schema可能含有相同的部分，假设有一个公共的Schema，其他Schema需要引用它，可以使用引用语法。
-
-直接引用：
 
     "@shared"
 
@@ -103,10 +101,25 @@
         "$self@shared": "desc of this dict"
     }
 
-在映射结构中可以添加新内容：
+引用的optional参数，表示这个值是可选的，不管@shared是否可选。
 
     {
-        "$self@shared": "desc",
+        "key@shared&optional": "this value is optional"
+    }
+
+### 混合mixins
+
+在映射结构中可以多个Schema进行组合：
+
+    {
+        "$self@shared1@shared2": "desc",
+        "addition_key": ...
+    }
+
+也可以加optional参数，表示这个映射是可选的，不管@shared是否可选。
+
+    {
+        "$self@shared1@shared2&optional": "desc",
         "addition_key": ...
     }
 
@@ -114,9 +127,11 @@
 ### 前置描述(pre-described)和自描述(self-described)
 
 前面提到序列结构只能用自描述，否则会有歧义，映射结构也只能用自描述。
-因为如果序列结构和映射结构如果可以用前置描述，那就可能写出同时用了前置描述和自描述的Schema，会造成歧义，如果规定前置描述和自描述的优先级，虽然能避免歧义，但使语法复杂了。所以规定序列结构和映射结构只能用自描述。
 
-如果考虑所有的情况，只有 $self, key-标量, key-引用 这三个地方用前置描述(为了使Schema的写法统一，规定只能用前置描述)，其他地方都用自描述。
+首先，这三种结构都有自描述的能力，但是在映射结构里面，key-标量中的标量用前置描述更方便实用。
+为了使Schema的写法统一，规定key-标量中的标量只能用前置描述，序列结构和映射结构只能用自描述。
+
+如果考虑所有的情况，只有 $self, key-标量, key-引用 这三个地方用前置描述()，其他地方都用自描述。
 
 即：
 
@@ -125,11 +140,11 @@
     ["&minlen=1", "int&default=0"]  # 自描述
 
     {  # 自描述
-        "$self?&optional": "desc",  # 前置描述
+        "$self&optional": "desc",  # 前置描述
         "key?int&default=0": "desc",  # 前置描述
         "key": ["&minlen=1", "int&default=0"],  # 自描述
         "key": {  # 自描述
-            "$self?&optional": "desc"
+            "$self&optional": "desc"
         }
     }
 
@@ -147,7 +162,7 @@
 
 
 ### 内置的校验函数
-    
+
     序列
     list(minlen=0, maxlen=1024, unique=false, default=null, optional=false)
 
@@ -190,5 +205,3 @@
 
 所有字符串类型的校验器(str,date,datetime,email...)，将空字符串视为null。
 所有布尔型参数默认值都是false，自定义校验函数需遵守此规定。
-
-

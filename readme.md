@@ -159,6 +159,9 @@ validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 >>>
 ```
 
+注意: 只有字典结构的Schema才能混合，非字典结构的Schema混合会在校验数据时报错。
+另外，不要混合有相同key的Schema。
+
 #### 自定义校验函数:
 
 `handle_default_optional_desc` 装饰器能让自定义的validater支持 `default`, `optional`, `desc` 这几个参数。

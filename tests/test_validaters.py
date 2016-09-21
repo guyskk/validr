@@ -1,4 +1,5 @@
 from validater import SchemaParser, Invalid
+from validater.validaters import handle_default_optional_desc
 import pytest
 from datetime import datetime, date
 
@@ -222,3 +223,17 @@ def test_validaters_fail(schema, value):
     f = sp.parse(schema)
     with pytest.raises(Invalid):
         f(value)
+
+
+def test_custom_validater():
+    @handle_default_optional_desc()
+    def choice_validater():
+        def validater(value):
+            if value in "ABCD":
+                return value
+            raise Invalid("invalid choice")
+        return validater
+    sp = SchemaParser(validaters={"choice": choice_validater})
+    for value in "ABCD":
+        assert sp.parse("choice")(value) == value
+    assert sp.parse("choice&optional")(None) is None

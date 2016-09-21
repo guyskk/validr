@@ -63,6 +63,10 @@ validater_string_fail = [
     "int&default=abc",
     "int&desc='a number'",
     "(0,10",
+    "key?int@user",
+    "key?int?str",
+    "key@user@",
+    "key@@user",
     None
 ]
 default_vs = {
@@ -163,6 +167,8 @@ def test_list_preposition_optional_error():
     # should be self-described
     with pytest.raises(SchemaError):
         sp.parse({"user?&optional": ["int(0,9)"]})
+    with pytest.raises(SchemaError):
+        sp.parse({"user&optional": ["int(0,9)"]})
 
 
 @pytest.mark.parametrize("value", [{"userid": 5}, User(5)])
@@ -179,14 +185,16 @@ def test_dict_inner(value):
     assert f(value) == expect
 
 
-def test_dict_optional():
-    f = sp.parse({"$self&optional": "User"})
+@pytest.mark.parametrize("key", ["$self&optional", "&optional"])
+def test_dict_optional(key):
+    f = sp.parse({key: "User"})
     assert f(None) is None
     assert f({"userid": 5}) == {}
 
 
-def test_dict_inner_optional():
-    f = sp.parse({"user": {"$self&optional": "User"}})
+@pytest.mark.parametrize("key", ["$self&optional", "&optional"])
+def test_dict_inner_optional(key):
+    f = sp.parse({"user": {key: "User"}})
     assert f({"user": None}) == {"user": None}
     assert f({"user": {"userid": 5}}) == {"user": {}}
 
@@ -332,6 +340,68 @@ def test_list_shared_fail(value):
         f(value)
 
 
+@pytest.mark.parametrize("schema", [
+    "@number@text",
+    {"key@number@text": "desc"}
+])
+def test_multi_refer_error(schema):
+    sp = SchemaParser(shared={"number": "int", "text": "str"})
+    with pytest.raises(SchemaError):
+        sp.parse(schema)
+
+
+@pytest.mark.parametrize("schema,value,expect", [
+    ({"user@user&optional": "desc"}, {"user": None}, {"user": None}),
+    ({"user@user&optional": "desc"},
+     {"user": {"userid": "123"}}, {"user": {"userid": 123}}),
+    ("@user&optional", None, None),
+    (["@user&optional"], [None, {"userid": "123"}], [None, {"userid": 123}]),
+])
+def test_optional_refer(schema, value, expect):
+    sp = SchemaParser(shared={
+        "user": {"userid?int": "userid"},
+    })
+    assert sp.parse(schema)(value) == expect
+
+
+@pytest.mark.parametrize("schema", [
+    {"$self": "desc", "$self&optional": "desc"},
+    {"": "desc", "$self&optional": "desc"},
+    {"": "desc", "&optional": "desc"},
+    {"@user": "desc", "&optional": "desc"},
+])
+def test_multi_self_described_error(schema):
+    sp = SchemaParser(shared={"user": {"userid?int": "desc"}})
+    with pytest.raises(SchemaError):
+        sp.parse(schema)
+
+
+@pytest.mark.parametrize("schema,value,expect", [
+    ({"@user1": "desc"}, {"userid": "123"}, {"userid": 123}),
+    ({"@user1": "desc", "userid?str": "override"},
+     {"userid": "123"}, {"userid": "123"}),
+    ({"@user1&optional": "desc"}, {"userid": "123"}, {"userid": 123}),
+    ({"@user1&optional": "desc"}, None, None),
+    ({"@user1@user2&optional": "desc"}, None, None),
+    (
+        {"@user1@user2&optional": "desc"},
+        {"userid": "123", "name": "kk", "age": 0, "xxx": "abc"},
+        {"userid": 123, "name": "kk", "age": 0}
+    ),
+    (
+        {"@user2@user1": "desc"},
+        {"userid": "123", "name": "kk", "age": 0, "xxx": "abc"},
+        {"userid": 123, "name": "kk", "age": 0}
+    ),
+])
+def test_mixins(schema, value, expect):
+    sp = SchemaParser(shared={
+        "user1": {"userid?int": "userid"},
+        "user2": {"name?str": "name", "age?int": "age"},
+    })
+    assert sp.parse(schema)(value) == expect
+
+
 @pytest.mark.parametrize("schema,expect", [
     ("int(0,9)&desc='number'", ""),
     ({"user?&optional": {}}, "user"),
@@ -399,19 +469,3 @@ def test_list_invalid_position(value, expect):
     with pytest.raises(Invalid) as exinfo:
         f(value)
     assert exinfo.value.position == expect
-
-
-def test_exception_message():
-    assert Invalid("invalid").message == "invalid"
-    assert Invalid().message is None
-
-
-def test_exception_position():
-    ex = Invalid("invalid").mark_index(0).mark_key("key")
-    assert ex.position == "key[0]"
-    assert ex.position in str(ex)
-    assert ex.message in str(ex)
-    ex = Invalid("invalid").mark_key("key").mark_index(0)
-    assert ex.position == "[0].key"
-    assert ex.position in str(ex)
-    assert ex.message in str(ex)

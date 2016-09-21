@@ -158,8 +158,13 @@ class SchemaParser:
                 with MarkKey(k):
                     self.shared[k] = self.parse(v)
 
-    def merge_validaters(self, validaters):
+    def merge_validaters(self, validaters, optional=False, desc=None):
         def merged_validater(value):
+            if value is None:
+                if optional:
+                    return None
+                else:
+                    raise Invalid("required")
             result = {}
             for v in validaters:
                 result.update(v(value))
@@ -188,24 +193,23 @@ class SchemaParser:
                             raise SchemaError("should be self-described")
                         inner[k] = self._parse(v)
                     else:
-                        # k-标量和k-引用：前置描述
+                        # k-标量：前置描述
                         if "?" not in k and "@" not in k:
                             raise SchemaError("should be pre-described")
                         inner_vs = ValidaterString(k)
                         inner[inner_vs.key] = self._parse(v, inner_vs)
         if vs:
-            _validater = self.dict_validater(inner, *vs.args, **vs.kwargs)
             if not vs.refers:
-                return _validater
+                return self.dict_validater(inner, *vs.args, **vs.kwargs)
             else:
                 # mixins
-                _validaters = []
+                _mixins = []
                 for refer in vs.refers:
                     if refer not in self.shared:
                         raise SchemaError("shared '%s' not found" % refer)
-                    _validaters.append(self.shared[refer])
-                _validaters.append(_validater)
-                return self.merge_validaters(_validaters)
+                    _mixins.append(self.shared[refer])
+                _mixins.append(self.dict_validater(inner))
+                return self.merge_validaters(_mixins, *vs.args, **vs.kwargs)
         else:
             return self.dict_validater(inner)
 
@@ -242,12 +246,12 @@ class SchemaParser:
             if not vs.kwargs.get("optional"):
                 return _validater
             else:
-                def optional_shared_validater(value):
+                def optional_refer_validater(value):
                     if value is None:
                         return None
                     else:
                         return _validater(value)
-                return optional_shared_validater
+                return optional_refer_validater
         else:
             if vs.name in self.validaters:
                 validater = self.validaters[vs.name]

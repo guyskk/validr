@@ -1,31 +1,30 @@
 # Validater
 
-[English](readme-en.md) [中文](readme.md)
+[中文](readme.md) [English](readme-en.md)
 
 ![travis-ci](https://api.travis-ci.org/guyskk/validater.svg) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
 
-为RESTful API而生的校验器：
+A validater born to RESTful API：
 
-- 可以作为API文档，Schema即文档
-- 可以用来校验请求参数
-- 可以用来校验输出与API文档是否一致
-- 可以用来序列化任意类型的对象
+- Schema as API document
+- Validate request data
+- Validate response data
+- Serialize any object
 
-注意：仅支持 python 3.3+
+Note：Only support python 3.3+
 
-## 安装
+## Install
 
     pip install validater
 
 
-## Schema语法
+## Schema syntax
 
-[同构的JSON-Schema](Isomorph-JSON-Schema.md)
+[Isomorph-JSON-Schema](Isomorph-JSON-Schema-en.md)
 
+## Usage
 
-## 用法
-
-#### 校验简单数据:
+#### Validate simple data:
 
 ```python
 >>> from validater import SchemaParser,Invalid
@@ -42,7 +41,7 @@ validater.exceptions.Invalid: invalid int
 >>>
 ```
 
-#### 校验复杂结构的数据:
+#### Validate complex data:
 
 ```python
 >>> f = sp.parse({"userid?int(0,9)": "UserID"})
@@ -70,7 +69,7 @@ validater.exceptions.Invalid: value must <= 9 in friends[0].userid
 >>>
 ```
 
-#### 处理校验错误:
+#### Handle Invalid:
 
 ```python
 >>> user.userid = 15
@@ -85,9 +84,9 @@ friends[0].userid
 >>>
 ```
 
-#### 引用:
+#### Refer:
 
-简单用法:
+Simple usage:
 
 ```python
 >>> shared = {"userid": "int(0,9)"}
@@ -107,7 +106,7 @@ friends[0].userid
 >>>
 ```
 
-引用内部相互引用:
+Refer in shared:
 
 ```python
 >>> from collections import OrderedDict
@@ -121,7 +120,7 @@ friends[0].userid
 {'userid': 5}
 ```
 
-注意：只能后面的引用前面的，并且要使用OrderedDict代替dict。
+Note：You can only refer to the back of the front, and you should use OrderedDict instead of dict.
 
 ```python
 >>> shared = OrderedDict([
@@ -133,7 +132,7 @@ friends[0].userid
 validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 ```
 
-#### 混合(Mixins):
+#### Mixins:
 
 ```python
 >>> shared = {
@@ -161,12 +160,11 @@ validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 >>>
 ```
 
-注意: 只有字典结构的Schema才能混合，非字典结构的Schema混合会在校验数据时抛出SchemaError。
-另外，不要混合有相同key的Schema。
+Note: Only dict schema can mixin, non-dict schema mixin will cause SchemaError on validating data. And don't mixin schemas which has same key.
 
-#### 自定义校验函数:
+#### Custom validater
 
-`handle_default_optional_desc` 装饰器能让自定义的validater支持 `default`, `optional`, `desc` 这几个参数。
+`handle_default_optional_desc` decorater can make you validater support `default`, `optional`, `desc` params.
 
 ```python
 >>> from validater.validaters import handle_default_optional_desc
@@ -176,7 +174,7 @@ validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 ...         if value%n==0:
 ...             return value
 ...         else:
-...             raise Invalid("不是 %d 的倍数"%n)
+...             raise Invalid("not a multiple of %d"%n)
 ...     return validater
 ...
 >>> validaters={"multiple":multiple_validater}
@@ -186,18 +184,18 @@ validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 6
 >>> f(5)
 ...
-validater.exceptions.Invalid: 不是 3 的倍数
+validater.exceptions.Invalid: not a multiple of 3
 >>> f = sp.parse("multiple(3)&default=3")
 >>> f(None)
 3
 >>>
 ```
 
-字符串类型的校验器请用 `@handle_default_optional_desc(string=True)` 装饰器，
-这样会将空字符串视为null，更符合default和optional的语义。
+string like validater should use `@handle_default_optional_desc(string=True)` decorater, 
+it will treat empty string as null, more suitable for default and optional semantic.
 
 
-#### 使用正则表达式构建校验函数：
+#### Create regex validater：
 
 ```python
 >>> from validater.validaters import build_re_validater
@@ -216,53 +214,45 @@ validater.exceptions.Invalid: invalid time
 ```
 
 
-## 关于内置校验函数
+## About built-in validater
 
 ### email
 
-参考：http://tool.lu/regex/
+See：http://tool.lu/regex/
 
 ### idcard
 
-完整校验身份证号的正则表达式非常复杂(还不一定正确)，如果通过代码逻辑判断结果能很准确，但(我感觉)没这种必要。内置的idcard校验函数只校验数字长度和xX，不校验地址码和日期。
-
-验证身份证号的正则，可以参考这个(有Bug)：
-http://blog.sina.com.cn/s/blog_491997ee0100avd2.html
-
-如果需要解析身份证号信息，可以参考这个：
-https://github.com/mc-zone/IDValidator
+Chinese idcard number
 
 ### phone
 
-支持 `+86` 开头，支持校验手机号段，只支持11位手机号，不支持固定电话号码。
-参考：http://tool.lu/regex/
+See：http://tool.lu/regex/
 
 ### ipv4
 
-支持完整校验IPv4地址。
-参考：https://segmentfault.com/a/1190000004622152
+Support full validate IPv4 address.
+See：https://segmentfault.com/a/1190000004622152
 
-### 其他
+### Other
 
-见Schema语法。
+See schema syntax.
 
+## Test
 
-## 测试
-
-用tox测试：
+use tox：
 
     pip install tox
     tox
 
-用pytest测试：
+use pytest
 
     pip install pytest
     py.test
 
 
-## 其他
+## Other
 
-validater是拼写错误的单词，正确的拼写是validator，但是validator这个名字已经被用掉了，所以继续用validater这个名字。
+validater is misspell, the correct spelling is validator, but validator is registered.
 
 
 ## License

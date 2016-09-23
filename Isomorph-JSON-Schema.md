@@ -1,5 +1,7 @@
 # 同构的JSON-Schema
 
+[English](Isomorph-JSON-Schema-en.md) [中文](Isomorph-JSON-Schema.md)
+
 同构的JSON-Schema(Isomorph-JSON-Schema)是用来描述JSON数据的格式，这种格式最大的特点就是Schema与实际JSON数据的结构完全相同，并且语法简洁，从Schema可以直观的看出实际数据的结构。
 
 ## 语法
@@ -63,7 +65,7 @@
         "key?ValidaterString": "desc"
     }
 
-下面来用一下这种语法，这是实际数据：
+下面来用一下这种语法，[这是实际数据](http://json-schema.org/example1.html)：
 
     {
         "id": 1,

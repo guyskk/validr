@@ -185,7 +185,7 @@ class SchemaParser:
         for k, v in schema.items():
             with MarkKey(cut_schema_key(k)):
                 if k[:5] == "$self":
-                    # $self: 前置描述
+                    # $self: pre-described
                     if vs is not None:
                         raise SchemaError("multi self-described not allowed")
                     vs = ValidaterString(k)
@@ -197,7 +197,7 @@ class SchemaParser:
                             raise SchemaError("should be self-described")
                         inner[k] = self._parse(v)
                     else:
-                        # k-标量：前置描述
+                        # key-scalar: pre-described
                         if "?" not in k and "@" not in k:
                             raise SchemaError("should be pre-described")
                         inner_vs = ValidaterString(k)

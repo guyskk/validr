@@ -191,7 +191,7 @@ validater.exceptions.Invalid: not a multiple of 3
 >>>
 ```
 
-string like validater should use `@handle_default_optional_desc(string=True)` decorater, 
+string like validater should use `@handle_default_optional_desc(string=True)` decorater,
 it will treat empty string as null, more suitable for default and optional semantic.
 
 

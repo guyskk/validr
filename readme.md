@@ -224,9 +224,9 @@ validater.exceptions.Invalid: invalid time
 
 ### idcard
 
-完整校验身份证号的正则表达式非常复杂(还不一定正确)，如果通过代码逻辑判断结果能很准确，但(我感觉)没这种必要。内置的idcard校验函数只校验数字长度和xX，不校验地址码和日期。
+内置的idcard校验函数只校验数字长度和xX，不校验地址码和日期。
 
-验证身份证号的正则，可以参考这个(有Bug)：
+完整验证身份证号的正则，可以参考这个(有Bug)：
 http://blog.sina.com.cn/s/blog_491997ee0100avd2.html
 
 如果需要解析身份证号信息，可以参考这个：

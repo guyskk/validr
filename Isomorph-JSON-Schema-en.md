@@ -2,13 +2,13 @@
 
 [中文](Isomorph-JSON-Schema.md) [English](Isomorph-JSON-Schema-en.md)
 
-Isomorph-JSON-Schema is used to describe JSON data struct. The greatest feature is schema has the same struct with JSON data(Isomorph), and the syntax is super concise, you can directly see the actual data struct from the Schema.
+Isomorph-JSON-Schema is used to describe JSON data structure. The greatest feature is that schema has the same structure with JSON data(Isomorph), and the syntax is super concise, you can directly see the actual data structure from the schema.
 
 ## Syntax
 
-[JSON](http://json.org) has 3 struct: mapping, sequence, scalar.
+[JSON](http://json.org) has 3 structures: mapping, sequence, scalar.
 
-From a structural point of view, all data can divided into 3 types:
+From a structureural point of view, all data can be divided into 3 types:
 - scalar: string number true false null.
 - sequence: also known as array or list.
 - mapping: a collection of name/value pairs, also known as object or dictionary.
@@ -16,7 +16,7 @@ From a structural point of view, all data can divided into 3 types:
 
 ### Validater function
 
-If there is a general way to describe the 3 structs above,
+If there is a general way to describe the 3 structures above,
 the way is function(**validater function**).
 
 In JSON, we can use string to represent validater function, eg:
@@ -34,10 +34,10 @@ Among them:
 
 - arg1, arg2...value is valid JSON value.
 - if validater is dict or list, it can be omitted.
-- if arg1, arg2...all is default value, the brackets may be omitted.
+- if arg1, arg2...all is default value, the brackets can be omitted.
 - if the value corresponding to key is true, just write &key, no need to write &key=true.
 
-Because schema and JSON data is isomorph, so the 3 structs should be able to self-described:
+Because schema and JSON data is isomorph, so the 3 structures should be able to be self-described:
 
 mapping use special key to describe self, other keys describe it's inner content:
 
@@ -84,7 +84,7 @@ and this is schema:
         "tags": ["&minlen=1&unique", "str&desc=\"product tag\""]
     }
 
-Note that tags is sequence, in order to avoid ambiguity(Described later) can only self-described.
+Note: tags is sequence, in order to avoid ambiguity(Described later) can only be self-described.
 
 
 ### Refer
@@ -131,14 +131,14 @@ there also a optional param, means the mapping is optional, regardless of
 
 ### pre-described and self-described
 
-Mentioned earlier, sequence can only self-described, otherwise will cause ambiguity.
-mapping can only self-described too.
+Mentioned earlier, sequence can only be self-described, otherwise will cause ambiguity.
+mapping can only be self-described too.
 
-First of all, the 3 struct has ability of self-described, but in mapping,
-if value is scalar, use pre-described is more convenient and practical.
+First of all, the 3 structures has ability of be self-described, but in mapping,
+if value is scalar, pre-described is more convenient and practical.
 
-In order to make schema unified, formulate that key-scalar can only pre-described,
-and sequence, mapping can only self-described.
+In order to make schema unified, formulate that key-scalar can only be pre-described,
+and sequence, mapping can only be self-described.
 
 Consider all the situations, only $self, key-scalar, key-refer is pre-described,
 other places is self-described.
@@ -213,6 +213,6 @@ that is:
     # URL
     url(default=null, optional=false)
 
-All string like validater(str,date,datetime,email...) treat empty string as null,
+All string-like validaters(str,date,datetime,email...) should treat empty string as null,
 all bool type params' default value is false,
 custom validater should follow this guideline.

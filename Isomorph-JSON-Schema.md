@@ -1,71 +1,15 @@
-# 同构的JSON-Schema
+# Isomorph-JSON-Schema
 
 [English](Isomorph-JSON-Schema-en.md) [中文](Isomorph-JSON-Schema.md)
 
-同构的JSON-Schema(Isomorph-JSON-Schema)是用来描述JSON数据的格式，这种格式最大的特点就是Schema与实际JSON数据的结构完全相同，并且语法简洁，从Schema可以直观的看出实际数据的结构。
+Isomorph-JSON-Schema(同构的JSON-Schema)是用来描述JSON数据的格式，这种格式最大的特点就是Schema与实际JSON数据的结构完全相同(Isomorph)，并且语法简洁，从Schema可以直观的看出实际数据的结构。
 
-## 语法
-
-[JSON](http://json.org/json-zh.html)有3种结构：映射，序列，标量。
-
-[数据类型和Json格式-阮一峰](http://www.ruanyifeng.com/blog/2009/05/data_types_and_json.html)
-> 从结构上看，所有的数据（data）最终都可以分解成三种类型：
-
-> 第一种类型是标量（scalar），也就是一个单独的字符串（string）或数字（numbers），比如"北京"这个单独的词。
-
-> 第二种类型是序列（sequence），也就是若干个相关的数据按照一定顺序并列在一起，又叫做数组（array）或列表（List），比如"北京，上海"。
-
-> 第三种类型是映射（mapping），也就是一个名/值对（Name/value），即数据有一个名称，还有一个与之相对应的值，这又称作散列（hash）或字典（dictionary），比如"首都：北京"。
+Isomorph-JSON-Schema不是[JSON Schema](http://json-schema.org)，但它比JSON Schema更简洁，可读性更好。
 
 
-### 校验函数
+## Example
 
-如果用一种通用的方式同时描述3种结构，这种方式只有函数，即**校验函数**。
-在JSON中，可以用一个字符串表示校验函数，例如：
-
-    "int(0,9)&default=5"
-
-表示这个校验函数接受0-9的整数，默认值是5。
-
-这种格式类似于URL里面的QueryString，可以取名为**ValidaterString**，完整形式如下：
-
-    "validater(arg1,arg2...)&key=value&..."
-
-其中：
-
-- arg1, arg2...value都是有效JSON值，即true/false是小写的，空值为null，字符串要加双引号。
-- 如果validater是dict或list，可以省略，因为可以从JSON结构看出是dict还是list。
-- 如果arg1, arg2...都是默认值，则括号可以省略。
-- 如果key对应的value为true，只需写&key，不需要写&key=true。
-
-因为Schema和JSON数据是同构的，所以这3种结构都需要能够自己描述自己(**自描述**)，即：
-
-映射结构用特殊的key描述自身，其余key描述字典里的内容：
-
-	{
-		"$self": "ValidaterString",
-		"key": "value"
-	}
-
-序列结构用第一个元素描述自身，第二个元素描述序列里的内容：
-
-	["ValidaterString", Item]
-
-序列结构也可以省略第一个元素，即只描述序列里的内容，不描述自身。
-
-    [Item]
-
-标量结构用字符串描述自身：
-
-	"ValidaterString"
-
-在映射结构中，如果value是标量，则在key中描述value(用？分隔key和ValidaterString)，value的位置写关于这个value介绍，即**前置描述**：
-
-    {
-        "key?ValidaterString": "desc"
-    }
-
-下面来用一下这种语法，[这是实际数据](http://json-schema.org/example1.html)：
+[这是实际数据](http://json-schema.org/example1.html)：
 
     {
         "id": 1,
@@ -84,7 +28,57 @@
         "tags": ["&minlen=1&unique", "str&desc=\"标签\""]
     }
 
-注意tags是序列结构，为了避免歧义（后面说明）只能用自描述。
+
+## ValidatorString
+
+在JSON中，可以用一个字符串描述JSON数据，例如：
+
+    "id？int"
+
+这种格式类似于URL里面的QueryString，可以取名为ValidatorString，完整形式如下：
+
+    "key?validator(arg1,arg2...)&key=value&..."
+
+其中：
+
+- arg1, arg2...value都是有效JSON值
+- 如果validator是dict或list，可以省略
+- 如果arg1, arg2...都是默认值，则括号可以省略
+- 如果key对应的value为true，只需写&key，不需要写&key=true
+
+
+## Schema
+
+JSON数据可以分为3种结构：
+
+- 映射："名称/值"对的集合，也被理解为对象（object）或字典（dictionary）
+- 序列：有序列表，也被理解为数组
+- 标量：string number true false null
+
+映射结构用$self描述自身，其余key描述字典里的内容：
+
+	{
+		"$self": "ValidatorString",
+		"key": "value"
+	}
+
+序列结构用第一个元素描述自身，第二个元素描述序列里的内容：
+
+	["ValidatorString", Item]
+
+序列结构也可以省略第一个元素，即只描述序列里的内容，不描述自身。
+
+    [Item]
+
+标量结构用字符串描述自身：
+
+	"ValidatorString"
+
+在映射结构中，如果value是标量，则在key的位置描述value，value的位置写关于这个value介绍：
+
+    {
+        "key?ValidatorString": "desc"
+    }
 
 
 ### 引用(Refer)
@@ -103,7 +97,7 @@
         "$self@shared": "desc of this dict"
     }
 
-引用的optional参数，表示这个值是可选的，不管@shared是否可选。
+也可以加optional参数，表示这个值是可选的:
 
     {
         "key@shared&optional": "this value is optional"
@@ -111,55 +105,18 @@
 
 ### 混合(Mixins)
 
-在映射结构中可以多个Schema进行组合：
+在映射结构中可以多个Schema进行组合:
 
     {
         "$self@shared1@shared2": "desc",
         "addition_key": ...
     }
 
-也可以加optional参数，表示这个映射是可选的，不管@shared是否可选。
+也可以加optional参数，表示这个映射是可选的:
 
     {
         "$self@shared1@shared2&optional": "desc",
         "addition_key": ...
-    }
-
-
-### 前置描述(pre-described)和自描述(self-described)
-
-前面提到序列结构只能用自描述，否则会有歧义，映射结构也只能用自描述。
-
-首先，这三种结构都有自描述的能力，但是在映射结构里面，key-标量中的标量用前置描述更方便实用。
-为了使Schema的写法统一，规定key-标量中的标量只能用前置描述，序列结构和映射结构只能用自描述。
-
-如果考虑所有的情况，只有 $self, key-标量, key-引用 这三个地方用前置描述()，其他地方都用自描述。
-
-即：
-
-    "int&default=0"  # 自描述
-
-    ["&minlen=1", "int&default=0"]  # 自描述
-
-    {  # 自描述
-        "$self&optional": "desc",  # 前置描述
-        "key?int&default=0": "desc",  # 前置描述
-        "key": ["&minlen=1", "int&default=0"],  # 自描述
-        "key": {  # 自描述
-            "$self&optional": "desc"
-        }
-    }
-
-    "@shared"  # 自描述
-
-    ["&minlen=1", "@shared"]  # 自描述
-
-    {  # 自描述
-        "$self@shared": "desc",  # 前置描述
-        "key@shared": "desc",  # 前置描述
-        "key": {  # 自描述
-            "$self@shared": "desc"
-        }
     }
 
 
@@ -193,17 +150,11 @@
     邮箱地址
     email(default=null, optional=false)
 
-    电话号码
-    phone(default=null, optional=false)
-
     IPv4地址
     ipv4(default=null, optional=false)
-
-    身份证号
-    idcard(default=null, optional=false)
 
     网址
     url(default=null, optional=false)
 
-所有字符串类型的校验器(str,date,datetime,email...)，将空字符串视为null。
+所有字符串类型的校验器(str,date,datetime,email...)，将空字符串视为null。  
 所有布尔型参数默认值都是false，自定义校验函数需遵守此规定。

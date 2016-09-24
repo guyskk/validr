@@ -1,14 +1,16 @@
 # Validater
 
-[English](readme-en.md) [中文](readme.md)
-
 ![travis-ci](https://api.travis-ci.org/guyskk/validater.svg) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
 
-A simple,fast,extensible library for validating and serializing:
+[English](readme-en.md) [中文](readme.md)
 
-- 比[JSON Schema](http://json-schema.org/)更简洁
-- 比[jsonschema](https://github.com/Julian/jsonschema)快10倍
-- 可以序列化任意类型的对象
+简单，快速，可拓展的数据校验库。
+
+- 比[JSON Schema](http://json-schema.org)更简洁，可读性更好的Schema
+- 拥有标准库中 json.loads 20%~40% 的速度
+- 能够序列化任意类型对象
+- 实现自定义校验器非常容易
+- 准确的错误提示，包括错误原因和位置
 
 注意：仅支持 python 3.3+
 
@@ -24,7 +26,7 @@ A simple,fast,extensible library for validating and serializing:
 
 ## 用法
 
-#### 校验简单数据:
+#### 校验简单数据
 
 ```python
 >>> from validater import SchemaParser,Invalid
@@ -41,7 +43,7 @@ validater.exceptions.Invalid: invalid int
 >>>
 ```
 
-#### 校验复杂结构的数据:
+#### 校验复杂结构的数据
 
 ```python
 >>> f = sp.parse({"userid?int(0,9)": "UserID"})
@@ -69,7 +71,7 @@ validater.exceptions.Invalid: value must <= 9 in friends[0].userid
 >>>
 ```
 
-#### 处理校验错误:
+#### 处理校验错误
 
 ```python
 >>> user.userid = 15
@@ -84,9 +86,9 @@ friends[0].userid
 >>>
 ```
 
-#### 引用:
+#### 引用(refer)
 
-简单用法:
+简单用法：
 
 ```python
 >>> shared = {"userid": "int(0,9)"}
@@ -106,7 +108,7 @@ friends[0].userid
 >>>
 ```
 
-引用内部相互引用:
+引用内部相互引用：
 
 ```python
 >>> from collections import OrderedDict
@@ -132,7 +134,7 @@ friends[0].userid
 validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 ```
 
-#### 混合(Mixins):
+#### 混合(mixin)
 
 ```python
 >>> shared = {
@@ -160,10 +162,10 @@ validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 >>>
 ```
 
-注意: 只有字典结构的Schema才能混合，非字典结构的Schema混合会在校验数据时抛出SchemaError。
+注意：只有字典结构的Schema才能混合，非字典结构的Schema混合会在校验数据时抛出SchemaError。
 另外，不要混合有相同key的Schema。
 
-#### 自定义校验函数:
+#### 自定义校验函数
 
 `handle_default_optional_desc` 装饰器能让自定义的validater支持 `default`, `optional`, `desc` 这几个参数。
 
@@ -192,11 +194,10 @@ validater.exceptions.Invalid: 不是 3 的倍数
 >>>
 ```
 
-字符串类型的校验器请用 `@handle_default_optional_desc(string=True)` 装饰器，
-这样会将空字符串视为null，更符合default和optional的语义。
+字符串类型的校验器请用 `@handle_default_optional_desc(string=True)` 装饰器，这样会将空字符串视为null，更符合default和optional的语义。
 
 
-#### 使用正则表达式构建校验函数：
+#### 使用正则表达式构建校验函数
 
 ```python
 >>> from validater.validaters import build_re_validater
@@ -242,10 +243,9 @@ validater.exceptions.Invalid: invalid time
     pip install pytest
     py.test
 
-## 性能:
+## 性能
 
-    # It cost about 5x time compare with
-    # load same JSON data use json.loads in stdlib
+    # benchmark
     python benchmark.py
 
     # profile

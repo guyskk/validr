@@ -1,17 +1,18 @@
 # Validater
 
-[中文](readme.md) [English](readme-en.md)
-
 ![travis-ci](https://api.travis-ci.org/guyskk/validater.svg) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
 
-A validater born to RESTful API：
+[中文](readme.md) [English](readme-en.md)
 
-- Schema as API document
-- Validate request data
-- Validate response data
-- Serialize any object
+A simple,fast,extensible library for validating.
 
-Note：Only support python 3.3+
+- Simple and readable schema
+- 20%~40% speed compare with json.loads
+- Can serialize any object
+- Easy to create custom validators
+- Accurate error messages, include reason and position
+
+Note: Only support python 3.3+
 
 ## Install
 
@@ -120,7 +121,7 @@ Refer in shared:
 {'userid': 5}
 ```
 
-Note：You can only refer to the back of the front, and you should use OrderedDict instead of dict.
+Note: You can only refer to the back of the front, and you should use OrderedDict instead of dict.
 
 ```python
 >>> shared = OrderedDict([
@@ -132,7 +133,7 @@ Note：You can only refer to the back of the front, and you should use OrderedDi
 validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 ```
 
-#### Mixins:
+#### Mixin:
 
 ```python
 >>> shared = {
@@ -195,7 +196,7 @@ string like validater should use `@handle_default_optional_desc(string=True)` de
 it will treat empty string as null, more suitable for default and optional semantic.
 
 
-#### Create regex validater：
+#### Create regex validater:
 
 ```python
 >>> from validater.validaters import build_re_validater
@@ -214,32 +215,9 @@ validater.exceptions.Invalid: invalid time
 ```
 
 
-## About built-in validater
-
-### email
-
-See：http://tool.lu/regex/
-
-### idcard
-
-Chinese idcard number
-
-### phone
-
-See：http://tool.lu/regex/
-
-### ipv4
-
-Support full validate IPv4 address.
-See：https://segmentfault.com/a/1190000004622152
-
-### Other
-
-See schema syntax.
-
 ## Test
 
-use tox：
+use tox:
 
     pip install tox
     tox
@@ -249,7 +227,15 @@ use pytest
     pip install pytest
     py.test
 
+## Performance
 
+    # benchmark
+    python benchmark.py
+
+    # profile
+    python benchmark.py -p
+
+        
 ## Other
 
 validater is misspell, the correct spelling is validator, but validator is registered.

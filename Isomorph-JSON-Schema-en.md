@@ -4,68 +4,12 @@
 
 Isomorph-JSON-Schema is used to describe JSON data structure. The greatest feature is that schema has the same structure with JSON data(Isomorph), and the syntax is super concise, you can directly see the actual data structure from the schema.
 
-## Syntax
+Isomorph-JSON-Schema is not [JSON Schema](http://json-schema.org), but Isomorph-JSON-Schema
+is more simple and readable then JSON Schema.
 
-[JSON](http://json.org) has 3 structures: mapping, sequence, scalar.
+## Example
 
-From a structureural point of view, all data can be divided into 3 types:
-- scalar: string number true false null.
-- sequence: also known as array or list.
-- mapping: a collection of name/value pairs, also known as object or dictionary.
-
-
-### Validater function
-
-If there is a general way to describe the 3 structures above,
-the way is function(**validater function**).
-
-In JSON, we can use string to represent validater function, eg:
-
-    "int(0,9)&default=5"
-
-Which means this validater function accept number between 0 and 9, default is 5.
-
-The syntax is similar to QueryString in URL, can be named **ValidaterString**,
-it's complete form is:
-
-    "validater(arg1,arg2...)&key=value&..."
-
-Among them:
-
-- arg1, arg2...value is valid JSON value.
-- if validater is dict or list, it can be omitted.
-- if arg1, arg2...all is default value, the brackets can be omitted.
-- if the value corresponding to key is true, just write &key, no need to write &key=true.
-
-Because schema and JSON data is isomorph, so the 3 structures should be able to be self-described:
-
-mapping use special key to describe self, other keys describe it's inner content:
-
-	{
-		"$self": "ValidaterString",
-		"key": "value"
-	}
-
-sequence use first element to describe self, second element to describe inner content:
-
-	["ValidaterString", Item]
-
-sequence can omit self describe, only describe inner content:
-
-    [Item]
-
-scalar use a string to describe self:
-
-	"ValidaterString"
-
-In mapping, if value is scalar, then describe value in the key(use ? split key and ValidaterString),
-and write comment in the position of value(pre-described):
-
-    {
-        "key?ValidaterString": "desc"
-    }
-
-Let's have a look, this is [actual data](http://json-schema.org/example1.html):
+this is [actual data](http://json-schema.org/example1.html):
 
     {
         "id": 1,
@@ -77,14 +21,67 @@ Let's have a look, this is [actual data](http://json-schema.org/example1.html):
 and this is schema:
 
     {
-        "$self": "desc / comment",
+        "$self": "product info",
         "id？int": "product ID",
         "name?str": "product name",
         "price?float&min=0&exmin": "product price",
         "tags": ["&minlen=1&unique", "str&desc=\"product tag\""]
     }
 
-Note: tags is sequence, in order to avoid ambiguity(Described later) can only be self-described.
+
+## Syntax
+
+### ValidatorString
+
+In JSON, we can use string to describe data, eg:
+
+    "id？int"
+
+The syntax is similar to QueryString in URL, can be named ValidatorString,
+it's complete form is:
+
+    "validator(arg1,arg2...)&key=value&..."
+
+Among them:
+
+- arg1, arg2...value is valid JSON value.
+- if validator is dict or list, it can be omitted.
+- if arg1, arg2...all is default value, the brackets can be omitted.
+- if the value corresponding to key is true, just write &key, no need to write &key=true.
+
+### Schema
+
+From a structureural point of view, all data can be divided into 3 types:
+
+- scalar: string number true false null.
+- sequence: also known as array or list.
+- mapping: a collection of name/value pairs, also known as object or dictionary.
+
+mapping use $self to describe self, other keys describe it's inner content:
+
+	{
+		"$self": "ValidatorString",
+		"key": "value"
+	}
+
+sequence use first element to describe self, second element to describe inner content:
+
+	["ValidatorString", Item]
+
+sequence can omit self describe, only describe inner content:
+
+    [Item]
+
+scalar use a string to describe self:
+
+	"ValidatorString"
+
+In mapping, if value is scalar, then describe value in the position of key,
+and write comment in the position of value:
+
+    {
+        "key?ValidatorString": "desc"
+    }
 
 
 ### Refer
@@ -103,25 +100,23 @@ Different schema may has same parts, assume there is a common schema, other sche
         "$self@shared": "desc of this dict"
     }
 
-the 'optional' param means the value is optional, regardless of
-@shared is optional or not.
+the 'optional' param means the value is optional.
 
     {
         "key@shared&optional": "this value is optional"
     }
 
 
-### Mixins
+### Mixin
 
-In mapping, you can combine multi schema:
+In mapping, you can combine multi schemas:
 
     {
         "$self@shared1@shared2": "desc",
         "addition_key": ...
     }
 
-there also a optional param, means the mapping is optional, regardless of
-@shared is optional or not.
+the 'optional' param, means the mapping is optional.
 
     {
         "$self@shared1@shared2&optional": "desc",
@@ -129,49 +124,7 @@ there also a optional param, means the mapping is optional, regardless of
     }
 
 
-### pre-described and self-described
-
-Mentioned earlier, sequence can only be self-described, otherwise will cause ambiguity.
-mapping can only be self-described too.
-
-First of all, the 3 structures has ability of be self-described, but in mapping,
-if value is scalar, pre-described is more convenient and practical.
-
-In order to make schema unified, formulate that key-scalar can only be pre-described,
-and sequence, mapping can only be self-described.
-
-Consider all the situations, only $self, key-scalar, key-refer is pre-described,
-other places is self-described.
-
-that is:
-
-    "int&default=0"  # self-described
-
-    ["&minlen=1", "int&default=0"]  # self-described
-
-    {  # self-described
-        "$self&optional": "desc",  # pre-described
-        "key?int&default=0": "desc",  # pre-described
-        "key": ["&minlen=1", "int&default=0"],  # self-described
-        "key": {  # self-described
-            "$self&optional": "desc"
-        }
-    }
-
-    "@shared"  # self-described
-
-    ["&minlen=1", "@shared"]  # self-described
-
-    {  # self-described
-        "$self@shared": "desc",  # pre-described
-        "key@shared": "desc",  # pre-described
-        "key": {  # self-described
-            "$self@shared": "desc"
-        }
-    }
-
-
-### built-in validater
+### built-in validator
 
     # sequence
     list(minlen=0, maxlen=1024, unique=false, default=null, optional=false)
@@ -201,18 +154,12 @@ that is:
     # email address
     email(default=null, optional=false)
 
-    # phone number
-    phone(default=null, optional=false)
-
     # IPv4 address
     ipv4(default=null, optional=false)
-
-    # chinese idcard
-    idcard(default=null, optional=false)
 
     # URL
     url(default=null, optional=false)
 
-All string-like validaters(str,date,datetime,email...) should treat empty string as null,
-all bool type params' default value is false,
-custom validater should follow this guideline.
+All string-like validators(str,date,datetime,email...) should treat empty string as null.  
+All bool type params' default value is false,
+custom validator should follow this guideline.

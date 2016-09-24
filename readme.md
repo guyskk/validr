@@ -4,12 +4,11 @@
 
 ![travis-ci](https://api.travis-ci.org/guyskk/validater.svg) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
 
-为RESTful API而生的校验器：
+A simple,fast,extensible library for validating and serializing:
 
-- 可以作为API文档，Schema即文档
-- 可以用来校验请求参数
-- 可以用来校验输出与API文档是否一致
-- 可以用来序列化任意类型的对象
+- 比[JSON Schema](http://json-schema.org/)更简洁
+- 比[jsonschema](https://github.com/Julian/jsonschema)快10倍
+- 可以序列化任意类型的对象
 
 注意：仅支持 python 3.3+
 
@@ -20,7 +19,7 @@
 
 ## Schema语法
 
-[同构的JSON-Schema](Isomorph-JSON-Schema.md)
+[Isomorph-JSON-Schema](Isomorph-JSON-Schema.md)
 
 
 ## 用法
@@ -218,29 +217,13 @@ validater.exceptions.Invalid: invalid time
 
 ## 关于内置校验函数
 
-### email
-
-参考：http://tool.lu/regex/
-
 ### idcard
 
 内置的idcard校验函数只校验数字长度和xX，不校验地址码和日期。
 
-完整验证身份证号的正则，可以参考这个(有Bug)：
-http://blog.sina.com.cn/s/blog_491997ee0100avd2.html
-
-如果需要解析身份证号信息，可以参考这个：
-https://github.com/mc-zone/IDValidator
-
 ### phone
 
 支持 `+86` 开头，支持校验手机号段，只支持11位手机号，不支持固定电话号码。
-参考：http://tool.lu/regex/
-
-### ipv4
-
-支持完整校验IPv4地址。
-参考：https://segmentfault.com/a/1190000004622152
 
 ### 其他
 
@@ -249,15 +232,24 @@ https://github.com/mc-zone/IDValidator
 
 ## 测试
 
-用tox测试：
+用tox测试:
 
     pip install tox
     tox
 
-用pytest测试：
+用pytest测试:
 
     pip install pytest
     py.test
+
+## 性能:
+
+    # It cost about 5x time compare with
+    # load same JSON data use json.loads in stdlib
+    python benchmark.py
+
+    # profile
+    python benchmark.py -p
 
 
 ## 其他

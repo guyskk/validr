@@ -4,12 +4,12 @@
 
 Isomorph-JSON-Schema(同构的JSON-Schema)是用来描述JSON数据的格式，这种格式最大的特点就是Schema与实际JSON数据的结构完全相同(Isomorph)，并且语法简洁，从Schema可以直观的看出实际数据的结构。
 
-Isomorph-JSON-Schema不是[JSON Schema](http://json-schema.org)，但它比JSON Schema更简洁，可读性更好。
+Isomorph-JSON-Schema不是[JSON Schema](http://json-schema.org)，它比JSON Schema更简洁，可读性更好。
 
 
 ## Example
 
-[这是实际数据](http://json-schema.org/example1.html)：
+这是[实际数据](http://json-schema.org/example1.html)：
 
     {
         "id": 1,
@@ -93,17 +93,13 @@ JSON数据可以分为3种结构：
         "key@shared": "desc of key"
     }
 
-    {
-        "$self@shared": "desc of this dict"
-    }
-
 也可以加optional参数，表示这个值是可选的:
 
     {
         "key@shared&optional": "this value is optional"
     }
 
-### 混合(Mixins)
+### 混合(Mixin)
 
 在映射结构中可以多个Schema进行组合:
 

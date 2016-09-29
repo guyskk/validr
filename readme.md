@@ -1,6 +1,6 @@
 # Validater
 
-![travis-ci](https://api.travis-ci.org/guyskk/validater.svg) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
+[![travis-ci](https://api.travis-ci.org/guyskk/validater.svg)](https://travis-ci.org/guyskk/validater) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
 
 [中文](readme-zh-cn.md) [English](readme.md)
 

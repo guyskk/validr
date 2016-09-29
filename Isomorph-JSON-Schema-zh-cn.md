@@ -142,13 +142,15 @@ JSON数据可以分为3种结构：
     日期和时间，输出结果为字符串
     格式为ISO8601，与Javascript中JSON.stringify输出格式一致
     date(format="%Y-%m-%d", default=null, optional=false)
+    time(format="%H:%M:%S", default=null, optional=false)
     datetime(format="%Y-%m-%dT%H:%M:%S.%fZ", default=null, optional=false)
 
     邮箱地址
     email(default=null, optional=false)
 
-    IPv4地址
+    IP地址
     ipv4(default=null, optional=false)
+    ipv6(default=null, optional=false)
 
     网址
     url(default=null, optional=false)

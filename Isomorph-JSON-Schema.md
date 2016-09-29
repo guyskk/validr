@@ -143,16 +143,18 @@ the 'optional' param, means the mapping is optional.
     str(minlen=0, maxlen=1024*1024, escape=false,
         default=null, optional=false)
 
-    # date and datetime, the output is string
+    # date, time and datetime, the output is string
     # default format is ISO8601, the same as JSON.stringify in Javascript
     date(format="%Y-%m-%d", default=null, optional=false)
+    time(format="%H:%M:%S", default=null, optional=false)
     datetime(format="%Y-%m-%dT%H:%M:%S.%fZ", default=null, optional=false)
 
     # email address
     email(default=null, optional=false)
 
-    # IPv4 address
+    # IP address
     ipv4(default=null, optional=false)
+    ipv6(default=null, optional=false)
 
     # URL
     url(default=null, optional=false)

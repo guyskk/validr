@@ -120,6 +120,10 @@ schema_value_expects = {
         "test-demo@vip.qq.com",
         "i+box@gmail.com",
     ]),
+    "email&optional": [
+        ("", ""),
+        (None, "")
+    ],
     "phone": tuple_items(valid_phones),
     "ipv4": tuple_items([
         "0.0.0.0", "9.9.9.9", "99.99.99.99",
@@ -163,6 +167,7 @@ schema_value_fails = {
     "float(0,1)&exmin&exmax": [0.0, 1.0],
     "str": [None, "", b"", 123, b"abc", "中文".encode("utf-8")],
     "str&minlen=1&maxlen=1": ["中文", "ab", ""],
+    "str&minlen=3": ["中文", "ab"],
     "datetime": [
         "2016-07-09T00:00:00.000000",
         "2016-07-09 00:00:00.000000Z",
@@ -209,6 +214,8 @@ schema_value_fails = {
         "qq.com",
         " @163.com",
         "中文@qq.com",
+        None,
+        datetime.utcnow()
     ],
     "phone": invalid_phones,
     "ipv4": [

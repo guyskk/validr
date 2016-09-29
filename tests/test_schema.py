@@ -81,6 +81,7 @@ default_vs = {
 @pytest.mark.parametrize("string, expect", validater_string.items())
 def test_validater_string(string, expect):
     vs = ValidaterString(string)
+    assert repr(vs)
     for k in default_vs:
         if k in expect:
             assert getattr(vs, k) == expect[k]
@@ -368,12 +369,29 @@ def test_mixins(schema, value, expect):
     assert sp.parse(schema)(value) == expect
 
 
+def test_mixin_shared_not_found():
+    sp = SchemaParser(shared={
+        "user1": {"userid?int": "userid"}
+    })
+    with pytest.raises(SchemaError):
+        sp.parse({"$self@user2@user1": "desc"})
+
+
 def test_merge_non_dict_value_error():
     sp = SchemaParser(shared={"a": "int", "b": "str"})
     f = sp.parse({"key": {"$self@a@b": "invalid mixins"}})
     with pytest.raises(SchemaError) as exinfo:
         f({"key": "123"})
     assert exinfo.value.position == "key"
+
+
+def test_merge_required():
+    sp = SchemaParser(shared={"a": {"x?int": "x"}, "b": {"y?int": "y"}})
+    f = sp.parse({"$self@a@b": "required"})
+    assert f({"x": 1, "y": 2}) == {"x": 1, "y": 2}
+    with pytest.raises(Invalid) as exinfo:
+        f(None)
+    assert "required" in exinfo.value.message
 
 
 @pytest.mark.parametrize("schema,expect", [

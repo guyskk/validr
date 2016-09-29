@@ -146,6 +146,22 @@ def date_validater(format="%Y-%m-%d"):
 
 
 @handle_default_optional_desc(string=True)
+def time_validater(format="%H:%M:%S"):
+    """Validate time string, convert value to string
+
+    :param format: time format, default ISO8601
+    """
+    def validater(value):
+        try:
+            if not isinstance(value, (datetime.datetime, datetime.time)):
+                value = datetime.datetime.strptime(value, format)
+            return value.strftime(format)
+        except Exception:
+            raise Invalid("invalid time")
+    return validater
+
+
+@handle_default_optional_desc(string=True)
 def datetime_validater(format="%Y-%m-%dT%H:%M:%S.%fZ"):
     """Validate datetime string, convert value to string
 
@@ -185,18 +201,21 @@ def build_re_validater(name, r):
     re_validater.__name__ = name + '_validater'
     return re_validater
 
-# Notes
-# email: http://tool.lu/regex/
-# phone: http://tool.lu/regex/ [modified]
-# ipv4: https://segmentfault.com/a/1190000004622152 [modified]
-# idcard: https://segmentfault.com/a/1190000004622152 [modified]
-# url: unknown
+"""
+email: https://github.com/jzaefferer/jquery-validation/blob/master/src/core.js#L1333
+url: https://github.com/jzaefferer/jquery-validation/blob/master/src/core.js#L1349
+ipv4: https://segmentfault.com/a/1190000004622152
+ipv6: https://github.com/jzaefferer/jquery-validation/blob/master/src/additional/ipv6.js
+phone: http://tool.lu/regex/ [modified]
+idcard: https://segmentfault.com/a/1190000004622152 [modified]
+"""  # noqa
 regexs = {
-    'email': r'\w[-\w.+]*@([A-Za-z0-9][-A-Za-z0-9]+\.)+[A-Za-z]{2,14}',
-    'phone': r'((\+86)|(86))?(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}',  # noqa
-    'ipv4': r'(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)',  # noqa
-    'idcard': r'\d{17}[\d|x|X]|\d{15}',
-    'url': r'\b((?:[a-z][\w-]+:(?:/{1,3}|[a-z0-9%])|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’]))'  # noqa
+    "email": r"[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*",  # noqa
+    "url": r"(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})).?)(?::\d{2,5})?(?:[/?#]\S*)?",  # noqa
+    "ipv4": r"(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)",  # noqa
+    "ipv6": r"((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))",  # noqa
+    "phone": r"((\+86)|(86))?(13\d|14[57]|15[^4,\D]|17[678]|18\d)\d{8}|170[059]\d{7}",  # noqa
+    "idcard": r"\d{17}[\d|x|X]|\d{15}",
 }
 
 builtin_validaters = {
@@ -204,8 +223,9 @@ builtin_validaters = {
     "bool": bool_validater,
     "float": float_validater,
     "str": str_validater,
-    'date': date_validater,
-    'datetime': datetime_validater,
+    "date": date_validater,
+    "time": time_validater,
+    "datetime": datetime_validater,
 }
 
 for name, r in regexs.items():

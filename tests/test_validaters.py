@@ -1,7 +1,7 @@
 from validater import SchemaParser, Invalid
 from validater.validaters import handle_default_optional_desc
 import pytest
-from datetime import datetime, date
+from datetime import datetime, date, time
 
 sp = SchemaParser()
 
@@ -103,11 +103,20 @@ schema_value_expects = {
         ("2016/07/09", "2016/07/09"),
         ("2016/7/9", "2016/07/09")
     ],
+    "time": [
+        (time(0, 0, 0), "00:00:00"),
+        ("12:00:59", "12:00:59"),
+        ("23:59:59", "23:59:59")
+    ],
+    'time&format="%H/%M/%S"': [
+        (time(23, 7, 9), "23/07/09"),
+        ("12/59/00", "12/59/00"),
+        ("23/7/9", "23/07/09")
+    ],
     "email": tuple_items([
         "12345678@qq.com",
         "python@gmail.com",
         "123@163.com",
-        "中文@qq.com",
         "test-demo@vip.qq.com",
         "i+box@gmail.com",
     ]),
@@ -119,10 +128,10 @@ schema_value_expects = {
     "idcard": tuple_items(valid_idcards),
     "url": tuple_items([
         "http://tool.lu/regex/",
-        "https://github.com/guyskk/kkblog",
+        "https://github.com/guyskk/validater",
         "https://avatars3.githubusercontent.com/u/6367792?v=3&s=40",
         "https://github.com",
-        "www.google.com.hk"
+        "//cdn.bootcss.com/bootstrap/4.0.0-alpha.3/css/bootstrap.min.css"
     ])
 }
 
@@ -156,6 +165,17 @@ schema_value_fails = {
         "2016-07-09",
         "16/07/09",
     ],
+    "time": [
+        "59:59",
+        "24:00:00",
+        "23:30:60",
+        "23:60:30",
+        "2016-07-09T00:00:59.123000Z"
+    ],
+    'time&format="%H/%M/%S"': [
+        "12:59:59",
+        "16/07/09/30",
+    ],
     "email": [
         "123"
         "123@"
@@ -170,6 +190,7 @@ schema_value_fails = {
         "123@163.com ",
         "qq.com",
         " @163.com",
+        "中文@qq.com",
     ],
     "phone": invalid_phones,
     "ipv4": [None, "", "127.0.0.", "127.0.0. ", ".0.0.1", " .0.0.1"
@@ -197,6 +218,7 @@ schema_value_fails = {
         "google",
         "readme.md",
         "github.com",
+        "www.google.com"
     }
 }
 

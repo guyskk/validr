@@ -14,6 +14,27 @@
 
 注意：仅支持 python 3.3+
 
+## 概览
+
+```python
+from validater import SchemaParser
+
+sp = SchemaParser()
+validate = sp.parse({
+    "id?int": "产品ID",
+    "name?str": "名称",
+    "price?float&min=0&exmin": "价格",
+    "tags": ["&minlen=1&unique", "str&desc=\"标签\""]
+})
+data = validate({
+    "id": 1,
+    "name": "Surface Book",
+    "price": 9.9,
+    "tags": ["笔记本电脑", "平板电脑"]
+})
+print(data)
+```
+
 ## 安装
 
     pip install validater

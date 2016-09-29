@@ -23,7 +23,7 @@ and this is schema:
 
     {
         "$self": "product info",
-        "id？int": "product ID",
+        "id?int": "product ID",
         "name?str": "product name",
         "price?float&min=0&exmin": "product price",
         "tags": ["&minlen=1&unique", "str&desc=\"product tag\""]
@@ -36,7 +36,7 @@ and this is schema:
 
 In JSON, we can use string to describe data, eg:
 
-    "id？int"
+    "id?int"
 
 The syntax is similar to QueryString in URL, can be named ValidatorString,
 it's complete form is:

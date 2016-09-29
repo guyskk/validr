@@ -23,7 +23,7 @@ Isomorph-JSON-Schema不是[JSON Schema](http://json-schema.org)，它比JSON Sch
 
     {
         "$self": "某种产品的信息",
-        "id？int": "产品ID",
+        "id?int": "产品ID",
         "name?str": "名称",
         "price?float&min=0&exmin": "价格",
         "tags": ["&minlen=1&unique", "str&desc=\"标签\""]
@@ -34,7 +34,7 @@ Isomorph-JSON-Schema不是[JSON Schema](http://json-schema.org)，它比JSON Sch
 
 在JSON中，可以用一个字符串描述JSON数据，例如：
 
-    "id？int"
+    "id?int"
 
 这种格式类似于URL里面的QueryString，可以取名为ValidatorString，完整形式如下：
 

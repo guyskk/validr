@@ -14,6 +14,27 @@ A simple,fast,extensible library for validating.
 
 Note: Only support python 3.3+
 
+## Overview
+
+```python
+from validater import SchemaParser
+
+sp = SchemaParser()
+validate = sp.parse({
+    "id?int": "product ID",
+    "name?str": "product name",
+    "price?float&min=0&exmin": "product price",
+    "tags": ["&minlen=1&unique", "str&desc=\"product tag\""]
+})
+data = validate({
+    "id": 1,
+    "name": "Surface Book",
+    "price": 9.9,
+    "tags": ["Laptop"]
+})
+print(data)
+```
+
 ## Install
 
     pip install validater

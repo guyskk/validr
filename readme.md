@@ -21,7 +21,7 @@ Note: Only support python 3.3+
 
 ## Schema syntax
 
-[Isomorph-JSON-Schema](Isomorph-JSON-Schema-en.md)
+[Isomorph-JSON-Schema](Isomorph-JSON-Schema.md)
 
 ## Usage
 

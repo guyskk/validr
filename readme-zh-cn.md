@@ -21,7 +21,7 @@
 
 ## Schema语法
 
-[Isomorph-JSON-Schema](Isomorph-JSON-Schema.md)
+[Isomorph-JSON-Schema](Isomorph-JSON-Schema-zh-cn.md)
 
 
 ## 用法

@@ -1,6 +1,6 @@
 # Isomorph-JSON-Schema
 
-[English](Isomorph-JSON-Schema-en.md) [中文](Isomorph-JSON-Schema.md)
+[English](Isomorph-JSON-Schema.md) [中文](Isomorph-JSON-Schema-zh-cn.md)
 
 Isomorph-JSON-Schema(同构的JSON-Schema)是用来描述JSON数据的格式，这种格式最大的特点就是Schema与实际JSON数据的结构完全相同(Isomorph)，并且语法简洁，从Schema可以直观的看出实际数据的结构。
 

@@ -1,6 +1,6 @@
 # Isomorph-JSON-Schema
 
-[中文](Isomorph-JSON-Schema.md) [English](Isomorph-JSON-Schema-en.md)
+[中文](Isomorph-JSON-Schema-zh-cn.md) [English](Isomorph-JSON-Schema.md)
 
 Isomorph-JSON-Schema is used to describe JSON data structure. The greatest feature is that schema has the same structure with JSON data(Isomorph), and the syntax is super concise, you can directly see the actual data structure from the schema.
 

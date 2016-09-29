@@ -2,7 +2,7 @@
 
 ![travis-ci](https://api.travis-ci.org/guyskk/validater.svg) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
 
-[中文](readme.md) [English](readme-en.md)
+[中文](readme-zh-cn.md) [English](readme.md)
 
 A simple,fast,extensible library for validating.
 
@@ -235,7 +235,7 @@ use pytest
     # profile
     python benchmark.py -p
 
-        
+
 ## Other
 
 validater is misspell, the correct spelling is validator, but validator is registered.

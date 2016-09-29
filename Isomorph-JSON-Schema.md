@@ -1,15 +1,15 @@
 # Isomorph-JSON-Schema
 
-[English](Isomorph-JSON-Schema-en.md) [中文](Isomorph-JSON-Schema.md)
+[中文](Isomorph-JSON-Schema.md) [English](Isomorph-JSON-Schema-en.md)
 
-Isomorph-JSON-Schema(同构的JSON-Schema)是用来描述JSON数据的格式，这种格式最大的特点就是Schema与实际JSON数据的结构完全相同(Isomorph)，并且语法简洁，从Schema可以直观的看出实际数据的结构。
+Isomorph-JSON-Schema is used to describe JSON data structure. The greatest feature is that schema has the same structure with JSON data(Isomorph), and the syntax is super concise, you can directly see the actual data structure from the schema.
 
-Isomorph-JSON-Schema不是[JSON Schema](http://json-schema.org)，它比JSON Schema更简洁，可读性更好。
-
+Isomorph-JSON-Schema is not [JSON Schema](http://json-schema.org),
+it is more simple and readable then JSON Schema.
 
 ## Example
 
-这是[实际数据](http://json-schema.org/example1.html)：
+this is [actual data](http://json-schema.org/example1.html):
 
     {
         "id": 1,
@@ -18,72 +18,75 @@ Isomorph-JSON-Schema不是[JSON Schema](http://json-schema.org)，它比JSON Sch
         "tags": ["home", "green"]
     }
 
-这是对应的Schema:
+and this is schema:
 
     {
-        "$self": "某种产品的信息",
-        "id？int": "产品ID",
-        "name?str": "名称",
-        "price?float&min=0&exmin": "价格",
-        "tags": ["&minlen=1&unique", "str&desc=\"标签\""]
+        "$self": "product info",
+        "id？int": "product ID",
+        "name?str": "product name",
+        "price?float&min=0&exmin": "product price",
+        "tags": ["&minlen=1&unique", "str&desc=\"product tag\""]
     }
 
 
-## ValidatorString
+## Syntax
 
-在JSON中，可以用一个字符串描述JSON数据，例如：
+### ValidatorString
+
+In JSON, we can use string to describe data, eg:
 
     "id？int"
 
-这种格式类似于URL里面的QueryString，可以取名为ValidatorString，完整形式如下：
+The syntax is similar to QueryString in URL, can be named ValidatorString,
+it's complete form is:
 
-    "key?validator(arg1,arg2...)&key=value&..."
+    "validator(arg1,arg2...)&key=value&..."
 
-其中：
+Among them:
 
-- arg1, arg2...value都是有效JSON值
-- 如果validator是dict或list，可以省略
-- 如果arg1, arg2...都是默认值，则括号可以省略
-- 如果key对应的value为true，只需写&key，不需要写&key=true
+- arg1, arg2...value is valid JSON value.
+- if validator is dict or list, it can be omitted.
+- if arg1, arg2...all is default value, the brackets can be omitted.
+- if the value corresponding to key is true, just write &key, no need to write &key=true.
 
+### Schema
 
-## Schema
+From a structureural point of view, all data can be divided into 3 types:
 
-JSON数据可以分为3种结构：
+- scalar: string number true false null.
+- sequence: also known as array or list.
+- mapping: a collection of name/value pairs, also known as object or dictionary.
 
-- 映射："名称/值"对的集合，也被理解为对象（object）或字典（dictionary）
-- 序列：有序列表，也被理解为数组
-- 标量：string number true false null
-
-映射结构用$self描述自身，其余key描述字典里的内容：
+mapping use $self to describe self, other keys describe it's inner content:
 
 	{
 		"$self": "ValidatorString",
 		"key": "value"
 	}
 
-序列结构用第一个元素描述自身，第二个元素描述序列里的内容：
+sequence use first element to describe self, second element to describe inner content:
 
 	["ValidatorString", Item]
 
-序列结构也可以省略第一个元素，即只描述序列里的内容，不描述自身。
+sequence can omit self describe, only describe inner content:
 
     [Item]
 
-标量结构用字符串描述自身：
+scalar use a string to describe self:
 
 	"ValidatorString"
 
-在映射结构中，如果value是标量，则在key的位置描述value，value的位置写关于这个value介绍：
+In mapping, if value is scalar, then describe value in the position of key,
+and write comment in the position of value:
 
     {
         "key?ValidatorString": "desc"
     }
 
 
-### 引用(Refer)
+### Refer
 
-不同的Schema可能含有相同的部分，假设有一个公共的Schema，其他Schema需要引用它，可以使用引用语法。
+Different schema may has same parts, assume there is a common schema, other schema need refer it, then can use refer syntax.
 
     "@shared"
 
@@ -93,22 +96,23 @@ JSON数据可以分为3种结构：
         "key@shared": "desc of key"
     }
 
-也可以加optional参数，表示这个值是可选的:
+the 'optional' param means the value is optional.
 
     {
         "key@shared&optional": "this value is optional"
     }
 
-### 混合(Mixin)
 
-在映射结构中可以多个Schema进行组合:
+### Mixin
+
+In mapping, you can combine multi schemas:
 
     {
         "$self@shared1@shared2": "desc",
         "addition_key": ...
     }
 
-也可以加optional参数，表示这个映射是可选的:
+the 'optional' param, means the mapping is optional.
 
     {
         "$self@shared1@shared2&optional": "desc",
@@ -116,41 +120,42 @@ JSON数据可以分为3种结构：
     }
 
 
-### 内置的校验函数
+### built-in validator
 
-    序列
+    # sequence
     list(minlen=0, maxlen=1024, unique=false, default=null, optional=false)
 
-    映射
+    # mapping
     dict(optional=false)
 
-    整数
+    # integer
     int(min=-sys.maxsize, max=sys.maxsize, default=null, optional=false)
 
-    布尔值
+    # bool
     bool(default=null, optional=false)
 
-    实数，exmin:是否不包括最小值, exmax:是否不包括最大值
+    # float, exmin: exclude min value, exmax: exclude max value
     float(min=-sys.float_info.max, max=sys.float_info.max,
           exmin=false, exmax=false, default=null, optional=false)
 
-    字符串
+    # string
     str(minlen=0, maxlen=1024*1024, escape=false,
         default=null, optional=false)
 
-    日期和时间，输出结果为字符串
-    格式为ISO8601，与Javascript中JSON.stringify输出格式一致
+    # date and datetime, the output is string
+    # default format is ISO8601, the same as JSON.stringify in Javascript
     date(format="%Y-%m-%d", default=null, optional=false)
     datetime(format="%Y-%m-%dT%H:%M:%S.%fZ", default=null, optional=false)
 
-    邮箱地址
+    # email address
     email(default=null, optional=false)
 
-    IPv4地址
+    # IPv4 address
     ipv4(default=null, optional=false)
 
-    网址
+    # URL
     url(default=null, optional=false)
 
-所有字符串类型的校验器(str,date,datetime,email...)，将空字符串视为null。  
-所有布尔型参数默认值都是false，自定义校验函数需遵守此规定。
+All string-like validators(str,date,datetime,email...) should treat empty string as null.  
+All bool type params' default value is false,
+custom validator should follow this guideline.

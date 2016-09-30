@@ -1,5 +1,4 @@
 from validater import SchemaError, Invalid, SchemaParser
-from validater.schema import ValidaterString
 import pytest
 import sys
 
@@ -11,88 +10,6 @@ class User:
     def __init__(self, userid):
         self.userid = userid
 
-
-validater_string = {
-    "int": {"name": "int"},
-    "int()": {"name": "int"},
-    "int(0)": {"name": "int", "args": tuple([0])},
-    "int(0,10)": {"name": "int", "args": tuple([0, 10])},
-    "int(0, 10)": {"name": "int", "args": tuple([0, 10])},
-    "int&default=5": {"name": "int", "kwargs": {"default": 5}},
-    "int&optional": {"name": "int", "kwargs": {"optional": True}},
-    "int&desc=\"a number\"": {"name": "int", "kwargs": {"desc": "a number"}},
-    "int(0,10)&optional&default=5&desc=\"a number\"": {
-        "name": "int",
-        "args": tuple([0, 10]),
-        "kwargs": {"default": 5, "optional": True, "desc": "a number"}
-    },
-    "()": {},
-    "(0)": {"args": tuple([0])},
-    "(0,10)": {"args": tuple([0, 10])},
-    "&optional": {"kwargs": {"optional": True}},
-    "&default=5&optional": {"kwargs": {"default": 5, "optional": True}},
-    "(0,10)&minlen=1": {"args": tuple([0, 10]), "kwargs": {"minlen": 1}},
-    "key?int(0,10)&optional": {
-        "key": "key",
-        "name": "int",
-        "args": tuple([0, 10]),
-        "kwargs": {"optional": True}
-    },
-    "key@shared": {"key": "key", "refers": ["shared"], "name": None},
-    "$self@shared": {"key": "$self", "refers": ["shared"], "name": None},
-    "@shared": {"refers": ["shared"], "name": None},
-    "": {},
-    "@user(0,9)": {"refers": ["user"], "args": (0, 9)},
-    "@user&optional": {"refers": ["user"], "kwargs": {"optional": True}},
-    "key@user(0,9)&optional": {
-        "key": "key",
-        "refers": ["user"],
-        "args": (0, 9),
-        "kwargs": {"optional": True}
-    },
-    "key@user&optional": {
-        "key": "key",
-        "refers": ["user"],
-        "kwargs": {"optional": True}
-    },
-}
-
-validater_string_fail = [
-    "int(0,10",
-    "int(0 10)"
-    "int&default=abc",
-    "int&desc='a number'",
-    "(0,10",
-    "key?int@user",
-    "key?int?str",
-    "key@user@",
-    "key@@user",
-    None
-]
-default_vs = {
-    "key": None,
-    "refers": None,
-    "name": None,
-    "args": tuple(),
-    "kwargs": {}
-}
-
-
-@pytest.mark.parametrize("string, expect", validater_string.items())
-def test_validater_string(string, expect):
-    vs = ValidaterString(string)
-    assert repr(vs)
-    for k in default_vs:
-        if k in expect:
-            assert getattr(vs, k) == expect[k]
-        else:
-            assert getattr(vs, k) == default_vs[k]
-
-
-@pytest.mark.parametrize("string", validater_string_fail)
-def test_validater_string_fail(string):
-    with pytest.raises(SchemaError):
-        ValidaterString(string)
 
 scalar_schemas = {
     "int(0,9)": (
@@ -139,39 +56,6 @@ def test_default_invalid():
         sp.parse("int(0,9)&default=10")
 
 
-@pytest.mark.parametrize("schema", [{"userid": "int(0,9)"}])
-def test_dict_pre_described_error(schema):
-    # should be pre-described
-    with pytest.raises(SchemaError):
-        sp.parse(schema)
-
-
-@pytest.mark.parametrize("schema", [
-    {"user&optional": {}},
-    {"user?&optional": {}},
-    {"user(1,3)": []},
-])
-def test_dict_self_described_error(schema):
-    # should be self-described
-    with pytest.raises(SchemaError):
-        sp.parse(schema)
-
-
-def test_dict_self_optional_error():
-    # 'optional' is treated as desc
-    f = sp.parse({"$self": "optional"})
-    with pytest.raises(Invalid):
-        f(None)
-
-
-def test_list_preposition_optional_error():
-    # should be self-described
-    with pytest.raises(SchemaError):
-        sp.parse({"user?&optional": ["int(0,9)"]})
-    with pytest.raises(SchemaError):
-        sp.parse({"user&optional": ["int(0,9)"]})
-
-
 @pytest.mark.parametrize("value", [{"userid": 5}, User(5)])
 def test_dict(value):
     expect = {"userid": 5}
@@ -206,11 +90,6 @@ def test_list_length_0_error():
 def test_list_length_3_error():
     with pytest.raises(SchemaError):
         sp.parse(["&unique", "int(0,9)", "xxxx"])
-
-
-def test_list_pre_described_error():
-    with pytest.raises(SchemaError):
-        sp.parse({"items?&unique": ["int(0,9)"]})
 
 
 @pytest.mark.parametrize("value,expect", [
@@ -261,139 +140,6 @@ def test_dict_list():
     assert f({"group": [1, "2"]}) == {"group": [1, 2]}
 
 
-@pytest.mark.parametrize("value,expect", [
-    (User(0), {"userid": 0}),
-    ({"userid": 1}, {"userid": 1})])
-def test_shared_scalar(value, expect):
-    sp = SchemaParser(shared={"userid": "int(0,9)"})
-    f = sp.parse({"userid@userid": "UserID"})
-    assert f(value) == expect
-
-
-@pytest.mark.parametrize("value,expect", [
-    (User(0), {"userid": 0}),
-    ({"userid": 1}, {"userid": 1})])
-def test_shared_dict(value, expect):
-    sp = SchemaParser(shared={"user": {"userid?int(0,9)": "UserID"}})
-    f = sp.parse({"group@user": "User"})
-    value = {"group": value}
-    expect = {"group": expect}
-    assert f(value) == expect
-
-
-@pytest.mark.parametrize("value,expect", [
-    ([User(0), {"userid": 1}], [{"userid": 0}, {"userid": 1}])])
-def test_shared_list(value, expect):
-    sp = SchemaParser(shared={"user": {"userid?int(0,9)": "UserID"}})
-    f = sp.parse(["@user"])
-    assert f(value) == expect
-
-
-@pytest.mark.parametrize("value,expect", [([0], [0]), ([1, "2"], [1, 2])])
-def test_list_shared(value, expect):
-    sp = SchemaParser(shared={"numbers": ["(1,3)&unique", "int(0,9)"]})
-    f = sp.parse("@numbers")
-    assert f(value) == expect
-
-
-@pytest.mark.parametrize("value", [
-    [],
-    [-1],
-    [1, 2, 3, 4],
-    [1, 2, 2, 3]])
-def test_list_shared_fail(value):
-    sp = SchemaParser(shared={"numbers": ["(1,3)&unique", "int(0,9)"]})
-    f = sp.parse("@numbers")
-    with pytest.raises(Invalid):
-        f(value)
-
-
-@pytest.mark.parametrize("schema", [
-    "@number@text",
-    {"key@number@text": "desc"}
-])
-def test_multi_refer_error(schema):
-    sp = SchemaParser(shared={"number": "int", "text": "str"})
-    with pytest.raises(SchemaError):
-        sp.parse(schema)
-
-
-@pytest.mark.parametrize("schema,value,expect", [
-    ({"user@user&optional": "desc"}, {"user": None}, {"user": None}),
-    ({"user@user&optional": "desc"},
-     {"user": {"userid": "123"}}, {"user": {"userid": 123}}),
-    ("@user&optional", None, None),
-    (["@user&optional"], [None, {"userid": "123"}], [None, {"userid": 123}]),
-])
-def test_optional_refer(schema, value, expect):
-    sp = SchemaParser(shared={
-        "user": {"userid?int": "userid"},
-    })
-    assert sp.parse(schema)(value) == expect
-
-
-@pytest.mark.parametrize("schema", [
-    {"$self": "desc", "$self&optional": "desc"},
-    {"": "desc", "$self&optional": "desc"},
-    {"": "desc", "&optional": "desc"},
-    {"@user": "desc", "&optional": "desc"},
-])
-def test_multi_self_described_error(schema):
-    sp = SchemaParser(shared={"user": {"userid?int": "desc"}})
-    with pytest.raises(SchemaError):
-        sp.parse(schema)
-
-
-@pytest.mark.parametrize("schema,value,expect", [
-    ({"$self@user1": "desc"}, {"userid": "123"}, {"userid": 123}),
-    ({"$self@user1": "desc"}, User(123), {"userid": 123}),
-    ({"$self@user1&optional": "desc"}, {"userid": "123"}, {"userid": 123}),
-    ({"$self@user1&optional": "desc"}, None, None),
-    ({"$self@user1@user2&optional": "desc"}, None, None),
-    (
-        {"$self@user1@user2&optional": "desc"},
-        {"userid": "123", "name": "kk", "age": 0, "xxx": "abc"},
-        {"userid": 123, "name": "kk", "age": 0}
-    ),
-    (
-        {"$self@user2@user1": "desc"},
-        {"userid": "123", "name": "kk", "age": 0, "xxx": "abc"},
-        {"userid": 123, "name": "kk", "age": 0}
-    ),
-])
-def test_mixins(schema, value, expect):
-    sp = SchemaParser(shared={
-        "user1": {"userid?int": "userid"},
-        "user2": {"name?str": "name", "age?int": "age"},
-    })
-    assert sp.parse(schema)(value) == expect
-
-
-def test_mixin_shared_not_found():
-    sp = SchemaParser(shared={
-        "user1": {"userid?int": "userid"}
-    })
-    with pytest.raises(SchemaError):
-        sp.parse({"$self@user2@user1": "desc"})
-
-
-def test_merge_non_dict_value_error():
-    sp = SchemaParser(shared={"a": "int", "b": "str"})
-    f = sp.parse({"key": {"$self@a@b": "invalid mixins"}})
-    with pytest.raises(SchemaError) as exinfo:
-        f({"key": "123"})
-    assert exinfo.value.position == "key"
-
-
-def test_merge_required():
-    sp = SchemaParser(shared={"a": {"x?int": "x"}, "b": {"y?int": "y"}})
-    f = sp.parse({"$self@a@b": "required"})
-    assert f({"x": 1, "y": 2}) == {"x": 1, "y": 2}
-    with pytest.raises(Invalid) as exinfo:
-        f(None)
-    assert "required" in exinfo.value.message
-
-
 @pytest.mark.parametrize("schema,expect", [
     ("int(0,9)&desc='number'", ""),
     ({"user?&optional": {}}, "user"),
@@ -409,13 +155,6 @@ def test_schema_error_position(schema, expect):
     with pytest.raises(SchemaError) as exinfo:
         sp.parse(schema)
     assert exinfo.value.position == expect
-
-
-def test_shared_schema_error_position():
-    shared = {"name": [{"key?xxx": "value"}]}
-    with pytest.raises(SchemaError) as exinfo:
-        SchemaParser(shared=shared)
-    assert exinfo.value.position == "name[].key"
 
 
 @pytest.mark.parametrize("schema,expect", [

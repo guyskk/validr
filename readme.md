@@ -184,9 +184,9 @@ validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 
 Note: Only dict schema can mixin, non-dict schema mixin will cause SchemaError on validating data. And don't mixin schemas which has same key.
 
-#### Custom validater
+#### Custom validator
 
-`handle_default_optional_desc` decorater can make you validater support `default`, `optional`, `desc` params.
+`handle_default_optional_desc` decorater can make you validator support `default`, `optional`, `desc` params.
 
 ```python
 >>> from validater.validaters import handle_default_optional_desc
@@ -213,11 +213,11 @@ validater.exceptions.Invalid: not a multiple of 3
 >>>
 ```
 
-string like validater should use `@handle_default_optional_desc(string=True)` decorater,
+string like validator should use `@handle_default_optional_desc(string=True)` decorater,
 it will treat empty string as null, more suitable for default and optional semantic.
 
 
-#### Create regex validater:
+#### Create regex validator:
 
 ```python
 >>> from validater.validaters import build_re_validater

@@ -1,24 +1,24 @@
 """
-## Overview
+Overview:
 
-```python
-from validr import SchemaParser
+.. code-block:: python
 
-sp = SchemaParser()
-validate = sp.parse({
-    "id?int": "product ID",
-    "name?str": "product name",
-    "price?float&min=0&exmin": "product price",
-    "tags": ["&minlen=1&unique", "str&desc=\"product tag\""]
-})
-data = validate({
-    "id": 1,
-    "name": "TeaCup",
-    "price": 9.9,
-    "tags": ["Cup"]
-})
-print(data)
-```
+    from validr import SchemaParser
+
+    sp = SchemaParser()
+    validate = sp.parse({
+        "id?int": "product ID",
+        "name?str": "product name",
+        "price?float&min=0&exmin": "product price",
+        "tags": ["&minlen=1&unique", "str&desc=\"product tag\""]
+    })
+    data = validate({
+        "id": 1,
+        "name": "TeaCup",
+        "price": 9.9,
+        "tags": ["Cup"]
+    })
+    print(data)
 """
 from setuptools import setup
 setup(

@@ -182,7 +182,10 @@ validr.exceptions.SchemaError: shared 'userid' not found in user.userid
 >>>
 ```
 
-Note: Only dict schema can mixin, non-dict schema mixin will cause SchemaError on validating data. And don't mixin schemas which has same key.
+Note:   
+Only dict schema can mixin, non-dict schema mixin will cause SchemaError on validating data.   
+And don't mixin schemas which has same key.  
+
 
 #### Custom validator
 

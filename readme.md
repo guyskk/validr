@@ -28,9 +28,9 @@ validate = sp.parse({
 })
 data = validate({
     "id": 1,
-    "name": "Surface Book",
+    "name": "TeaCup",
     "price": 9.9,
-    "tags": ["Laptop"]
+    "tags": ["Cup"]
 })
 print(data)
 ```

@@ -1,4 +1,4 @@
-from validater import Invalid
+from validr import Invalid
 
 
 def test_exception_message():

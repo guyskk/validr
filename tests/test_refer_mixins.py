@@ -1,4 +1,4 @@
-from validater import SchemaError, Invalid, SchemaParser
+from validr import SchemaError, Invalid, SchemaParser
 import pytest
 
 sp = SchemaParser()
@@ -28,7 +28,7 @@ def test_refer_invalid_key(schema):
     {"userid?": "comment"},  # invalid syntax
     {"userid@": "comment"},  # invalid syntax
 ])
-def test_missing_refer_or_validater(schema):
+def test_missing_refer_or_validator(schema):
     with pytest.raises(SchemaError):
         sp.parse(schema)
 

@@ -1,6 +1,6 @@
-# Validater
+# Validr
 
-[![travis-ci](https://api.travis-ci.org/guyskk/validater.svg)](https://travis-ci.org/guyskk/validater) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
+[![travis-ci](https://api.travis-ci.org/guyskk/validr.svg)](https://travis-ci.org/guyskk/validr) [![codecov](https://codecov.io/gh/guyskk/validr/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validr)
 
 [English](readme.md) [中文](readme-zh-cn.md)
 
@@ -17,7 +17,7 @@
 ## 概览
 
 ```python
-from validater import SchemaParser
+from validr import SchemaParser
 
 sp = SchemaParser()
 validate = sp.parse({
@@ -37,7 +37,7 @@ print(data)
 
 ## 安装
 
-    pip install validater
+    pip install validr
 
 
 ## Schema语法
@@ -50,17 +50,17 @@ print(data)
 #### 校验简单数据
 
 ```python
->>> from validater import SchemaParser,Invalid
+>>> from validr import SchemaParser,Invalid
 >>> sp = SchemaParser()
 >>> f = sp.parse("int(0, 9)")
 >>> f("3")
 3
 >>> f(-1)
 ...
-validater.exceptions.Invalid: value must >= 0
+validr.exceptions.Invalid: value must >= 0
 >>> f("abc")
 ...
-validater.exceptions.Invalid: invalid int
+validr.exceptions.Invalid: invalid int
 >>>
 ```
 
@@ -71,7 +71,7 @@ validater.exceptions.Invalid: invalid int
 >>> user = {"userid": 15}
 >>> f(user)
 ...
-validater.exceptions.Invalid: value must <= 9 in userid
+validr.exceptions.Invalid: value must <= 9 in userid
 >>> class User:pass
 ...
 >>> user = User()
@@ -81,11 +81,11 @@ validater.exceptions.Invalid: value must <= 9 in userid
 >>> user.userid = 15
 >>> f(user)
 ...
-validater.exceptions.Invalid: value must <= 9 in userid
+validr.exceptions.Invalid: value must <= 9 in userid
 >>> f = sp.parse({"friends":[{"userid?int(0,9)":"UserID"}]})
 >>> f({"friends":[user,user]})
 ...
-validater.exceptions.Invalid: value must <= 9 in friends[0].userid
+validr.exceptions.Invalid: value must <= 9 in friends[0].userid
 >>> user.userid=5
 >>> f({"friends":[user,user]})
 {'friends': [{'userid': 5}, {'userid': 5}]}
@@ -152,7 +152,7 @@ friends[0].userid
 ])
 >>> sp = SchemaParser(shared=shared)
 ...
-validater.exceptions.SchemaError: shared 'userid' not found in user.userid
+validr.exceptions.SchemaError: shared 'userid' not found in user.userid
 ```
 
 #### 混合(mixin)
@@ -188,27 +188,27 @@ validater.exceptions.SchemaError: shared 'userid' not found in user.userid
 
 #### 自定义校验函数
 
-`handle_default_optional_desc` 装饰器能让自定义的validater支持 `default`, `optional`, `desc` 这几个参数。
+`handle_default_optional_desc` 装饰器能让自定义的validr支持 `default`, `optional`, `desc` 这几个参数。
 
 ```python
->>> from validater.validaters import handle_default_optional_desc
+>>> from validr.validators import handle_default_optional_desc
 >>> @handle_default_optional_desc()
-... def multiple_validater(n):
-...     def validater(value):
+... def multiple_validator(n):
+...     def validr(value):
 ...         if value%n==0:
 ...             return value
 ...         else:
 ...             raise Invalid("不是 %d 的倍数"%n)
-...     return validater
+...     return validr
 ...
->>> validaters={"multiple":multiple_validater}
->>> sp = SchemaParser(validaters=validaters)
+>>> validators={"multiple":multiple_validator}
+>>> sp = SchemaParser(validators=validators)
 >>> f = sp.parse("multiple(3)")
 >>> f(6)
 6
 >>> f(5)
 ...
-validater.exceptions.Invalid: 不是 3 的倍数
+validr.exceptions.Invalid: 不是 3 的倍数
 >>> f = sp.parse("multiple(3)&default=3")
 >>> f(None)
 3
@@ -221,16 +221,16 @@ validater.exceptions.Invalid: 不是 3 的倍数
 #### 使用正则表达式构建校验函数
 
 ```python
->>> from validater.validaters import build_re_validater
+>>> from validr.validators import build_re_validator
 >>> regex_time = r'([01]?\d|2[0-3]):[0-5]?\d:[0-5]?\d'
->>> time_validater = build_re_validater("time", regex_time)
->>> sp = SchemaParser(validaters={"time":time_validater})
+>>> time_validator = build_re_validator("time", regex_time)
+>>> sp = SchemaParser(validators={"time":time_validator})
 >>> f = sp.parse('time&default="00:00:00"')
 >>> f("12:00:00")
 '12:00:00'
 >>> f("12:00:00123")
 ...
-validater.exceptions.Invalid: invalid time
+validr.exceptions.Invalid: invalid time
 >>> f(None)
 '00:00:00'
 >>>
@@ -271,11 +271,6 @@ validater.exceptions.Invalid: invalid time
 
     # profile
     python benchmark.py -p
-
-
-## 其他
-
-validater是拼写错误的单词，正确的拼写是validator，但是validator这个名字已经被用掉了，所以继续用validater这个名字。
 
 
 ## License

@@ -1,13 +1,13 @@
 from setuptools import setup
 setup(
-    name="validater",
-    version="0.11.1",
-    description="A simple,fast,extensible library for validating.",
+    name="validr",
+    version="0.12.0",
+    description="A simple,fast,extensible python library for data validation.",
     author="guyskk",
     author_email='guyskk@qq.com',
-    url="https://github.com/guyskk/validater",
+    url="https://github.com/guyskk/validr",
     license="MIT",
-    packages=['validater'],
+    packages=['validr'],
     install_requires=[],
     tests_require=[
         'pytest',

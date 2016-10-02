@@ -1,4 +1,4 @@
-from validater import SchemaError, Invalid, SchemaParser
+from validr import SchemaError, Invalid, SchemaParser
 import pytest
 import sys
 
@@ -162,7 +162,7 @@ def test_schema_error_position(schema, expect):
     ({"userid": "int&required"}, "userid"),
     ({"friends": [{"userid": "int&required"}]}, "friends[].userid"),
 ])
-def test_invalid_validater_params_error_position(schema, expect):
+def test_invalid_validator_params_error_position(schema, expect):
     with pytest.raises(SchemaError) as exinfo:
         sp.parse(schema)
     assert exinfo.value.position == expect

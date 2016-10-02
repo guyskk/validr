@@ -1,10 +1,10 @@
-# Validater
+# Validr
 
-[![travis-ci](https://api.travis-ci.org/guyskk/validater.svg)](https://travis-ci.org/guyskk/validater) [![codecov](https://codecov.io/gh/guyskk/validater/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validater)
+[![travis-ci](https://api.travis-ci.org/guyskk/validr.svg)](https://travis-ci.org/guyskk/validr) [![codecov](https://codecov.io/gh/guyskk/validr/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validr)
 
 [中文](readme-zh-cn.md) [English](readme.md)
 
-A simple,fast,extensible library for validating.
+A simple,fast,extensible python library for data validation.
 
 - Simple and readable schema
 - 20%~40% speed compare with json.loads
@@ -17,7 +17,7 @@ Note: Only support python 3.3+
 ## Overview
 
 ```python
-from validater import SchemaParser
+from validr import SchemaParser
 
 sp = SchemaParser()
 validate = sp.parse({
@@ -37,7 +37,7 @@ print(data)
 
 ## Install
 
-    pip install validater
+    pip install validr
 
 
 ## Schema syntax
@@ -49,17 +49,17 @@ print(data)
 #### Validate simple data:
 
 ```python
->>> from validater import SchemaParser,Invalid
+>>> from validr import SchemaParser,Invalid
 >>> sp = SchemaParser()
 >>> f = sp.parse("int(0, 9)")
 >>> f("3")
 3
 >>> f(-1)
 ...
-validater.exceptions.Invalid: value must >= 0
+validr.exceptions.Invalid: value must >= 0
 >>> f("abc")
 ...
-validater.exceptions.Invalid: invalid int
+validr.exceptions.Invalid: invalid int
 >>>
 ```
 
@@ -70,7 +70,7 @@ validater.exceptions.Invalid: invalid int
 >>> user = {"userid": 15}
 >>> f(user)
 ...
-validater.exceptions.Invalid: value must <= 9 in userid
+validr.exceptions.Invalid: value must <= 9 in userid
 >>> class User:pass
 ...
 >>> user = User()
@@ -80,11 +80,11 @@ validater.exceptions.Invalid: value must <= 9 in userid
 >>> user.userid = 15
 >>> f(user)
 ...
-validater.exceptions.Invalid: value must <= 9 in userid
+validr.exceptions.Invalid: value must <= 9 in userid
 >>> f = sp.parse({"friends":[{"userid?int(0,9)":"UserID"}]})
 >>> f({"friends":[user,user]})
 ...
-validater.exceptions.Invalid: value must <= 9 in friends[0].userid
+validr.exceptions.Invalid: value must <= 9 in friends[0].userid
 >>> user.userid=5
 >>> f({"friends":[user,user]})
 {'friends': [{'userid': 5}, {'userid': 5}]}
@@ -151,7 +151,7 @@ Note: You can only refer to the back of the front, and you should use OrderedDic
 ])
 >>> sp = SchemaParser(shared=shared)
 ...
-validater.exceptions.SchemaError: shared 'userid' not found in user.userid
+validr.exceptions.SchemaError: shared 'userid' not found in user.userid
 ```
 
 #### Mixin:
@@ -189,24 +189,24 @@ Note: Only dict schema can mixin, non-dict schema mixin will cause SchemaError o
 `handle_default_optional_desc` decorater can make you validator support `default`, `optional`, `desc` params.
 
 ```python
->>> from validater.validaters import handle_default_optional_desc
+>>> from validr.validators import handle_default_optional_desc
 >>> @handle_default_optional_desc()
-... def multiple_validater(n):
-...     def validater(value):
+... def multiple_validator(n):
+...     def validr(value):
 ...         if value%n==0:
 ...             return value
 ...         else:
 ...             raise Invalid("not a multiple of %d"%n)
-...     return validater
+...     return validr
 ...
->>> validaters={"multiple":multiple_validater}
->>> sp = SchemaParser(validaters=validaters)
+>>> validators={"multiple":multiple_validator}
+>>> sp = SchemaParser(validators=validators)
 >>> f = sp.parse("multiple(3)")
 >>> f(6)
 6
 >>> f(5)
 ...
-validater.exceptions.Invalid: not a multiple of 3
+validr.exceptions.Invalid: not a multiple of 3
 >>> f = sp.parse("multiple(3)&default=3")
 >>> f(None)
 3
@@ -220,16 +220,16 @@ it will treat empty string as null, more suitable for default and optional seman
 #### Create regex validator:
 
 ```python
->>> from validater.validaters import build_re_validater
+>>> from validr.validators import build_re_validator
 >>> regex_time = r'([01]?\d|2[0-3]):[0-5]?\d:[0-5]?\d'
->>> time_validater = build_re_validater("time", regex_time)
->>> sp = SchemaParser(validaters={"time":time_validater})
+>>> time_validator = build_re_validr("time", regex_time)
+>>> sp = SchemaParser(validators={"time":time_validator})
 >>> f = sp.parse('time&default="00:00:00"')
 >>> f("12:00:00")
 '12:00:00'
 >>> f("12:00:00123")
 ...
-validater.exceptions.Invalid: invalid time
+validr.exceptions.Invalid: invalid time
 >>> f(None)
 '00:00:00'
 >>>
@@ -255,11 +255,6 @@ use pytest
 
     # profile
     python benchmark.py -p
-
-
-## Other
-
-validater is misspell, the correct spelling is validator, but validator is registered.
 
 
 ## License

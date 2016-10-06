@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from validr import SchemaError, Invalid, SchemaParser
 import pytest
 
@@ -31,6 +32,18 @@ def test_refer_invalid_key(schema):
 def test_missing_refer_or_validator(schema):
     with pytest.raises(SchemaError):
         sp.parse(schema)
+
+
+def test_shared_orderd():
+    """shared should keep ordered"""
+    shared = OrderedDict([
+        ("user_id", "int"),
+        ("user", {"user_id@user_id": "desc"}),
+        ("group", {"user@user": "desc"}),
+        ("team", {"group@group": "desc"}),
+    ])
+    for i in range(100):
+        SchemaParser(shared=shared)
 
 
 def test_shared_error_position():

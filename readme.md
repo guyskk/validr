@@ -17,22 +17,18 @@ Note: Only support python 3.3+
 ## Overview
 
 ```python
+from sys import version_info
 from validr import SchemaParser
 
 sp = SchemaParser()
 validate = sp.parse({
-    "id?int": "product ID",
-    "name?str": "product name",
-    "price?float&min=0&exmin": "product price",
-    "tags": ["&minlen=1&unique", "str&desc=\"product tag\""]
+    "major?int&min=3": "Major version",
+    "minor?int&min=3": "Minor version",
+    "micro?int&min=0": "Mirco version",
+    "releaselevel?str": "Release level",
+    "serial?int": "Serial number"
 })
-data = validate({
-    "id": 1,
-    "name": "TeaCup",
-    "price": 9.9,
-    "tags": ["Cup"]
-})
-print(data)
+print(validate(version_info))
 ```
 
 ## Install

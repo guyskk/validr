@@ -17,22 +17,18 @@
 ## 概览
 
 ```python
+from sys import version_info
 from validr import SchemaParser
 
 sp = SchemaParser()
 validate = sp.parse({
-    "id?int": "产品ID",
-    "name?str": "名称",
-    "price?float&min=0&exmin": "价格",
-    "tags": ["&minlen=1&unique", "str&desc=\"标签\""]
+    "major?int&min=3": "Major version",
+    "minor?int&min=3": "Minor version",
+    "micro?int&min=0": "Mirco version",
+    "releaselevel?str": "Release level",
+    "serial?int": "Serial number"
 })
-data = validate({
-    "id": 1,
-    "name": "茶杯",
-    "price": 9.9,
-    "tags": ["杯子"]
-})
-print(data)
+print(validate(version_info))
 ```
 
 ## 安装

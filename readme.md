@@ -24,7 +24,7 @@ sp = SchemaParser()
 validate = sp.parse({
     "major?int&min=3": "Major version",
     "minor?int&min=3": "Minor version",
-    "micro?int&min=0": "Mirco version",
+    "micro?int&min=0": "Micro version",
     "releaselevel?str": "Release level",
     "serial?int": "Serial number"
 })

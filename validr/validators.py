@@ -51,7 +51,7 @@ def int_validator(min=-sys.maxsize, max=sys.maxsize):
     def validator(value):
         try:
             v = int(value)
-        except (ValueError, OverflowError):
+        except Exception:
             raise Invalid("invalid int")
         if v < min:
             raise Invalid("value must >= %d" % min)
@@ -85,7 +85,7 @@ def float_validator(min=-sys.float_info.max, max=sys.float_info.max,
     def validator(value):
         try:
             v = float(value)
-        except (ValueError, OverflowError):
+        except Exception:
             raise Invalid("invalid float")
         if exmin:
             if v <= min:

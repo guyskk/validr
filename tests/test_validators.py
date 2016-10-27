@@ -159,7 +159,8 @@ schema_value_expects = {
 
 schema_value_fails = {
     "bool": [None, "", "true", "false", 0, 1],
-    "float": ["1.0.0", None, "", "a.b"],
+    "int": [None, object(), "a1"],
+    "float": ["1.0.0", None, "", "a.b", object()],
     "float&default=1.0": ["", b""],
     "float(0,1)": [-0.01, 1.01],
     "float(0,1)&exmin": [0, 0.0],

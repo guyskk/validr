@@ -7,7 +7,7 @@
 A simple,fast,extensible python library for data validation.
 
 - Simple and readable schema
-- 20%~40% speed compare with json.loads
+- 20%~30% speed compare with json.loads
 - Can serialize any object
 - Easy to create custom validators
 - Accurate error messages, include reason and position
@@ -247,13 +247,22 @@ use pytest
     pip install pytest
     py.test
 
+
 ## Performance
 
     # benchmark
+    pip install -r requires-dev.txt
     python benchmark.py
 
     # profile
     python benchmark.py -p
+
+    # benchmark result in my computer, Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz
+    # compare with https://github.com/keleshev/schema
+    json.loads: 0.866
+    validr: 4.327
+    validr_simple: 3.919
+    schema: 48.002
 
 
 ## License

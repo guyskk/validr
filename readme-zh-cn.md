@@ -7,7 +7,7 @@
 简单，快速，可拓展的数据校验库。
 
 - 比[JSON Schema](http://json-schema.org)更简洁，可读性更好的Schema
-- 拥有标准库中 json.loads 20%~40% 的速度
+- 拥有标准库中 json.loads 20%~30% 的速度
 - 能够序列化任意类型对象
 - 实现自定义校验器非常容易
 - 准确的错误提示，包括错误原因和位置
@@ -262,6 +262,7 @@ validr.exceptions.Invalid: invalid time
     pip install pytest
     py.test
 
+
 ## 性能
 
     # benchmark
@@ -269,6 +270,13 @@ validr.exceptions.Invalid: invalid time
 
     # profile
     python benchmark.py -p
+
+    # 在我电脑上的测试结果(Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz)
+    # 对比 https://github.com/keleshev/schema
+    json.loads: 0.866
+    validr: 4.327
+    validr_simple: 3.919
+    schema: 48.002
 
 
 ## License

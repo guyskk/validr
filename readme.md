@@ -10,7 +10,7 @@ A simple,fast,extensible python library for data validation.
 - 20%~30% speed compare with json.loads
 - Can serialize any object
 - Easy to create custom validators
-- Accurate error messages, include reason and position
+- Accurate error messages include reason and position
 
 Note: Only support python 3.3+
 
@@ -180,7 +180,7 @@ validr.exceptions.SchemaError: shared 'userid' not found in user.userid
 
 Note:   
 Only dict schema can mixin, non-dict schema mixin will cause SchemaError on validating data.   
-And don't mixin schemas which has same key.  
+And don't mixin schemas which have the same key.  
 
 
 #### Custom validator
@@ -212,8 +212,8 @@ validr.exceptions.Invalid: not a multiple of 3
 >>>
 ```
 
-string like validator should use `@handle_default_optional_desc(string=True)` decorater,
-it will treat empty string as null, more suitable for default and optional semantic.
+string like validator should use `@handle_default_optional_desc(string=True)` decorator,
+it will treat the empty string as null, more suitable for default and optional semantic.
 
 
 #### Create regex validator:

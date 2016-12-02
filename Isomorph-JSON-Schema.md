@@ -6,7 +6,7 @@ Isomorph-JSON-Schema is used to describe JSON data structure.
 The greatest feature is that schema has the same structure with JSON data(Isomorph), and the syntax is super concise, you can directly see the actual data structure from the schema.
 
 Isomorph-JSON-Schema is not [JSON Schema](http://json-schema.org),
-it is more simple and readable then JSON Schema.
+it is more simple and readable than JSON Schema.
 
 ## Example
 
@@ -46,13 +46,13 @@ it's complete form is:
 Among them:
 
 - arg1, arg2...value is valid JSON value.
-- if validator is dict or list, it can be omitted.
+- if the validator is dict or list, it can be omitted.
 - if arg1, arg2...all is default value, the brackets can be omitted.
-- if the value corresponding to key is true, just write &key, no need to write &key=true.
+- if the value corresponding to the key is true, just write &key, no need to write &key=true.
 
 ### Schema
 
-From a structureural point of view, all data can be divided into 3 types:
+From a structural point of view, all data can be divided into 3 types:
 
 - scalar: string number true false null.
 - sequence: also known as array or list.
@@ -60,22 +60,22 @@ From a structureural point of view, all data can be divided into 3 types:
 
 mapping use $self to describe self, other keys describe it's inner content:
 
-	{
-		"$self": "ValidatorString",
-		"key": "value"
-	}
+    {
+        "$self": "ValidatorString",
+        "key": "value"
+    }
 
 sequence use first element to describe self, second element to describe inner content:
 
-	["ValidatorString", Item]
+    ["ValidatorString", Item]
 
-sequence can omit self describe, only describe inner content:
+a sequence can omit self-describe, only describe inner content:
 
     [Item]
 
 scalar use a string to describe self:
 
-	"ValidatorString"
+    "ValidatorString"
 
 In mapping, if value is scalar, then describe value in the position of key,
 and write comment in the position of value:
@@ -87,7 +87,7 @@ and write comment in the position of value:
 
 ### Refer
 
-Different schema may has same parts, assume there is a common schema, other schema need refer it, then can use refer syntax.
+Different schemas may have same parts, assume there is a common schema, other schemas need refer it, then can use refer syntax.
 
     "@shared"
 
@@ -161,4 +161,4 @@ the 'optional' param, means the mapping is optional.
 
 All string-like validators(str,date,datetime,email...) should treat empty string as null.  
 All bool type params' default value is false,
-custom validator should follow this guideline.
+custom validators should follow this guideline.

@@ -1,2 +1,5 @@
-beeprint
-schema
+beeprint>=2.4.6
+schema>=0.6.5
+jsonschema>=2.5.1
+schematics>=2.0.0a1
+voluptuous>=0.9.3

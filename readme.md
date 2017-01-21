@@ -250,19 +250,30 @@ use pytest
 
 ## Performance
 
-    # benchmark
     pip install -r requires-dev.txt
+    cd benchmark
     python benchmark.py
 
-    # profile
-    python benchmark.py -p
+benchmark result in my computer, Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz
 
-    # benchmark result in my computer, Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz
-    # compare with https://github.com/keleshev/schema
-    json.loads: 0.866
-    validr: 4.327
-    validr_simple: 3.919
-    schema: 48.002
+    -----------------------result-of-time-----------------------
+    {
+      'json': [0.1661980320004659],
+      'jsonschema': [8.965013334000105, 0.9007545409986051, 0.9497663809997903],
+      'schema': [3.964973062000354],
+      'schematics': [3.267164867000247],
+      'validr': [0.3280817329996353, 0.2965033119999134],
+    }
+    ------------speed---time(json)/time(case)*10000-------------
+               json-0: 10000
+             validr-0: 5066
+             validr-1: 5605
+             schema-0: 419
+         jsonschema-0: 185
+         jsonschema-1: 1845
+         jsonschema-2: 1750
+         schematics-0: 509
+
 
 
 ## License

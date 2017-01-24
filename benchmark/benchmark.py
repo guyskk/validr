@@ -19,7 +19,7 @@ from timeit import timeit
 
 from beeprint import pp
 
-cases = ['json', 'validr', 'schema', 'jsonschema', 'schematics']
+cases = ['json', 'validr', 'schema', 'jsonschema', 'schematics', 'voluptuous']
 cases_validates = {
     name: __import__('case_' + name).validates for name in cases
 }

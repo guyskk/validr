@@ -1,6 +1,5 @@
 from validr import SchemaError, Invalid, SchemaParser
 import pytest
-import sys
 
 sp = SchemaParser()
 
@@ -9,51 +8,6 @@ class User:
 
     def __init__(self, userid):
         self.userid = userid
-
-
-scalar_schemas = {
-    "int(0,9)": (
-        [(0, 0), (9, 9), ("3", 3), (True, 1), (False, 0)],
-        ["a", "-1", "10", "", None]),
-    "int&default=5": (
-        [(None, 5)],
-        [""]),
-    "int&optional": (
-        [(None, None)],
-        [""]),
-    "int&default=5&optional": (
-        [(None, 5)],
-        [""]),
-    "int&desc=\"a number\"": (
-        [(sys.maxsize, sys.maxsize), (-sys.maxsize, -sys.maxsize)],
-        [sys.maxsize + 1, -sys.maxsize - 1, float('INF'), float('NAN')])
-}
-
-scalar_params = []
-scalar_params_fail = []
-for schema, (success, fail) in scalar_schemas.items():
-    for value, expect in success:
-        scalar_params.append((schema, value, expect))
-    for value in fail:
-        scalar_params_fail.append((schema, value))
-
-
-@pytest.mark.parametrize("schema,value,expect", scalar_params)
-def test_scalar(schema, value, expect):
-    f = sp.parse(schema)
-    assert f(value) == expect
-
-
-@pytest.mark.parametrize("schema,value", scalar_params_fail)
-def test_scalar_fail(schema, value):
-    f = sp.parse(schema)
-    with pytest.raises(Invalid):
-        print("value is: %s" % f(value))
-
-
-def test_default_invalid():
-    with pytest.raises(SchemaError):
-        sp.parse("int(0,9)&default=10")
 
 
 @pytest.mark.parametrize("value", [{"userid": 5}, User(5)])

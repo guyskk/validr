@@ -201,6 +201,7 @@ def build_re_validator(name, r):
     re_validator.__name__ = name + '_validator'
     return re_validator
 
+
 """
 email: https://github.com/jzaefferer/jquery-validation/blob/master/src/core.js#L1333
 url: https://github.com/jzaefferer/jquery-validation/blob/master/src/core.js#L1349

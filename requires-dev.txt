@@ -3,3 +3,6 @@ schema>=0.6.5
 jsonschema>=2.5.1
 schematics>=2.0.0a1
 voluptuous>=0.9.3
+pytest>=3.0.6
+pytest-cov>=2.4.0
+flake8>=3.2.1

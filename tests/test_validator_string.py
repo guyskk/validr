@@ -10,8 +10,8 @@ validator_string = {
     "int(0, 10)": {"name": "int", "args": tuple([0, 10])},
     "int&default=5": {"name": "int", "kwargs": {"default": 5}},
     "int&optional": {"name": "int", "kwargs": {"optional": True}},
-    "int&desc=\"a number\"": {"name": "int", "kwargs": {"desc": "a number"}},
-    "int(0,10)&optional&default=5&desc=\"a number\"": {
+    'int&desc="a number"': {"name": "int", "kwargs": {"desc": "a number"}},
+    'int(0,10)&optional&default=5&desc="a number"': {
         "name": "int",
         "args": tuple([0, 10]),
         "kwargs": {"default": 5, "optional": True, "desc": "a number"}
@@ -47,7 +47,7 @@ validator_string = {
     },
 }
 
-validator_string_fail = [
+invalid_validator_string = [
     "int(0,10",
     "int(0 10)"
     "int&default=abc",
@@ -59,7 +59,7 @@ validator_string_fail = [
     "key@@user",
     None
 ]
-default_vs = {
+DEFAULT_VS = {
     "key": None,
     "refers": None,
     "name": None,
@@ -72,14 +72,14 @@ default_vs = {
 def test_validator_string(string, expect):
     vs = ValidatorString(string)
     assert repr(vs)
-    for k in default_vs:
+    for k in DEFAULT_VS:
         if k in expect:
             assert getattr(vs, k) == expect[k]
         else:
-            assert getattr(vs, k) == default_vs[k]
+            assert getattr(vs, k) == DEFAULT_VS[k]
 
 
-@pytest.mark.parametrize("string", validator_string_fail)
-def test_validator_string_fail(string):
+@pytest.mark.parametrize("string", invalid_validator_string)
+def test_invalid_validator_string(string):
     with pytest.raises(SchemaError):
         ValidatorString(string)

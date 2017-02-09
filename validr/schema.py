@@ -1,4 +1,6 @@
 import json
+from collections.abc import Mapping
+
 from .exceptions import Invalid, SchemaError
 from .validators import builtin_validators
 
@@ -296,7 +298,7 @@ class SchemaParser:
                 else:
                     raise Invalid("required")
             result = {}
-            if isinstance(value, dict):
+            if isinstance(value, Mapping):
                 for k, inner in inners:
                     with MarkKey(k):
                         v = inner(value.get(k, None))

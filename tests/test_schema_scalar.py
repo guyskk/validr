@@ -1,30 +1,27 @@
 import pytest
 from validr import Invalid, SchemaError, SchemaParser
 
-
-def validate(schema, value):
-    f = SchemaParser().parse(schema)
-    return f(value)
+sp = SchemaParser()
 
 
 def test_basic():
-    schema = "int(0,9)"
-    assert validate(schema, 3) == 3
+    f = sp.parse("int(0,9)")
+    assert f(3) == 3
     with pytest.raises(Invalid):
-        validate(schema, -1)
+        f(-1)
 
 
 def test_optional_int():
-    schema = "int&optional"
-    assert validate(schema, None) is None
+    f = sp.parse("int&optional")
+    assert f(None) is None
     with pytest.raises(Invalid):
-        validate(schema, "")
+        f("")
 
 
 def test_optional_str():
-    schema = "str&optional"
-    assert validate(schema, None) == ""
-    assert validate(schema, "") == ""
+    f = sp.parse("str&optional")
+    assert f(None) == ""
+    assert f("") == ""
 
 
 @pytest.mark.parametrize("schema", [
@@ -32,9 +29,10 @@ def test_optional_str():
     "int&default=5&optional"
 ])
 def test_default_int(schema):
-    assert validate(schema, None) == 5
+    f = sp.parse(schema)
+    assert f(None) == 5
     with pytest.raises(Invalid):
-        validate(schema, "")
+        f("")
 
 
 @pytest.mark.parametrize("schema", [
@@ -42,22 +40,23 @@ def test_default_int(schema):
     'str&default="x"&optional'
 ])
 def test_default_str(schema):
-    assert validate(schema, None) == "x"
-    assert validate(schema, "") == "x"
+    f = sp.parse(schema)
+    assert f(None) == "x"
+    assert f("") == "x"
 
 
 def test_desc():
-    schema = 'int&desc="数字"'
-    assert validate(schema, 3) == 3
+    f = sp.parse('int&desc="数字"')
+    assert f(3) == 3
 
 
 def test_invalid_default_value():
     schema = "int(0,9)&default=-1"
     with pytest.raises(SchemaError):
-        SchemaParser().parse(schema)
+        sp.parse(schema)
 
 
 def test_validator_not_found():
     schema = "unknown(0,9)"
     with pytest.raises(SchemaError):
-        SchemaParser().parse(schema)
+        sp.parse(schema)

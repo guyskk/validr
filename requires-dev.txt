@@ -6,3 +6,4 @@ voluptuous>=0.9.3
 pytest>=3.0.6
 pytest-cov>=2.4.0
 flake8>=3.2.1
+tox>=2.6.0

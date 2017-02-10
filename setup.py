@@ -23,7 +23,7 @@ Overview:
 from setuptools import setup
 setup(
     name="validr",
-    version="0.12.1",
+    version="0.13.0",
     description="A simple,fast,extensible python library for data validation.",
     long_description=__doc__,
     author="guyskk",

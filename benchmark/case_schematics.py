@@ -27,6 +27,7 @@ def validate(data):
     m.validate()
     return m.to_primitive()
 
+
 CASES = {
     "default": validate
 }

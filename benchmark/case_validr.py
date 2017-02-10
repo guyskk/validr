@@ -44,6 +44,7 @@ def default():
     }
     return sp.parse(schema)
 
+
 CASES = {
     "default": default(),
     "use-refer-mixin": use_refer_mixin(),

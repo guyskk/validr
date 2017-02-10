@@ -12,7 +12,6 @@ add case:
 """
 import json
 import statistics
-import sys
 from cProfile import runctx
 from glob import glob
 from os.path import basename, dirname, splitext

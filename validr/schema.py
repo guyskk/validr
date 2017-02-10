@@ -106,7 +106,7 @@ class ValidatorString:
         })
 
 
-def cut_schema_key(k):
+def schema_key(k):
     cut = k.find("?")
     if cut < 0:
         cut = k.find("@")
@@ -171,11 +171,8 @@ class SchemaParser:
 
     def merge_validators(self, validators, optional=False, desc=None):
         def merged_validator(value):
-            if value is None:
-                if optional:
-                    return None
-                else:
-                    raise Invalid("required")
+            if check_optional(value, optional):
+                return None
             result = {}
             for v in validators:
                 data = v(value)
@@ -194,7 +191,7 @@ class SchemaParser:
         inner = {}
         vs = None
         for k, v in schema.items():
-            with MarkKey(cut_schema_key(k)):
+            with MarkKey(schema_key(k)):
                 if k[:5] == "$self":
                     if vs is not None:
                         raise SchemaError("multi $self not allowed")
@@ -301,33 +298,24 @@ class SchemaParser:
         inners = inners.items()
 
         def validator(value):
-            if value is None:
-                if optional:
-                    return None
-                else:
-                    raise Invalid("required")
+            if check_optional(value, optional):
+                return None
             result = {}
             if isinstance(value, Mapping):
-                for k, inner in inners:
-                    with MarkKey(k):
-                        v = inner(value.get(k, None))
-                    result[k] = v
+                get_item = get_dict_value
             else:
-                for k, inner in inners:
-                    with MarkKey(k):
-                        v = inner(getattr(value, k, None))
-                    result[k] = v
+                get_item = get_object_value
+            for k, validate in inners:
+                with MarkKey(k):
+                    result[k] = validate(get_item(value, k))
             return result
         return validator
 
     def list_validator(self, inner, minlen=0, maxlen=1024, unique=False,
                        optional=False, desc=None):
         def validator(value):
-            if value is None:
-                if optional:
-                    return None
-                else:
-                    raise Invalid("required")
+            if check_optional(value, optional):
+                return None
             try:
                 value = enumerate(value)
             except TypeError:
@@ -346,3 +334,21 @@ class SchemaParser:
                 raise Invalid("list length must >= %d" % minlen)
             return result
         return validator
+
+
+def check_optional(value, optional):
+    """Return should_return_none"""
+    if value is None:
+        if optional:
+            return True
+        else:
+            raise Invalid("required")
+    return False
+
+
+def get_dict_value(obj, key):
+    return obj.get(key, None)
+
+
+def get_object_value(obj, key):
+    return getattr(obj, key, None)

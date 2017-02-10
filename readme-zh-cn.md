@@ -260,35 +260,34 @@ validr.exceptions.Invalid: invalid time
 用pytest测试:
 
     pip install pytest
-    py.test
+    pytest
 
 
 ## 性能
 
     pip install -r requires-dev.txt
-    cd benchmark
-    python benchmark.py
+    python benchmark/benchmark.py benchmark
 
 在我电脑上的测试结果(Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz)
 
-    -----------------------result-of-time-----------------------
-    {
-      'json': [0.1661980320004659],
-      'jsonschema': [8.965013334000105, 0.9007545409986051, 0.9497663809997903],
-      'schema': [3.964973062000354],
-      'schematics': [3.267164867000247],
-      'validr': [0.3280817329996353, 0.2965033119999134],
-    }
+    ----------------time---the-result-of-timeit-----------------
+    validr:default 3.9474168669985374
+    validr:use-refer-mixin 4.608337737998227
+    json:loads-dumps 1.6587990809930488
+    voluptuous:default 18.96944373799488
+    schema:default 40.53439778399479
+    schematics:default 34.1044494890084
+    jsonschema:draft3 9.507412713996018
+    jsonschema:draft4 9.953055930993287
     ------------speed---time(json)/time(case)*10000-------------
-               json-0: 10000
-             validr-0: 5066
-             validr-1: 5605
-             schema-0: 419
-         jsonschema-0: 185
-         jsonschema-1: 1845
-         jsonschema-2: 1750
-         schematics-0: 509
-
+    validr:default 4202
+    validr:use-refer-mixin 3600
+    json:loads-dumps 10000
+    voluptuous:default 874
+    schema:default 409
+    schematics:default 486
+    jsonschema:draft3 1745
+    jsonschema:draft4 1667
 
 
 ## License

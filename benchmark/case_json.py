@@ -1,8 +1,10 @@
 from json import dumps, loads
 
 
-def _validate_0(value):
+def loads_dumps(value):
     return loads(dumps(value))
 
 
-validates = [_validate_0]
+CASES = {
+    "loads-dumps": loads_dumps
+}

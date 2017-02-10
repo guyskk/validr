@@ -19,13 +19,14 @@ class Data(Model):
     user = ModelType(User, required=True)
     tags = ListType(IntType)
     style = ModelType(Style, required=True)
-    unknown = StringType(required=False)
+    optional = StringType(required=False)
 
 
-def _validate_0(data):
+def validate(data):
     m = Data(data)
     m.validate()
     return m.to_primitive()
 
-
-validates = [_validate_0]
+CASES = {
+    "default": validate
+}

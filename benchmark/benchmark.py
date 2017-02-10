@@ -1,36 +1,28 @@
 """
 benchmark data validation librarys
 
-benchmark: python benchmark.py
-test: python benchmark.py -t
-profile: python benchmark.py -p
+usage:
+
+    python benchmark.py
 
 add case:
-    1. create case_{CASE_NAME}.py, add CASE_NAME to `cases` in this module
-    2. implement one or more funcs which can validate the `_data` at
-       the begin of this module
-    3. put validate funcs in a list named `validates` in case module
+    1. create case_{CASE_NAME}.py
+    2. implement one or more funcs which can validate the `DATA` in this module
+    3. put validate funcs in a dict named `CASES` in case module
 """
 import json
 import statistics
 import sys
-from profile import runctx
+from cProfile import runctx
+from glob import glob
+from os.path import basename, dirname, splitext
 from timeit import timeit
+
+import click
 
 from beeprint import pp
 
-cases = [
-    'json',
-    'validr',
-    'schema',
-    'jsonschema',
-    'schematics',
-    'voluptuous'
-]
-cases_validates = {
-    name: __import__('case_' + name).validates for name in cases
-}
-_data = {
+DATA = {
     "user": {"userid": 5},
     "tags": [1, 2, 5, 9999, 1234567890],
     "style": {
@@ -41,57 +33,91 @@ _data = {
         "border_color": "red",
         "color": "black"
     },
-    # optional
-    # "unknown": "string"
+    # "optional": "string"
 }
-text = json.dumps(_data)
+TEXT = json.dumps(DATA)
 
 
+def make_data():
+    return json.loads(TEXT)
+
+
+def glob_cases():
+    files = glob(dirname(__file__) + '/case_*.py')
+    cases = {}
+    for filename in files:
+        module = splitext(basename(filename))[0]
+        name = module[len('case_'):]
+        cases[name] = __import__(module).CASES
+    return cases
+
+
+CASES = glob_cases()
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
+def show():
+    """show all cases"""
+    pp({name: list(cases) for name, cases in CASES.items()})
+
+
+@cli.command()
 def test():
-    """test validates"""
-    for case, validates in cases_validates.items():
-        for i, f in enumerate(validates):
-            print('{}-{}'.format(case, i).center(60, '-'))
-            pp(f(json.loads(text)))
+    """test all cases"""
+    for name, subcases in CASES.items():
+        for subname, f in subcases.items():
+            value = f(make_data())
+            try:
+                ok = (value['user'] == DATA['user'] and
+                      value['tags'] == DATA['tags'] and
+                      value['style'] == DATA['style'])
+            except:
+                ok = False
+            if ok:
+                print('{}:{} OK'.format(name, subname))
+            else:
+                print('{}:{}'.format(name, subname).center(60, '-'))
+                pp(value)
 
 
-result = {}
-
-
-def benchmark():
+@cli.command()
+@click.option('--validr', is_flag=True, help='only benchmark validr')
+def benchmark(validr):
     """do benchmark"""
-    for case, validates in cases_validates.items():
-        result[case] = []
-        for i, f in enumerate(validates):
-            print('{}-{}'.format(case, i).center(60, '-'))
-            data = json.loads(text)
-            t = timeit("f(data)", number=10000,
-                       globals={"f": f, "data": data})
-            result[case].append(t)
-            print(t)
-    print('result-of-time'.center(60, '-'))
-    pp(result)
+    if validr:
+        cases = {'json': CASES['json'], 'validr': CASES['validr']}
+    else:
+        cases = CASES
+    result = {}
+    print('time---the-result-of-timeit'.center(60, '-'))
+    for name, suncases in cases.items():
+        result[name] = {}
+        for subname, f in suncases.items():
+            params = {"f": f, "data": make_data()}
+            t = timeit("f(data)", number=100000, globals=params)
+            result[name][subname] = t
+            print('{}:{} {}'.format(name, subname, t))
     print('speed---time(json)/time(case)*10000'.center(60, '-'))
-    base_time = statistics.mean(result['json'])  # 基准时间
-    for case, times in result.items():
-        for i, time in enumerate(times):
+    base_time = statistics.mean(result['json'].values())  # 基准时间
+    for name, subcases in result.items():
+        for subname, time in subcases.items():
             speed = base_time * 10000 / time
-            print('{:>15}-{}: {:.0f}'.format(case, i, speed))
+            print('{}:{} {:.0f}'.format(name, subname, speed))
 
 
+@cli.command()
 def profile():
     """profile validr"""
-    for f in cases_validates['validr']:
-        data = json.loads(text)
-        runctx("for i in range(1000):f(data)",
-               globals=None, locals={'f': f, 'data': data})
+    for name, f in CASES['validr'].items():
+        print(name.center(60, '-'))
+        params = {"f": f, "data": make_data()}
+        runctx("for i in range(10000):f(data)", globals=params, locals=None)
 
 
 if __name__ == "__main__":
-    cmd = sys.argv[1] if len(sys.argv) > 1 else None
-    if cmd == "-p":
-        profile()
-    elif cmd == "-t":
-        test()
-    else:
-        benchmark()
+    cli()

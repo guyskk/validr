@@ -1,7 +1,7 @@
 from validr import SchemaParser
 
 
-def _make_validate_0():
+def use_refer_mixin():
     shared = {
         "size": {
             "width?int": "width",
@@ -22,12 +22,12 @@ def _make_validate_0():
             "$self@size@border": "style",
             "color?str": "Color"
         },
-        "unknown?str&optional": "unknown value"
+        "optional?str&optional": "unknown value"
     }
     return sp.parse(schema)
 
 
-def _make_validate_1():
+def default():
     sp = SchemaParser()
     schema = {
         "user": {"userid?int(0,9)": "UserID"},
@@ -40,9 +40,11 @@ def _make_validate_1():
             "border_color?str": "border_color",
             "color?str": "Color"
         },
-        "unknown?str&optional": "unknown value"
+        "optional?str&optional": "unknown value"
     }
     return sp.parse(schema)
 
-
-validates = [_make_validate_0(), _make_validate_1()]
+CASES = {
+    "default": default(),
+    "use-refer-mixin": use_refer_mixin(),
+}

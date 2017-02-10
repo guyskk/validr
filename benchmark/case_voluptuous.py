@@ -11,7 +11,9 @@ schema = Schema({
         Required("border_color"): str,
         Required("color"): str
     },
-    "unknown": str
+    "optional": str
 })
 
-validates = [schema]
+CASES = {
+    "default": schema
+}

@@ -1,4 +1,4 @@
-from jsonschema import Draft3Validator, Draft4Validator, validate
+from jsonschema import Draft3Validator, Draft4Validator
 
 schema = {
     "type": "object",
@@ -29,31 +29,26 @@ schema = {
                 "border_style", "border_color", "color"
             ]
         },
-        "unknown": {"type": "string"},
+        "optional": {"type": "string"},
     },
     "required": ["user", "tags", "style"]
 }
 
-
-def _validate_0(data):
-    validate(data, schema)
-    return data
-
-
 d3 = Draft3Validator(schema)
+d4 = Draft4Validator(schema)
 
 
-def _validate_1(data):
+def draft3(data):
     d3.validate(data)
     return data
 
 
-d4 = Draft4Validator(schema)
-
-
-def _validate_2(data):
+def draft4(data):
     d4.validate(data)
     return data
 
 
-validates = [_validate_0, _validate_1, _validate_2]
+CASES = {
+    "draft3": draft3,
+    "draft4": draft4,
+}

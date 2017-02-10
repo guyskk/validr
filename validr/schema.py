@@ -6,7 +6,8 @@ from .validators import builtin_validators
 
 
 class ValidatorString:
-    """ValidatorString
+    """
+    ValidatorString
 
     eg::
 
@@ -26,10 +27,13 @@ class ValidatorString:
         cuts = [text.find("("), text.find("&"), len(text)]
         cut = min([x for x in cuts if x >= 0])
         first, last = text[:cut], text[cut:]
+        self.init_first_part(first)
+        self.init_last_part(last)
+
+    def init_first_part(self, first):
         key = name = refers = None
         if first:
-            if ("?" in first and "@" in first)\
-                    or first[-1] in "?@":
+            if ("?" in first and "@" in first) or first[-1] in "?@":
                 raise SchemaError("invalid syntax %s" % repr(first))
 
             if "@" in first:
@@ -53,6 +57,7 @@ class ValidatorString:
         self.name = name
         self.refers = refers
 
+    def init_last_part(self, last):
         text_args = text_kwargs = None
         if last and last[0] == "(":
             cut = last.find(")")
@@ -62,30 +67,34 @@ class ValidatorString:
             last = last[cut + 1:]
         if last:
             text_kwargs = last[1:]
+        self.args = self.parse_args(text_args)
+        self.kwargs = self.parse_kwargs(text_kwargs)
 
+    def parse_args(self, text):
+        if not text:
+            return tuple()
         args = []
-        if text_args:
-            for x in text_args.split(","):
-                try:
-                    args.append(json.loads(x))
-                except ValueError:
-                    raise SchemaError(
-                        "invalid JSON value in %s" % repr(text_args))
-        self.args = tuple(args)
+        for x in text.split(","):
+            try:
+                args.append(json.loads(x))
+            except ValueError:
+                raise SchemaError("invalid JSON value in %s" % repr(text))
+        return tuple(args)
 
+    def parse_kwargs(self, text):
+        if not text:
+            return {}
         kwargs = {}
-        if text_kwargs:
-            for kv in text_kwargs.split("&"):
-                cut = kv.find("=")
-                if cut >= 0:
-                    try:
-                        kwargs[kv[:cut]] = json.loads(kv[cut + 1:])
-                    except ValueError:
-                        raise SchemaError(
-                            "invalid JSON value in %s" % repr(kv))
-                else:
-                    kwargs[kv] = True
-        self.kwargs = kwargs
+        for kv in text.split("&"):
+            cut = kv.find("=")
+            if cut >= 0:
+                try:
+                    kwargs[kv[:cut]] = json.loads(kv[cut + 1:])
+                except ValueError:
+                    raise SchemaError("invalid JSON value in %s" % repr(kv))
+            else:
+                kwargs[kv] = True
+        return kwargs
 
     def __repr__(self):
         return repr({

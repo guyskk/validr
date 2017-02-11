@@ -21,6 +21,9 @@ Overview:
     print(data)
 """
 from setuptools import setup
+
+from Cython.Build import cythonize
+
 setup(
     name="validr",
     version="0.13.0",
@@ -31,10 +34,7 @@ setup(
     url="https://github.com/guyskk/validr",
     license="MIT",
     packages=['validr'],
-    install_requires=[],
-    tests_require=[
-        'pytest',
-    ],
+    ext_modules=cythonize("validr/_schema.pyx"),
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',

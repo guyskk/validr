@@ -1,6 +1,8 @@
 import json
-from collections.abc import Mapping
 
+from ._schema import (
+    MarkIndex, MarkKey, dict_validator, list_validator, merge_validators
+)
 from .exceptions import Invalid, SchemaError
 from .validators import builtin_validators
 
@@ -116,41 +118,6 @@ def schema_key(k):
         return k
 
 
-class MarkIndex:
-    """Add current index to Invalid/SchemaError"""
-
-    def __init__(self, items):
-        self.items = items
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is Invalid or exc_type is SchemaError:
-            if self.items is None:
-                exc_val.mark_index(None)
-            else:
-                exc_val.mark_index(len(self.items))
-        if exc_type is not None:
-            return False
-
-
-class MarkKey:
-    """Add current key to Invalid/SchemaError"""
-
-    def __init__(self, key):
-        self.key = key
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is Invalid or exc_type is SchemaError:
-            exc_val.mark_key(self.key)
-        if exc_type is not None:
-            return False
-
-
 class SchemaParser:
     """SchemaParser
 
@@ -168,20 +135,6 @@ class SchemaParser:
             for k, v in shared.items():
                 with MarkKey(k):
                     self.shared[k] = self.parse(v)
-
-    def merge_validators(self, validators, optional=False, desc=None):
-        def merged_validator(value):
-            if check_optional(value, optional):
-                return None
-            result = {}
-            for v in validators:
-                data = v(value)
-                try:
-                    result.update(data)
-                except TypeError:
-                    raise SchemaError("can't merge non-dict value")
-            return result
-        return merged_validator
 
     def parse(self, schema):
         """Parse schema"""
@@ -209,7 +162,7 @@ class SchemaParser:
                         inner[inner_vs.key] = self._parse(v, inner_vs)
         if vs:
             if not vs.refers:
-                return self.dict_validator(inner, *vs.args, **vs.kwargs)
+                return dict_validator(inner, *vs.args, **vs.kwargs)
             else:
                 # mixins
                 _mixins = []
@@ -217,10 +170,10 @@ class SchemaParser:
                     if refer not in self.shared:
                         raise SchemaError("shared '%s' not found" % refer)
                     _mixins.append(self.shared[refer])
-                _mixins.append(self.dict_validator(inner))
-                return self.merge_validators(_mixins, *vs.args, **vs.kwargs)
+                _mixins.append(dict_validator(inner))
+                return merge_validators(_mixins, *vs.args, **vs.kwargs)
         else:
-            return self.dict_validator(inner)
+            return dict_validator(inner)
 
     def _parse_list(self, schema):
         vs = None
@@ -234,9 +187,9 @@ class SchemaParser:
         with MarkIndex(None):
             inner = self._parse(schema)
             if vs:
-                return self.list_validator(inner, *vs.args, **vs.kwargs)
+                return list_validator(inner, *vs.args, **vs.kwargs)
             else:
-                return self.list_validator(inner)
+                return list_validator(inner)
 
     def _parse_scalar(self, schema, vs):
         if vs:
@@ -292,63 +245,3 @@ class SchemaParser:
             return self._parse_list(schema)
         else:
             return self._parse_scalar(schema, vs)
-
-    def dict_validator(self, inners, optional=False, desc=None):
-
-        inners = inners.items()
-
-        def validator(value):
-            if check_optional(value, optional):
-                return None
-            result = {}
-            if isinstance(value, Mapping):
-                get_item = get_dict_value
-            else:
-                get_item = get_object_value
-            for k, validate in inners:
-                with MarkKey(k):
-                    result[k] = validate(get_item(value, k))
-            return result
-        return validator
-
-    def list_validator(self, inner, minlen=0, maxlen=1024, unique=False,
-                       optional=False, desc=None):
-        def validator(value):
-            if check_optional(value, optional):
-                return None
-            try:
-                value = enumerate(value)
-            except TypeError:
-                raise Invalid("not list")
-            result = []
-            i = -1
-            for i, x in value:
-                if i >= maxlen:
-                    raise Invalid("list length must <= %d" % maxlen)
-                with MarkIndex(result):
-                    v = inner(x)
-                    if unique and v in result:
-                        raise Invalid("not unique")
-                result.append(v)
-            if i + 1 < minlen:
-                raise Invalid("list length must >= %d" % minlen)
-            return result
-        return validator
-
-
-def check_optional(value, optional):
-    """Return should_return_none"""
-    if value is None:
-        if optional:
-            return True
-        else:
-            raise Invalid("required")
-    return False
-
-
-def get_dict_value(obj, key):
-    return obj.get(key, None)
-
-
-def get_object_value(obj, key):
-    return getattr(obj, key, None)

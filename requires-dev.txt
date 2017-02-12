@@ -9,3 +9,5 @@ pytest-cov>=2.4.0
 flake8>=3.2.1
 tox>=2.6.0
 cython>=0.25.2
+matplotlib>=2.0.0
+pandas>=0.19.2

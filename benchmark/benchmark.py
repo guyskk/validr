@@ -11,14 +11,14 @@ add case:
     3. put validate funcs in a dict named `CASES` in case module
 """
 import json
-import statistics
 from cProfile import runctx
 from glob import glob
 from os.path import basename, dirname, splitext
-from timeit import timeit
+from timeit import repeat
 
 import click
 
+from analyze import scores
 from beeprint import pp
 
 DATA = {
@@ -84,29 +84,30 @@ def test():
                 pp(value)
 
 
+def warmup():
+    data = make_data()
+    validates = list(CASES['json'].values()) + list(CASES['validr'].values())
+    for i in range(10000):
+        for f in validates:
+            f(data)
+
+
 @cli.command()
 @click.option('--validr', is_flag=True, help='only benchmark validr')
 def benchmark(validr):
     """do benchmark"""
     if validr:
+        warmup()
         cases = {'json': CASES['json'], 'validr': CASES['validr']}
     else:
         cases = CASES
     result = {}
-    print('time---the-result-of-timeit'.center(60, '-'))
     for name, suncases in cases.items():
-        result[name] = {}
         for subname, f in suncases.items():
             params = {"f": f, "data": make_data()}
-            t = timeit("f(data)", number=100000, globals=params)
-            result[name][subname] = t
-            print('{}:{} {}'.format(name, subname, t))
-    print('speed---time(json)/time(case)*10000'.center(60, '-'))
-    base_time = statistics.mean(result['json'].values())  # 基准时间
-    for name, subcases in result.items():
-        for subname, time in subcases.items():
-            speed = base_time * 10000 / time
-            print('{}:{} {:.0f}'.format(name, subname, speed))
+            times = repeat("f(data)", repeat=1000, number=100, globals=params)
+            result['{}:{}'.format(name, subname)] = times
+    print(scores(result, plot=True))
 
 
 @cli.command()

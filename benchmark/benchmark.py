@@ -107,7 +107,7 @@ def benchmark(validr):
             params = {"f": f, "data": make_data()}
             times = repeat("f(data)", repeat=1000, number=100, globals=params)
             result['{}:{}'.format(name, subname)] = times
-    print(scores(result, plot=True))
+    print(scores(result, plot=True, block=False))
 
 
 @cli.command()

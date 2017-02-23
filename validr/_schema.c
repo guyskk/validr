@@ -681,7 +681,7 @@ struct __pyx_obj_6validr_7_schema___pyx_scope_struct__merge_validators {
 };
 
 
-/* "validr/_schema.pyx":55
+/* "validr/_schema.pyx":51
  * 
  * 
  * def dict_validator(inners, bint optional=False, str desc=None):             # <<<<<<<<<<<<<<
@@ -695,12 +695,12 @@ struct __pyx_obj_6validr_7_schema___pyx_scope_struct_1_dict_validator {
 };
 
 
-/* "validr/_schema.pyx":75
- *     return validator
+/* "validr/_schema.pyx":71
+ *     return validate_dict
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,             # <<<<<<<<<<<<<<
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  */
 struct __pyx_obj_6validr_7_schema___pyx_scope_struct_2_list_validator {
   PyObject_HEAD
@@ -850,60 +850,6 @@ static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, in
 /* None.proto */
 static CYTHON_INLINE void __Pyx_RaiseClosureNameError(const char *varname);
 
-/* PyThreadStateGet.proto */
-#if CYTHON_FAST_THREAD_STATE
-#define __Pyx_PyThreadState_declare  PyThreadState *__pyx_tstate;
-#define __Pyx_PyThreadState_assign  __pyx_tstate = PyThreadState_GET();
-#else
-#define __Pyx_PyThreadState_declare
-#define __Pyx_PyThreadState_assign
-#endif
-
-/* SaveResetException.proto */
-#if CYTHON_FAST_THREAD_STATE
-#define __Pyx_ExceptionSave(type, value, tb)  __Pyx__ExceptionSave(__pyx_tstate, type, value, tb)
-static CYTHON_INLINE void __Pyx__ExceptionSave(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb);
-#define __Pyx_ExceptionReset(type, value, tb)  __Pyx__ExceptionReset(__pyx_tstate, type, value, tb)
-static CYTHON_INLINE void __Pyx__ExceptionReset(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb);
-#else
-#define __Pyx_ExceptionSave(type, value, tb)   PyErr_GetExcInfo(type, value, tb)
-#define __Pyx_ExceptionReset(type, value, tb)  PyErr_SetExcInfo(type, value, tb)
-#endif
-
-/* PyErrExceptionMatches.proto */
-#if CYTHON_FAST_THREAD_STATE
-#define __Pyx_PyErr_ExceptionMatches(err) __Pyx_PyErr_ExceptionMatchesInState(__pyx_tstate, err)
-static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err);
-#else
-#define __Pyx_PyErr_ExceptionMatches(err)  PyErr_ExceptionMatches(err)
-#endif
-
-/* GetException.proto */
-#if CYTHON_FAST_THREAD_STATE
-#define __Pyx_GetException(type, value, tb)  __Pyx__GetException(__pyx_tstate, type, value, tb)
-static int __Pyx__GetException(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb);
-#else
-static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb);
-#endif
-
-/* PyErrFetchRestore.proto */
-#if CYTHON_FAST_THREAD_STATE
-#define __Pyx_ErrRestoreWithState(type, value, tb)  __Pyx_ErrRestoreInState(PyThreadState_GET(), type, value, tb)
-#define __Pyx_ErrFetchWithState(type, value, tb)    __Pyx_ErrFetchInState(PyThreadState_GET(), type, value, tb)
-#define __Pyx_ErrRestore(type, value, tb)  __Pyx_ErrRestoreInState(__pyx_tstate, type, value, tb)
-#define __Pyx_ErrFetch(type, value, tb)    __Pyx_ErrFetchInState(__pyx_tstate, type, value, tb)
-static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb);
-static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb);
-#else
-#define __Pyx_ErrRestoreWithState(type, value, tb)  PyErr_Restore(type, value, tb)
-#define __Pyx_ErrFetchWithState(type, value, tb)  PyErr_Fetch(type, value, tb)
-#define __Pyx_ErrRestore(type, value, tb)  PyErr_Restore(type, value, tb)
-#define __Pyx_ErrFetch(type, value, tb)  PyErr_Fetch(type, value, tb)
-#endif
-
-/* RaiseException.proto */
-static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause);
-
 /* FetchCommonType.proto */
 static PyTypeObject* __Pyx_FetchCommonType(PyTypeObject* type);
 
@@ -1006,6 +952,60 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_CallNoArg(PyObject *func);
 #define __Pyx_PyObject_CallNoArg(func) __Pyx_PyObject_Call(func, __pyx_empty_tuple, NULL)
 #endif
 
+/* PyThreadStateGet.proto */
+#if CYTHON_FAST_THREAD_STATE
+#define __Pyx_PyThreadState_declare  PyThreadState *__pyx_tstate;
+#define __Pyx_PyThreadState_assign  __pyx_tstate = PyThreadState_GET();
+#else
+#define __Pyx_PyThreadState_declare
+#define __Pyx_PyThreadState_assign
+#endif
+
+/* SaveResetException.proto */
+#if CYTHON_FAST_THREAD_STATE
+#define __Pyx_ExceptionSave(type, value, tb)  __Pyx__ExceptionSave(__pyx_tstate, type, value, tb)
+static CYTHON_INLINE void __Pyx__ExceptionSave(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb);
+#define __Pyx_ExceptionReset(type, value, tb)  __Pyx__ExceptionReset(__pyx_tstate, type, value, tb)
+static CYTHON_INLINE void __Pyx__ExceptionReset(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb);
+#else
+#define __Pyx_ExceptionSave(type, value, tb)   PyErr_GetExcInfo(type, value, tb)
+#define __Pyx_ExceptionReset(type, value, tb)  PyErr_SetExcInfo(type, value, tb)
+#endif
+
+/* GetException.proto */
+#if CYTHON_FAST_THREAD_STATE
+#define __Pyx_GetException(type, value, tb)  __Pyx__GetException(__pyx_tstate, type, value, tb)
+static int __Pyx__GetException(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb);
+#else
+static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb);
+#endif
+
+/* PyErrFetchRestore.proto */
+#if CYTHON_FAST_THREAD_STATE
+#define __Pyx_ErrRestoreWithState(type, value, tb)  __Pyx_ErrRestoreInState(PyThreadState_GET(), type, value, tb)
+#define __Pyx_ErrFetchWithState(type, value, tb)    __Pyx_ErrFetchInState(PyThreadState_GET(), type, value, tb)
+#define __Pyx_ErrRestore(type, value, tb)  __Pyx_ErrRestoreInState(__pyx_tstate, type, value, tb)
+#define __Pyx_ErrFetch(type, value, tb)    __Pyx_ErrFetchInState(__pyx_tstate, type, value, tb)
+static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb);
+static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb);
+#else
+#define __Pyx_ErrRestoreWithState(type, value, tb)  PyErr_Restore(type, value, tb)
+#define __Pyx_ErrFetchWithState(type, value, tb)  PyErr_Fetch(type, value, tb)
+#define __Pyx_ErrRestore(type, value, tb)  PyErr_Restore(type, value, tb)
+#define __Pyx_ErrFetch(type, value, tb)  PyErr_Fetch(type, value, tb)
+#endif
+
+/* PyErrExceptionMatches.proto */
+#if CYTHON_FAST_THREAD_STATE
+#define __Pyx_PyErr_ExceptionMatches(err) __Pyx_PyErr_ExceptionMatchesInState(__pyx_tstate, err)
+static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err);
+#else
+#define __Pyx_PyErr_ExceptionMatches(err)  PyErr_ExceptionMatches(err)
+#endif
+
+/* RaiseException.proto */
+static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause);
+
 /* PySequenceContains.proto */
 static CYTHON_INLINE int __Pyx_PySequence_ContainsTF(PyObject* item, PyObject* seq, int eq) {
     int result = PySequence_Contains(seq, item);
@@ -1098,15 +1098,14 @@ static PyObject *__pyx_f_6validr_7_schema_get_object_value(PyObject *, PyObject 
 int __pyx_module_is_main_validr___schema = 0;
 
 /* Implementation of 'validr._schema' */
-static PyObject *__pyx_builtin_TypeError;
 static PyObject *__pyx_builtin_enumerate;
+static PyObject *__pyx_builtin_TypeError;
 static const char __pyx_k_i[] = "i";
 static const char __pyx_k_k[] = "k";
 static const char __pyx_k_v[] = "v";
 static const char __pyx_k_x[] = "x";
 static const char __pyx_k_get[] = "get";
 static const char __pyx_k_key[] = "key";
-static const char __pyx_k_data[] = "data";
 static const char __pyx_k_desc[] = "desc";
 static const char __pyx_k_exit[] = "__exit__";
 static const char __pyx_k_main[] = "__main__";
@@ -1132,16 +1131,16 @@ static const char __pyx_k_mark_key[] = "mark_key";
 static const char __pyx_k_not_list[] = "not list";
 static const char __pyx_k_optional[] = "optional";
 static const char __pyx_k_required[] = "required";
-static const char __pyx_k_validate[] = "validate";
 static const char __pyx_k_TypeError[] = "TypeError";
 static const char __pyx_k_enumerate[] = "enumerate";
-static const char __pyx_k_validator[] = "validator";
 static const char __pyx_k_exceptions[] = "exceptions";
 static const char __pyx_k_mark_index[] = "mark_index";
 static const char __pyx_k_not_unique[] = "not unique";
 static const char __pyx_k_validators[] = "validators";
 static const char __pyx_k_SchemaError[] = "SchemaError";
 static const char __pyx_k_ValidrError[] = "ValidrError";
+static const char __pyx_k_validate_dict[] = "validate_dict";
+static const char __pyx_k_validate_list[] = "validate_list";
 static const char __pyx_k_dict_validator[] = "dict_validator";
 static const char __pyx_k_list_validator[] = "list_validator";
 static const char __pyx_k_validr__schema[] = "validr._schema";
@@ -1150,10 +1149,9 @@ static const char __pyx_k_merge_validators[] = "merge_validators";
 static const char __pyx_k_merged_validator[] = "merged_validator";
 static const char __pyx_k_list_length_must_d[] = "list length must <= %d";
 static const char __pyx_k_list_length_must_d_2[] = "list length must >= %d";
-static const char __pyx_k_can_t_merge_non_dict_value[] = "can't merge non-dict value";
 static const char __pyx_k_Users_xiachufang_dev_validr_val[] = "/Users/xiachufang/dev/validr/validr/_schema.pyx";
-static const char __pyx_k_dict_validator_locals_validator[] = "dict_validator.<locals>.validator";
-static const char __pyx_k_list_validator_locals_validator[] = "list_validator.<locals>.validator";
+static const char __pyx_k_dict_validator_locals_validate_d[] = "dict_validator.<locals>.validate_dict";
+static const char __pyx_k_list_validator_locals_validate_l[] = "list_validator.<locals>.validate_list";
 static const char __pyx_k_merge_validators_locals_merged_v[] = "merge_validators.<locals>.merged_validator";
 static PyObject *__pyx_n_s_Invalid;
 static PyObject *__pyx_n_s_Mapping;
@@ -1161,12 +1159,10 @@ static PyObject *__pyx_n_s_SchemaError;
 static PyObject *__pyx_n_s_TypeError;
 static PyObject *__pyx_kp_s_Users_xiachufang_dev_validr_val;
 static PyObject *__pyx_n_s_ValidrError;
-static PyObject *__pyx_kp_s_can_t_merge_non_dict_value;
 static PyObject *__pyx_n_s_collections_abc;
-static PyObject *__pyx_n_s_data;
 static PyObject *__pyx_n_s_desc;
 static PyObject *__pyx_n_s_dict_validator;
-static PyObject *__pyx_n_s_dict_validator_locals_validator;
+static PyObject *__pyx_n_s_dict_validator_locals_validate_d;
 static PyObject *__pyx_n_s_enter;
 static PyObject *__pyx_n_s_enumerate;
 static PyObject *__pyx_n_s_exc_tb;
@@ -1186,7 +1182,7 @@ static PyObject *__pyx_n_s_key;
 static PyObject *__pyx_kp_s_list_length_must_d;
 static PyObject *__pyx_kp_s_list_length_must_d_2;
 static PyObject *__pyx_n_s_list_validator;
-static PyObject *__pyx_n_s_list_validator_locals_validator;
+static PyObject *__pyx_n_s_list_validator_locals_validate_l;
 static PyObject *__pyx_n_s_main;
 static PyObject *__pyx_n_s_mark_index;
 static PyObject *__pyx_n_s_mark_key;
@@ -1204,8 +1200,8 @@ static PyObject *__pyx_n_s_test;
 static PyObject *__pyx_n_s_unique;
 static PyObject *__pyx_n_s_update;
 static PyObject *__pyx_n_s_v;
-static PyObject *__pyx_n_s_validate;
-static PyObject *__pyx_n_s_validator;
+static PyObject *__pyx_n_s_validate_dict;
+static PyObject *__pyx_n_s_validate_list;
 static PyObject *__pyx_n_s_validators;
 static PyObject *__pyx_n_s_validr__schema;
 static PyObject *__pyx_n_s_value;
@@ -1213,20 +1209,14 @@ static PyObject *__pyx_n_s_x;
 static int __pyx_pf_6validr_7_schema_9MarkIndex___init__(struct __pyx_obj_6validr_7_schema_MarkIndex *__pyx_v_self, PyObject *__pyx_v_items); /* proto */
 static PyObject *__pyx_pf_6validr_7_schema_9MarkIndex_2__enter__(struct __pyx_obj_6validr_7_schema_MarkIndex *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_6validr_7_schema_9MarkIndex_4__exit__(struct __pyx_obj_6validr_7_schema_MarkIndex *__pyx_v_self, PyObject *__pyx_v_exc_type, PyObject *__pyx_v_exc_val, CYTHON_UNUSED PyObject *__pyx_v_exc_tb); /* proto */
-static PyObject *__pyx_pf_6validr_7_schema_9MarkIndex_5items___get__(struct __pyx_obj_6validr_7_schema_MarkIndex *__pyx_v_self); /* proto */
-static int __pyx_pf_6validr_7_schema_9MarkIndex_5items_2__set__(struct __pyx_obj_6validr_7_schema_MarkIndex *__pyx_v_self, PyObject *__pyx_v_value); /* proto */
-static int __pyx_pf_6validr_7_schema_9MarkIndex_5items_4__del__(struct __pyx_obj_6validr_7_schema_MarkIndex *__pyx_v_self); /* proto */
 static int __pyx_pf_6validr_7_schema_7MarkKey___init__(struct __pyx_obj_6validr_7_schema_MarkKey *__pyx_v_self, PyObject *__pyx_v_key); /* proto */
 static PyObject *__pyx_pf_6validr_7_schema_7MarkKey_2__enter__(struct __pyx_obj_6validr_7_schema_MarkKey *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_6validr_7_schema_7MarkKey_4__exit__(struct __pyx_obj_6validr_7_schema_MarkKey *__pyx_v_self, PyObject *__pyx_v_exc_type, PyObject *__pyx_v_exc_val, CYTHON_UNUSED PyObject *__pyx_v_exc_tb); /* proto */
-static PyObject *__pyx_pf_6validr_7_schema_7MarkKey_3key___get__(struct __pyx_obj_6validr_7_schema_MarkKey *__pyx_v_self); /* proto */
-static int __pyx_pf_6validr_7_schema_7MarkKey_3key_2__set__(struct __pyx_obj_6validr_7_schema_MarkKey *__pyx_v_self, PyObject *__pyx_v_value); /* proto */
-static int __pyx_pf_6validr_7_schema_7MarkKey_3key_4__del__(struct __pyx_obj_6validr_7_schema_MarkKey *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_6validr_7_schema_16merge_validators_merged_validator(PyObject *__pyx_self, PyObject *__pyx_v_value); /* proto */
 static PyObject *__pyx_pf_6validr_7_schema_merge_validators(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_validators, int __pyx_v_optional, CYTHON_UNUSED PyObject *__pyx_v_desc); /* proto */
-static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *__pyx_self, PyObject *__pyx_v_value); /* proto */
+static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validate_dict(PyObject *__pyx_self, PyObject *__pyx_v_value); /* proto */
 static PyObject *__pyx_pf_6validr_7_schema_2dict_validator(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_inners, int __pyx_v_optional, CYTHON_UNUSED PyObject *__pyx_v_desc); /* proto */
-static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *__pyx_self, PyObject *__pyx_v_value); /* proto */
+static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validate_list(PyObject *__pyx_self, PyObject *__pyx_v_value); /* proto */
 static PyObject *__pyx_pf_6validr_7_schema_4list_validator(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_inner, int __pyx_v_minlen, int __pyx_v_maxlen, int __pyx_v_unique, int __pyx_v_optional, CYTHON_UNUSED PyObject *__pyx_v_desc); /* proto */
 static PyObject *__pyx_tp_new_6validr_7_schema_MarkIndex(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tp_new_6validr_7_schema_MarkKey(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
@@ -1235,26 +1225,25 @@ static PyObject *__pyx_tp_new_6validr_7_schema___pyx_scope_struct_1_dict_validat
 static PyObject *__pyx_tp_new_6validr_7_schema___pyx_scope_struct_2_list_validator(PyTypeObject *t, PyObject *a, PyObject *k); /*proto*/
 static PyObject *__pyx_tuple_;
 static PyObject *__pyx_tuple__2;
-static PyObject *__pyx_tuple__3;
+static PyObject *__pyx_tuple__4;
 static PyObject *__pyx_tuple__5;
-static PyObject *__pyx_tuple__6;
+static PyObject *__pyx_tuple__7;
 static PyObject *__pyx_tuple__8;
 static PyObject *__pyx_tuple__9;
 static PyObject *__pyx_tuple__10;
-static PyObject *__pyx_tuple__11;
+static PyObject *__pyx_tuple__12;
 static PyObject *__pyx_tuple__13;
-static PyObject *__pyx_tuple__14;
-static PyObject *__pyx_tuple__16;
-static PyObject *__pyx_tuple__18;
-static PyObject *__pyx_codeobj__4;
-static PyObject *__pyx_codeobj__7;
-static PyObject *__pyx_codeobj__12;
-static PyObject *__pyx_codeobj__15;
-static PyObject *__pyx_codeobj__17;
-static PyObject *__pyx_codeobj__19;
+static PyObject *__pyx_tuple__15;
+static PyObject *__pyx_tuple__17;
+static PyObject *__pyx_codeobj__3;
+static PyObject *__pyx_codeobj__6;
+static PyObject *__pyx_codeobj__11;
+static PyObject *__pyx_codeobj__14;
+static PyObject *__pyx_codeobj__16;
+static PyObject *__pyx_codeobj__18;
 
 /* "validr/_schema.pyx":10
- *     cdef public list items
+ *     cdef list items
  * 
  *     def __init__(self, items):             # <<<<<<<<<<<<<<
  *         self.items = items
@@ -1333,7 +1322,7 @@ static int __pyx_pf_6validr_7_schema_9MarkIndex___init__(struct __pyx_obj_6valid
   __pyx_t_1 = 0;
 
   /* "validr/_schema.pyx":10
- *     cdef public list items
+ *     cdef list items
  * 
  *     def __init__(self, items):             # <<<<<<<<<<<<<<
  *         self.items = items
@@ -1656,113 +1645,8 @@ static PyObject *__pyx_pf_6validr_7_schema_9MarkIndex_4__exit__(struct __pyx_obj
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":8
- *     """Add current index to Invalid/SchemaError"""
- * 
- *     cdef public list items             # <<<<<<<<<<<<<<
- * 
- *     def __init__(self, items):
- */
-
-/* Python wrapper */
-static PyObject *__pyx_pw_6validr_7_schema_9MarkIndex_5items_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_6validr_7_schema_9MarkIndex_5items_1__get__(PyObject *__pyx_v_self) {
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_6validr_7_schema_9MarkIndex_5items___get__(((struct __pyx_obj_6validr_7_schema_MarkIndex *)__pyx_v_self));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_6validr_7_schema_9MarkIndex_5items___get__(struct __pyx_obj_6validr_7_schema_MarkIndex *__pyx_v_self) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__get__", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __Pyx_INCREF(__pyx_v_self->items);
-  __pyx_r = __pyx_v_self->items;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static int __pyx_pw_6validr_7_schema_9MarkIndex_5items_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value); /*proto*/
-static int __pyx_pw_6validr_7_schema_9MarkIndex_5items_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value) {
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__set__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_6validr_7_schema_9MarkIndex_5items_2__set__(((struct __pyx_obj_6validr_7_schema_MarkIndex *)__pyx_v_self), ((PyObject *)__pyx_v_value));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static int __pyx_pf_6validr_7_schema_9MarkIndex_5items_2__set__(struct __pyx_obj_6validr_7_schema_MarkIndex *__pyx_v_self, PyObject *__pyx_v_value) {
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  __Pyx_RefNannySetupContext("__set__", 0);
-  if (!(likely(PyList_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "list", Py_TYPE(__pyx_v_value)->tp_name), 0))) __PYX_ERR(0, 8, __pyx_L1_error)
-  __pyx_t_1 = __pyx_v_value;
-  __Pyx_INCREF(__pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __Pyx_GOTREF(__pyx_v_self->items);
-  __Pyx_DECREF(__pyx_v_self->items);
-  __pyx_v_self->items = ((PyObject*)__pyx_t_1);
-  __pyx_t_1 = 0;
-
-  /* function exit code */
-  __pyx_r = 0;
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("validr._schema.MarkIndex.items.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = -1;
-  __pyx_L0:;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static int __pyx_pw_6validr_7_schema_9MarkIndex_5items_5__del__(PyObject *__pyx_v_self); /*proto*/
-static int __pyx_pw_6validr_7_schema_9MarkIndex_5items_5__del__(PyObject *__pyx_v_self) {
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__del__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_6validr_7_schema_9MarkIndex_5items_4__del__(((struct __pyx_obj_6validr_7_schema_MarkIndex *)__pyx_v_self));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static int __pyx_pf_6validr_7_schema_9MarkIndex_5items_4__del__(struct __pyx_obj_6validr_7_schema_MarkIndex *__pyx_v_self) {
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__del__", 0);
-  __Pyx_INCREF(Py_None);
-  __Pyx_GIVEREF(Py_None);
-  __Pyx_GOTREF(__pyx_v_self->items);
-  __Pyx_DECREF(__pyx_v_self->items);
-  __pyx_v_self->items = ((PyObject*)Py_None);
-
-  /* function exit code */
-  __pyx_r = 0;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
 /* "validr/_schema.pyx":29
- *     cdef public str key
+ *     cdef str key
  * 
  *     def __init__(self, key):             # <<<<<<<<<<<<<<
  *         self.key = key
@@ -1841,7 +1725,7 @@ static int __pyx_pf_6validr_7_schema_7MarkKey___init__(struct __pyx_obj_6validr_
   __pyx_t_1 = 0;
 
   /* "validr/_schema.pyx":29
- *     cdef public str key
+ *     cdef str key
  * 
  *     def __init__(self, key):             # <<<<<<<<<<<<<<
  *         self.key = key
@@ -2110,111 +1994,6 @@ static PyObject *__pyx_pf_6validr_7_schema_7MarkKey_4__exit__(struct __pyx_obj_6
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":27
- *     """Add current key to Invalid/SchemaError"""
- * 
- *     cdef public str key             # <<<<<<<<<<<<<<
- * 
- *     def __init__(self, key):
- */
-
-/* Python wrapper */
-static PyObject *__pyx_pw_6validr_7_schema_7MarkKey_3key_1__get__(PyObject *__pyx_v_self); /*proto*/
-static PyObject *__pyx_pw_6validr_7_schema_7MarkKey_3key_1__get__(PyObject *__pyx_v_self) {
-  PyObject *__pyx_r = 0;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__get__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_6validr_7_schema_7MarkKey_3key___get__(((struct __pyx_obj_6validr_7_schema_MarkKey *)__pyx_v_self));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static PyObject *__pyx_pf_6validr_7_schema_7MarkKey_3key___get__(struct __pyx_obj_6validr_7_schema_MarkKey *__pyx_v_self) {
-  PyObject *__pyx_r = NULL;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__get__", 0);
-  __Pyx_XDECREF(__pyx_r);
-  __Pyx_INCREF(__pyx_v_self->key);
-  __pyx_r = __pyx_v_self->key;
-  goto __pyx_L0;
-
-  /* function exit code */
-  __pyx_L0:;
-  __Pyx_XGIVEREF(__pyx_r);
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static int __pyx_pw_6validr_7_schema_7MarkKey_3key_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value); /*proto*/
-static int __pyx_pw_6validr_7_schema_7MarkKey_3key_3__set__(PyObject *__pyx_v_self, PyObject *__pyx_v_value) {
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__set__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_6validr_7_schema_7MarkKey_3key_2__set__(((struct __pyx_obj_6validr_7_schema_MarkKey *)__pyx_v_self), ((PyObject *)__pyx_v_value));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static int __pyx_pf_6validr_7_schema_7MarkKey_3key_2__set__(struct __pyx_obj_6validr_7_schema_MarkKey *__pyx_v_self, PyObject *__pyx_v_value) {
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  PyObject *__pyx_t_1 = NULL;
-  __Pyx_RefNannySetupContext("__set__", 0);
-  if (!(likely(PyString_CheckExact(__pyx_v_value))||((__pyx_v_value) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_v_value)->tp_name), 0))) __PYX_ERR(0, 27, __pyx_L1_error)
-  __pyx_t_1 = __pyx_v_value;
-  __Pyx_INCREF(__pyx_t_1);
-  __Pyx_GIVEREF(__pyx_t_1);
-  __Pyx_GOTREF(__pyx_v_self->key);
-  __Pyx_DECREF(__pyx_v_self->key);
-  __pyx_v_self->key = ((PyObject*)__pyx_t_1);
-  __pyx_t_1 = 0;
-
-  /* function exit code */
-  __pyx_r = 0;
-  goto __pyx_L0;
-  __pyx_L1_error:;
-  __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("validr._schema.MarkKey.key.__set__", __pyx_clineno, __pyx_lineno, __pyx_filename);
-  __pyx_r = -1;
-  __pyx_L0:;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-/* Python wrapper */
-static int __pyx_pw_6validr_7_schema_7MarkKey_3key_5__del__(PyObject *__pyx_v_self); /*proto*/
-static int __pyx_pw_6validr_7_schema_7MarkKey_3key_5__del__(PyObject *__pyx_v_self) {
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__del__ (wrapper)", 0);
-  __pyx_r = __pyx_pf_6validr_7_schema_7MarkKey_3key_4__del__(((struct __pyx_obj_6validr_7_schema_MarkKey *)__pyx_v_self));
-
-  /* function exit code */
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
-static int __pyx_pf_6validr_7_schema_7MarkKey_3key_4__del__(struct __pyx_obj_6validr_7_schema_MarkKey *__pyx_v_self) {
-  int __pyx_r;
-  __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("__del__", 0);
-  __Pyx_INCREF(Py_None);
-  __Pyx_GIVEREF(Py_None);
-  __Pyx_GOTREF(__pyx_v_self->key);
-  __Pyx_DECREF(__pyx_v_self->key);
-  __pyx_v_self->key = ((PyObject*)Py_None);
-
-  /* function exit code */
-  __pyx_r = 0;
-  __Pyx_RefNannyFinishContext();
-  return __pyx_r;
-}
-
 /* "validr/_schema.pyx":40
  * 
  * 
@@ -2331,7 +2110,6 @@ static PyObject *__pyx_pf_6validr_7_schema_16merge_validators_merged_validator(P
   struct __pyx_obj_6validr_7_schema___pyx_scope_struct__merge_validators *__pyx_outer_scope;
   PyObject *__pyx_v_result = NULL;
   PyObject *__pyx_v_v = NULL;
-  PyObject *__pyx_v_data = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2343,9 +2121,6 @@ static PyObject *__pyx_pf_6validr_7_schema_16merge_validators_merged_validator(P
   PyObject *__pyx_t_7 = NULL;
   PyObject *__pyx_t_8 = NULL;
   PyObject *__pyx_t_9 = NULL;
-  PyObject *__pyx_t_10 = NULL;
-  int __pyx_t_11;
-  PyObject *__pyx_t_12 = NULL;
   __Pyx_RefNannySetupContext("merged_validator", 0);
   __pyx_outer_scope = (struct __pyx_obj_6validr_7_schema___pyx_scope_struct__merge_validators *) __Pyx_CyFunction_GetClosure(__pyx_self);
   __pyx_cur_scope = __pyx_outer_scope;
@@ -2389,7 +2164,7 @@ static PyObject *__pyx_pf_6validr_7_schema_16merge_validators_merged_validator(P
  *             return None
  *         result = {}             # <<<<<<<<<<<<<<
  *         for v in validators:
- *             data = v(value)
+ *             result.update(v(value))
  */
   __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -2400,8 +2175,8 @@ static PyObject *__pyx_pf_6validr_7_schema_16merge_validators_merged_validator(P
  *             return None
  *         result = {}
  *         for v in validators:             # <<<<<<<<<<<<<<
- *             data = v(value)
- *             try:
+ *             result.update(v(value))
+ *         return result
  */
   if (unlikely(!__pyx_cur_scope->__pyx_v_validators)) { __Pyx_RaiseClosureNameError("validators"); __PYX_ERR(0, 45, __pyx_L1_error) }
   if (unlikely(__pyx_cur_scope->__pyx_v_validators == Py_None)) {
@@ -2423,209 +2198,117 @@ static PyObject *__pyx_pf_6validr_7_schema_16merge_validators_merged_validator(P
     /* "validr/_schema.pyx":46
  *         result = {}
  *         for v in validators:
- *             data = v(value)             # <<<<<<<<<<<<<<
- *             try:
- *                 result.update(data)
+ *             result.update(v(value))             # <<<<<<<<<<<<<<
+ *         return result
+ *     return merged_validator
  */
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_result, __pyx_n_s_update); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 46, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
     __Pyx_INCREF(__pyx_v_v);
-    __pyx_t_5 = __pyx_v_v; __pyx_t_6 = NULL;
-    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_5))) {
-      __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_5);
-      if (likely(__pyx_t_6)) {
+    __pyx_t_7 = __pyx_v_v; __pyx_t_8 = NULL;
+    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_7))) {
+      __pyx_t_8 = PyMethod_GET_SELF(__pyx_t_7);
+      if (likely(__pyx_t_8)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
+        __Pyx_INCREF(__pyx_t_8);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_7, function);
+      }
+    }
+    if (!__pyx_t_8) {
+      __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_v_value); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 46, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+    } else {
+      #if CYTHON_FAST_PYCALL
+      if (PyFunction_Check(__pyx_t_7)) {
+        PyObject *__pyx_temp[2] = {__pyx_t_8, __pyx_v_value};
+        __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 46, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_GOTREF(__pyx_t_6);
+      } else
+      #endif
+      #if CYTHON_FAST_PYCCALL
+      if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
+        PyObject *__pyx_temp[2] = {__pyx_t_8, __pyx_v_value};
+        __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 46, __pyx_L1_error)
+        __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
+        __Pyx_GOTREF(__pyx_t_6);
+      } else
+      #endif
+      {
+        __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 46, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_9);
+        __Pyx_GIVEREF(__pyx_t_8); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_8); __pyx_t_8 = NULL;
+        __Pyx_INCREF(__pyx_v_value);
+        __Pyx_GIVEREF(__pyx_v_value);
+        PyTuple_SET_ITEM(__pyx_t_9, 0+1, __pyx_v_value);
+        __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_9, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 46, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_6);
+        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
+      }
+    }
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_7 = NULL;
+    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
+      __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_5);
+      if (likely(__pyx_t_7)) {
         PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
-        __Pyx_INCREF(__pyx_t_6);
+        __Pyx_INCREF(__pyx_t_7);
         __Pyx_INCREF(function);
         __Pyx_DECREF_SET(__pyx_t_5, function);
       }
     }
-    if (!__pyx_t_6) {
-      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_v_value); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
+    if (!__pyx_t_7) {
+      __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __Pyx_GOTREF(__pyx_t_4);
     } else {
       #if CYTHON_FAST_PYCALL
       if (PyFunction_Check(__pyx_t_5)) {
-        PyObject *__pyx_temp[2] = {__pyx_t_6, __pyx_v_value};
+        PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_t_6};
         __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
-        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_GOTREF(__pyx_t_4);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       } else
       #endif
       #if CYTHON_FAST_PYCCALL
       if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
-        PyObject *__pyx_temp[2] = {__pyx_t_6, __pyx_v_value};
+        PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_t_6};
         __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
-        __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
+        __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
         __Pyx_GOTREF(__pyx_t_4);
+        __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       } else
       #endif
       {
-        __pyx_t_7 = PyTuple_New(1+1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 46, __pyx_L1_error)
-        __Pyx_GOTREF(__pyx_t_7);
-        __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6); __pyx_t_6 = NULL;
-        __Pyx_INCREF(__pyx_v_value);
-        __Pyx_GIVEREF(__pyx_v_value);
-        PyTuple_SET_ITEM(__pyx_t_7, 0+1, __pyx_v_value);
-        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_7, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
+        __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 46, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_9);
+        __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_7); __pyx_t_7 = NULL;
+        __Pyx_GIVEREF(__pyx_t_6);
+        PyTuple_SET_ITEM(__pyx_t_9, 0+1, __pyx_t_6);
+        __pyx_t_6 = 0;
+        __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_9, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 46, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+        __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       }
     }
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __Pyx_XDECREF_SET(__pyx_v_data, __pyx_t_4);
-    __pyx_t_4 = 0;
-
-    /* "validr/_schema.pyx":47
- *         for v in validators:
- *             data = v(value)
- *             try:             # <<<<<<<<<<<<<<
- *                 result.update(data)
- *             except TypeError:
- */
-    {
-      __Pyx_PyThreadState_declare
-      __Pyx_PyThreadState_assign
-      __Pyx_ExceptionSave(&__pyx_t_8, &__pyx_t_9, &__pyx_t_10);
-      __Pyx_XGOTREF(__pyx_t_8);
-      __Pyx_XGOTREF(__pyx_t_9);
-      __Pyx_XGOTREF(__pyx_t_10);
-      /*try:*/ {
-
-        /* "validr/_schema.pyx":48
- *             data = v(value)
- *             try:
- *                 result.update(data)             # <<<<<<<<<<<<<<
- *             except TypeError:
- *                 raise SchemaError("can't merge non-dict value")
- */
-        __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_result, __pyx_n_s_update); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 48, __pyx_L6_error)
-        __Pyx_GOTREF(__pyx_t_5);
-        __pyx_t_7 = NULL;
-        if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
-          __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_5);
-          if (likely(__pyx_t_7)) {
-            PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
-            __Pyx_INCREF(__pyx_t_7);
-            __Pyx_INCREF(function);
-            __Pyx_DECREF_SET(__pyx_t_5, function);
-          }
-        }
-        if (!__pyx_t_7) {
-          __pyx_t_4 = __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_v_data); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 48, __pyx_L6_error)
-          __Pyx_GOTREF(__pyx_t_4);
-        } else {
-          #if CYTHON_FAST_PYCALL
-          if (PyFunction_Check(__pyx_t_5)) {
-            PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_v_data};
-            __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 48, __pyx_L6_error)
-            __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-            __Pyx_GOTREF(__pyx_t_4);
-          } else
-          #endif
-          #if CYTHON_FAST_PYCCALL
-          if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
-            PyObject *__pyx_temp[2] = {__pyx_t_7, __pyx_v_data};
-            __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 48, __pyx_L6_error)
-            __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-            __Pyx_GOTREF(__pyx_t_4);
-          } else
-          #endif
-          {
-            __pyx_t_6 = PyTuple_New(1+1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 48, __pyx_L6_error)
-            __Pyx_GOTREF(__pyx_t_6);
-            __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_7); __pyx_t_7 = NULL;
-            __Pyx_INCREF(__pyx_v_data);
-            __Pyx_GIVEREF(__pyx_v_data);
-            PyTuple_SET_ITEM(__pyx_t_6, 0+1, __pyx_v_data);
-            __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_6, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 48, __pyx_L6_error)
-            __Pyx_GOTREF(__pyx_t_4);
-            __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-          }
-        }
-        __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-        __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-
-        /* "validr/_schema.pyx":47
- *         for v in validators:
- *             data = v(value)
- *             try:             # <<<<<<<<<<<<<<
- *                 result.update(data)
- *             except TypeError:
- */
-      }
-      __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
-      __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
-      __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
-      goto __pyx_L13_try_end;
-      __pyx_L6_error:;
-      __Pyx_PyThreadState_assign
-      __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-
-      /* "validr/_schema.pyx":49
- *             try:
- *                 result.update(data)
- *             except TypeError:             # <<<<<<<<<<<<<<
- *                 raise SchemaError("can't merge non-dict value")
- *         return result
- */
-      __pyx_t_11 = __Pyx_PyErr_ExceptionMatches(__pyx_builtin_TypeError);
-      if (__pyx_t_11) {
-        __Pyx_AddTraceback("validr._schema.merge_validators.merged_validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
-        if (__Pyx_GetException(&__pyx_t_4, &__pyx_t_5, &__pyx_t_6) < 0) __PYX_ERR(0, 49, __pyx_L8_except_error)
-        __Pyx_GOTREF(__pyx_t_4);
-        __Pyx_GOTREF(__pyx_t_5);
-        __Pyx_GOTREF(__pyx_t_6);
-
-        /* "validr/_schema.pyx":50
- *                 result.update(data)
- *             except TypeError:
- *                 raise SchemaError("can't merge non-dict value")             # <<<<<<<<<<<<<<
- *         return result
- *     return merged_validator
- */
-        __pyx_t_7 = __Pyx_GetModuleGlobalName(__pyx_n_s_SchemaError); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 50, __pyx_L8_except_error)
-        __Pyx_GOTREF(__pyx_t_7);
-        __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 50, __pyx_L8_except_error)
-        __Pyx_GOTREF(__pyx_t_12);
-        __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-        __Pyx_Raise(__pyx_t_12, 0, 0, 0);
-        __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-        __PYX_ERR(0, 50, __pyx_L8_except_error)
-      }
-      goto __pyx_L8_except_error;
-      __pyx_L8_except_error:;
-
-      /* "validr/_schema.pyx":47
- *         for v in validators:
- *             data = v(value)
- *             try:             # <<<<<<<<<<<<<<
- *                 result.update(data)
- *             except TypeError:
- */
-      __Pyx_PyThreadState_assign
-      __Pyx_XGIVEREF(__pyx_t_8);
-      __Pyx_XGIVEREF(__pyx_t_9);
-      __Pyx_XGIVEREF(__pyx_t_10);
-      __Pyx_ExceptionReset(__pyx_t_8, __pyx_t_9, __pyx_t_10);
-      goto __pyx_L1_error;
-      __pyx_L13_try_end:;
-    }
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
 
     /* "validr/_schema.pyx":45
  *             return None
  *         result = {}
  *         for v in validators:             # <<<<<<<<<<<<<<
- *             data = v(value)
- *             try:
+ *             result.update(v(value))
+ *         return result
  */
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "validr/_schema.pyx":51
- *             except TypeError:
- *                 raise SchemaError("can't merge non-dict value")
+  /* "validr/_schema.pyx":47
+ *         for v in validators:
+ *             result.update(v(value))
  *         return result             # <<<<<<<<<<<<<<
  *     return merged_validator
  * 
@@ -2650,13 +2333,13 @@ static PyObject *__pyx_pf_6validr_7_schema_16merge_validators_merged_validator(P
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
-  __Pyx_XDECREF(__pyx_t_12);
+  __Pyx_XDECREF(__pyx_t_8);
+  __Pyx_XDECREF(__pyx_t_9);
   __Pyx_AddTraceback("validr._schema.merge_validators.merged_validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_result);
   __Pyx_XDECREF(__pyx_v_v);
-  __Pyx_XDECREF(__pyx_v_data);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
@@ -2697,13 +2380,13 @@ static PyObject *__pyx_pf_6validr_7_schema_merge_validators(CYTHON_UNUSED PyObje
  *         if check_optional(value, optional):
  *             return None
  */
-  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_6validr_7_schema_16merge_validators_1merged_validator, 0, __pyx_n_s_merge_validators_locals_merged_v, ((PyObject*)__pyx_cur_scope), __pyx_n_s_validr__schema, __pyx_d, ((PyObject *)__pyx_codeobj__4)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 41, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_6validr_7_schema_16merge_validators_1merged_validator, 0, __pyx_n_s_merge_validators_locals_merged_v, ((PyObject*)__pyx_cur_scope), __pyx_n_s_validr__schema, __pyx_d, ((PyObject *)__pyx_codeobj__3)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 41, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_v_merged_validator = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "validr/_schema.pyx":52
- *                 raise SchemaError("can't merge non-dict value")
+  /* "validr/_schema.pyx":48
+ *             result.update(v(value))
  *         return result
  *     return merged_validator             # <<<<<<<<<<<<<<
  * 
@@ -2735,7 +2418,7 @@ static PyObject *__pyx_pf_6validr_7_schema_merge_validators(CYTHON_UNUSED PyObje
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":55
+/* "validr/_schema.pyx":51
  * 
  * 
  * def dict_validator(inners, bint optional=False, str desc=None):             # <<<<<<<<<<<<<<
@@ -2784,7 +2467,7 @@ static PyObject *__pyx_pw_6validr_7_schema_3dict_validator(PyObject *__pyx_self,
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "dict_validator") < 0)) __PYX_ERR(0, 55, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "dict_validator") < 0)) __PYX_ERR(0, 51, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -2797,7 +2480,7 @@ static PyObject *__pyx_pw_6validr_7_schema_3dict_validator(PyObject *__pyx_self,
     }
     __pyx_v_inners = values[0];
     if (values[1]) {
-      __pyx_v_optional = __Pyx_PyObject_IsTrue(values[1]); if (unlikely((__pyx_v_optional == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 55, __pyx_L3_error)
+      __pyx_v_optional = __Pyx_PyObject_IsTrue(values[1]); if (unlikely((__pyx_v_optional == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 51, __pyx_L3_error)
     } else {
       __pyx_v_optional = ((int)0);
     }
@@ -2805,13 +2488,13 @@ static PyObject *__pyx_pw_6validr_7_schema_3dict_validator(PyObject *__pyx_self,
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("dict_validator", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 55, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("dict_validator", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 51, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("validr._schema.dict_validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_desc), (&PyString_Type), 1, "desc", 1))) __PYX_ERR(0, 55, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_desc), (&PyString_Type), 1, "desc", 1))) __PYX_ERR(0, 51, __pyx_L1_error)
   __pyx_r = __pyx_pf_6validr_7_schema_2dict_validator(__pyx_self, __pyx_v_inners, __pyx_v_optional, __pyx_v_desc);
 
   /* function exit code */
@@ -2823,35 +2506,35 @@ static PyObject *__pyx_pw_6validr_7_schema_3dict_validator(PyObject *__pyx_self,
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":59
+/* "validr/_schema.pyx":55
  *     inners = list(inners.items())
  * 
- *     def validator(value):             # <<<<<<<<<<<<<<
+ *     def validate_dict(value):             # <<<<<<<<<<<<<<
  *         if check_optional(value, optional):
  *             return None
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_6validr_7_schema_14dict_validator_1validator(PyObject *__pyx_self, PyObject *__pyx_v_value); /*proto*/
-static PyMethodDef __pyx_mdef_6validr_7_schema_14dict_validator_1validator = {"validator", (PyCFunction)__pyx_pw_6validr_7_schema_14dict_validator_1validator, METH_O, 0};
-static PyObject *__pyx_pw_6validr_7_schema_14dict_validator_1validator(PyObject *__pyx_self, PyObject *__pyx_v_value) {
+static PyObject *__pyx_pw_6validr_7_schema_14dict_validator_1validate_dict(PyObject *__pyx_self, PyObject *__pyx_v_value); /*proto*/
+static PyMethodDef __pyx_mdef_6validr_7_schema_14dict_validator_1validate_dict = {"validate_dict", (PyCFunction)__pyx_pw_6validr_7_schema_14dict_validator_1validate_dict, METH_O, 0};
+static PyObject *__pyx_pw_6validr_7_schema_14dict_validator_1validate_dict(PyObject *__pyx_self, PyObject *__pyx_v_value) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("validator (wrapper)", 0);
-  __pyx_r = __pyx_pf_6validr_7_schema_14dict_validator_validator(__pyx_self, ((PyObject *)__pyx_v_value));
+  __Pyx_RefNannySetupContext("validate_dict (wrapper)", 0);
+  __pyx_r = __pyx_pf_6validr_7_schema_14dict_validator_validate_dict(__pyx_self, ((PyObject *)__pyx_v_value));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *__pyx_self, PyObject *__pyx_v_value) {
+static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validate_dict(PyObject *__pyx_self, PyObject *__pyx_v_value) {
   struct __pyx_obj_6validr_7_schema___pyx_scope_struct_1_dict_validator *__pyx_cur_scope;
   struct __pyx_obj_6validr_7_schema___pyx_scope_struct_1_dict_validator *__pyx_outer_scope;
-  PyObject *__pyx_v_result = NULL;
   PyObject *(*__pyx_v_get_item)(PyObject *, PyObject *);
+  PyObject *__pyx_v_result = NULL;
   PyObject *__pyx_v_k = 0;
-  PyObject *__pyx_v_validate = NULL;
+  PyObject *__pyx_v_inner = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2870,71 +2553,59 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
   PyObject *__pyx_t_14 = NULL;
   PyObject *__pyx_t_15 = NULL;
   PyObject *__pyx_t_16 = NULL;
-  __Pyx_RefNannySetupContext("validator", 0);
+  __Pyx_RefNannySetupContext("validate_dict", 0);
   __pyx_outer_scope = (struct __pyx_obj_6validr_7_schema___pyx_scope_struct_1_dict_validator *) __Pyx_CyFunction_GetClosure(__pyx_self);
   __pyx_cur_scope = __pyx_outer_scope;
 
-  /* "validr/_schema.pyx":60
+  /* "validr/_schema.pyx":56
  * 
- *     def validator(value):
+ *     def validate_dict(value):
  *         if check_optional(value, optional):             # <<<<<<<<<<<<<<
  *             return None
- *         result = {}
+ *         # use dict instead of Mapping can speed up about 10%
  */
-  __pyx_t_1 = __pyx_f_6validr_7_schema_check_optional(__pyx_v_value, __pyx_cur_scope->__pyx_v_optional); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 60, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_6validr_7_schema_check_optional(__pyx_v_value, __pyx_cur_scope->__pyx_v_optional); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 60, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 56, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "validr/_schema.pyx":61
- *     def validator(value):
+    /* "validr/_schema.pyx":57
+ *     def validate_dict(value):
  *         if check_optional(value, optional):
  *             return None             # <<<<<<<<<<<<<<
- *         result = {}
  *         # use dict instead of Mapping can speed up about 10%
+ *         if isinstance(value, Mapping):
  */
     __Pyx_XDECREF(__pyx_r);
     __Pyx_INCREF(Py_None);
     __pyx_r = Py_None;
     goto __pyx_L0;
 
-    /* "validr/_schema.pyx":60
+    /* "validr/_schema.pyx":56
  * 
- *     def validator(value):
+ *     def validate_dict(value):
  *         if check_optional(value, optional):             # <<<<<<<<<<<<<<
  *             return None
- *         result = {}
+ *         # use dict instead of Mapping can speed up about 10%
  */
   }
 
-  /* "validr/_schema.pyx":62
- *         if check_optional(value, optional):
+  /* "validr/_schema.pyx":59
  *             return None
- *         result = {}             # <<<<<<<<<<<<<<
- *         # use dict instead of Mapping can speed up about 10%
- *         if isinstance(value, Mapping):
- */
-  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 62, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_v_result = ((PyObject*)__pyx_t_1);
-  __pyx_t_1 = 0;
-
-  /* "validr/_schema.pyx":64
- *         result = {}
  *         # use dict instead of Mapping can speed up about 10%
  *         if isinstance(value, Mapping):             # <<<<<<<<<<<<<<
  *             get_item = get_dict_value
  *         else:
  */
-  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_Mapping); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 64, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetModuleGlobalName(__pyx_n_s_Mapping); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 59, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_IsInstance(__pyx_v_value, __pyx_t_1); if (unlikely(__pyx_t_2 == -1)) __PYX_ERR(0, 64, __pyx_L1_error)
+  __pyx_t_2 = PyObject_IsInstance(__pyx_v_value, __pyx_t_1); if (unlikely(__pyx_t_2 == -1)) __PYX_ERR(0, 59, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_3 = (__pyx_t_2 != 0);
   if (__pyx_t_3) {
 
-    /* "validr/_schema.pyx":65
+    /* "validr/_schema.pyx":60
  *         # use dict instead of Mapping can speed up about 10%
  *         if isinstance(value, Mapping):
  *             get_item = get_dict_value             # <<<<<<<<<<<<<<
@@ -2943,8 +2614,8 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
  */
     __pyx_v_get_item = __pyx_f_6validr_7_schema_get_dict_value;
 
-    /* "validr/_schema.pyx":64
- *         result = {}
+    /* "validr/_schema.pyx":59
+ *             return None
  *         # use dict instead of Mapping can speed up about 10%
  *         if isinstance(value, Mapping):             # <<<<<<<<<<<<<<
  *             get_item = get_dict_value
@@ -2953,50 +2624,62 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
     goto __pyx_L4;
   }
 
-  /* "validr/_schema.pyx":67
+  /* "validr/_schema.pyx":62
  *             get_item = get_dict_value
  *         else:
  *             get_item = get_object_value             # <<<<<<<<<<<<<<
+ *         result = {}
  *         cdef str k
- *         for k, validate in inners:
  */
   /*else*/ {
     __pyx_v_get_item = __pyx_f_6validr_7_schema_get_object_value;
   }
   __pyx_L4:;
 
-  /* "validr/_schema.pyx":69
+  /* "validr/_schema.pyx":63
+ *         else:
  *             get_item = get_object_value
+ *         result = {}             # <<<<<<<<<<<<<<
  *         cdef str k
- *         for k, validate in inners:             # <<<<<<<<<<<<<<
- *             with MarkKey(k):
- *                 result[k] = validate(get_item(value, k))
+ *         for k, inner in inners:
  */
-  if (unlikely(!__pyx_cur_scope->__pyx_v_inners)) { __Pyx_RaiseClosureNameError("inners"); __PYX_ERR(0, 69, __pyx_L1_error) }
+  __pyx_t_1 = PyDict_New(); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 63, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_v_result = ((PyObject*)__pyx_t_1);
+  __pyx_t_1 = 0;
+
+  /* "validr/_schema.pyx":65
+ *         result = {}
+ *         cdef str k
+ *         for k, inner in inners:             # <<<<<<<<<<<<<<
+ *             with MarkKey(k):
+ *                 result[k] = inner(get_item(value, k))
+ */
+  if (unlikely(!__pyx_cur_scope->__pyx_v_inners)) { __Pyx_RaiseClosureNameError("inners"); __PYX_ERR(0, 65, __pyx_L1_error) }
   if (likely(PyList_CheckExact(__pyx_cur_scope->__pyx_v_inners)) || PyTuple_CheckExact(__pyx_cur_scope->__pyx_v_inners)) {
     __pyx_t_1 = __pyx_cur_scope->__pyx_v_inners; __Pyx_INCREF(__pyx_t_1); __pyx_t_4 = 0;
     __pyx_t_5 = NULL;
   } else {
-    __pyx_t_4 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_cur_scope->__pyx_v_inners); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 69, __pyx_L1_error)
+    __pyx_t_4 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_cur_scope->__pyx_v_inners); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 65, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 69, __pyx_L1_error)
+    __pyx_t_5 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 65, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_5)) {
       if (likely(PyList_CheckExact(__pyx_t_1))) {
         if (__pyx_t_4 >= PyList_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_6 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_4); __Pyx_INCREF(__pyx_t_6); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 69, __pyx_L1_error)
+        __pyx_t_6 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_4); __Pyx_INCREF(__pyx_t_6); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 65, __pyx_L1_error)
         #else
-        __pyx_t_6 = PySequence_ITEM(__pyx_t_1, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 69, __pyx_L1_error)
+        __pyx_t_6 = PySequence_ITEM(__pyx_t_1, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 65, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_6);
         #endif
       } else {
         if (__pyx_t_4 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_6 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_4); __Pyx_INCREF(__pyx_t_6); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 69, __pyx_L1_error)
+        __pyx_t_6 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_4); __Pyx_INCREF(__pyx_t_6); __pyx_t_4++; if (unlikely(0 < 0)) __PYX_ERR(0, 65, __pyx_L1_error)
         #else
-        __pyx_t_6 = PySequence_ITEM(__pyx_t_1, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 69, __pyx_L1_error)
+        __pyx_t_6 = PySequence_ITEM(__pyx_t_1, __pyx_t_4); __pyx_t_4++; if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 65, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_6);
         #endif
       }
@@ -3006,7 +2689,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 69, __pyx_L1_error)
+          else __PYX_ERR(0, 65, __pyx_L1_error)
         }
         break;
       }
@@ -3022,7 +2705,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
       if (unlikely(size != 2)) {
         if (size > 2) __Pyx_RaiseTooManyValuesError(2);
         else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-        __PYX_ERR(0, 69, __pyx_L1_error)
+        __PYX_ERR(0, 65, __pyx_L1_error)
       }
       #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
       if (likely(PyTuple_CheckExact(sequence))) {
@@ -3035,15 +2718,15 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
       __Pyx_INCREF(__pyx_t_7);
       __Pyx_INCREF(__pyx_t_8);
       #else
-      __pyx_t_7 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 69, __pyx_L1_error)
+      __pyx_t_7 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 65, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_8 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 69, __pyx_L1_error)
+      __pyx_t_8 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 65, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       #endif
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     } else {
       Py_ssize_t index = -1;
-      __pyx_t_9 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 69, __pyx_L1_error)
+      __pyx_t_9 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 65, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __pyx_t_10 = Py_TYPE(__pyx_t_9)->tp_iternext;
@@ -3051,7 +2734,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
       __Pyx_GOTREF(__pyx_t_7);
       index = 1; __pyx_t_8 = __pyx_t_10(__pyx_t_9); if (unlikely(!__pyx_t_8)) goto __pyx_L7_unpacking_failed;
       __Pyx_GOTREF(__pyx_t_8);
-      if (__Pyx_IternextUnpackEndCheck(__pyx_t_10(__pyx_t_9), 2) < 0) __PYX_ERR(0, 69, __pyx_L1_error)
+      if (__Pyx_IternextUnpackEndCheck(__pyx_t_10(__pyx_t_9), 2) < 0) __PYX_ERR(0, 65, __pyx_L1_error)
       __pyx_t_10 = NULL;
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       goto __pyx_L8_unpacking_done;
@@ -3059,34 +2742,34 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       __pyx_t_10 = NULL;
       if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-      __PYX_ERR(0, 69, __pyx_L1_error)
+      __PYX_ERR(0, 65, __pyx_L1_error)
       __pyx_L8_unpacking_done:;
     }
-    if (!(likely(PyString_CheckExact(__pyx_t_7))||((__pyx_t_7) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_t_7)->tp_name), 0))) __PYX_ERR(0, 69, __pyx_L1_error)
+    if (!(likely(PyString_CheckExact(__pyx_t_7))||((__pyx_t_7) == Py_None)||(PyErr_Format(PyExc_TypeError, "Expected %.16s, got %.200s", "str", Py_TYPE(__pyx_t_7)->tp_name), 0))) __PYX_ERR(0, 65, __pyx_L1_error)
     __Pyx_XDECREF_SET(__pyx_v_k, ((PyObject*)__pyx_t_7));
     __pyx_t_7 = 0;
-    __Pyx_XDECREF_SET(__pyx_v_validate, __pyx_t_8);
+    __Pyx_XDECREF_SET(__pyx_v_inner, __pyx_t_8);
     __pyx_t_8 = 0;
 
-    /* "validr/_schema.pyx":70
+    /* "validr/_schema.pyx":66
  *         cdef str k
- *         for k, validate in inners:
+ *         for k, inner in inners:
  *             with MarkKey(k):             # <<<<<<<<<<<<<<
- *                 result[k] = validate(get_item(value, k))
+ *                 result[k] = inner(get_item(value, k))
  *         return result
  */
     /*with:*/ {
-      __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 70, __pyx_L1_error)
+      __pyx_t_6 = PyTuple_New(1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_INCREF(__pyx_v_k);
       __Pyx_GIVEREF(__pyx_v_k);
       PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_v_k);
-      __pyx_t_8 = __Pyx_PyObject_Call(((PyObject *)__pyx_ptype_6validr_7_schema_MarkKey), __pyx_t_6, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 70, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_Call(((PyObject *)__pyx_ptype_6validr_7_schema_MarkKey), __pyx_t_6, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 66, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_8);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_11 = __Pyx_PyObject_LookupSpecial(__pyx_t_8, __pyx_n_s_exit); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 70, __pyx_L1_error)
+      __pyx_t_11 = __Pyx_PyObject_LookupSpecial(__pyx_t_8, __pyx_n_s_exit); if (unlikely(!__pyx_t_11)) __PYX_ERR(0, 66, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_11);
-      __pyx_t_7 = __Pyx_PyObject_LookupSpecial(__pyx_t_8, __pyx_n_s_enter); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 70, __pyx_L9_error)
+      __pyx_t_7 = __Pyx_PyObject_LookupSpecial(__pyx_t_8, __pyx_n_s_enter); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 66, __pyx_L9_error)
       __Pyx_GOTREF(__pyx_t_7);
       __pyx_t_9 = NULL;
       if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_7))) {
@@ -3099,10 +2782,10 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
         }
       }
       if (__pyx_t_9) {
-        __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_9); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 70, __pyx_L9_error)
+        __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_9); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L9_error)
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       } else {
-        __pyx_t_6 = __Pyx_PyObject_CallNoArg(__pyx_t_7); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 70, __pyx_L9_error)
+        __pyx_t_6 = __Pyx_PyObject_CallNoArg(__pyx_t_7); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L9_error)
       }
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
@@ -3118,17 +2801,17 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
           __Pyx_XGOTREF(__pyx_t_14);
           /*try:*/ {
 
-            /* "validr/_schema.pyx":71
- *         for k, validate in inners:
+            /* "validr/_schema.pyx":67
+ *         for k, inner in inners:
  *             with MarkKey(k):
- *                 result[k] = validate(get_item(value, k))             # <<<<<<<<<<<<<<
+ *                 result[k] = inner(get_item(value, k))             # <<<<<<<<<<<<<<
  *         return result
- *     return validator
+ *     return validate_dict
  */
-            __pyx_t_6 = __pyx_v_get_item(__pyx_v_value, __pyx_v_k); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 71, __pyx_L15_error)
+            __pyx_t_6 = __pyx_v_get_item(__pyx_v_value, __pyx_v_k); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 67, __pyx_L15_error)
             __Pyx_GOTREF(__pyx_t_6);
-            __Pyx_INCREF(__pyx_v_validate);
-            __pyx_t_7 = __pyx_v_validate; __pyx_t_9 = NULL;
+            __Pyx_INCREF(__pyx_v_inner);
+            __pyx_t_7 = __pyx_v_inner; __pyx_t_9 = NULL;
             if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_7))) {
               __pyx_t_9 = PyMethod_GET_SELF(__pyx_t_7);
               if (likely(__pyx_t_9)) {
@@ -3139,14 +2822,14 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
               }
             }
             if (!__pyx_t_9) {
-              __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_6); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 71, __pyx_L15_error)
+              __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_t_6); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 67, __pyx_L15_error)
               __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
               __Pyx_GOTREF(__pyx_t_8);
             } else {
               #if CYTHON_FAST_PYCALL
               if (PyFunction_Check(__pyx_t_7)) {
                 PyObject *__pyx_temp[2] = {__pyx_t_9, __pyx_t_6};
-                __pyx_t_8 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 71, __pyx_L15_error)
+                __pyx_t_8 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 67, __pyx_L15_error)
                 __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
                 __Pyx_GOTREF(__pyx_t_8);
                 __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
@@ -3155,33 +2838,33 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
               #if CYTHON_FAST_PYCCALL
               if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
                 PyObject *__pyx_temp[2] = {__pyx_t_9, __pyx_t_6};
-                __pyx_t_8 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 71, __pyx_L15_error)
+                __pyx_t_8 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 67, __pyx_L15_error)
                 __Pyx_XDECREF(__pyx_t_9); __pyx_t_9 = 0;
                 __Pyx_GOTREF(__pyx_t_8);
                 __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
               } else
               #endif
               {
-                __pyx_t_15 = PyTuple_New(1+1); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 71, __pyx_L15_error)
+                __pyx_t_15 = PyTuple_New(1+1); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 67, __pyx_L15_error)
                 __Pyx_GOTREF(__pyx_t_15);
                 __Pyx_GIVEREF(__pyx_t_9); PyTuple_SET_ITEM(__pyx_t_15, 0, __pyx_t_9); __pyx_t_9 = NULL;
                 __Pyx_GIVEREF(__pyx_t_6);
                 PyTuple_SET_ITEM(__pyx_t_15, 0+1, __pyx_t_6);
                 __pyx_t_6 = 0;
-                __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_15, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 71, __pyx_L15_error)
+                __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_15, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 67, __pyx_L15_error)
                 __Pyx_GOTREF(__pyx_t_8);
                 __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
               }
             }
             __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-            if (unlikely(PyDict_SetItem(__pyx_v_result, __pyx_v_k, __pyx_t_8) < 0)) __PYX_ERR(0, 71, __pyx_L15_error)
+            if (unlikely(PyDict_SetItem(__pyx_v_result, __pyx_v_k, __pyx_t_8) < 0)) __PYX_ERR(0, 67, __pyx_L15_error)
             __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-            /* "validr/_schema.pyx":70
+            /* "validr/_schema.pyx":66
  *         cdef str k
- *         for k, validate in inners:
+ *         for k, inner in inners:
  *             with MarkKey(k):             # <<<<<<<<<<<<<<
- *                 result[k] = validate(get_item(value, k))
+ *                 result[k] = inner(get_item(value, k))
  *         return result
  */
           }
@@ -3197,21 +2880,21 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
           __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
           __Pyx_XDECREF(__pyx_t_8); __pyx_t_8 = 0;
           /*except:*/ {
-            __Pyx_AddTraceback("validr._schema.dict_validator.validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
-            if (__Pyx_GetException(&__pyx_t_8, &__pyx_t_7, &__pyx_t_15) < 0) __PYX_ERR(0, 70, __pyx_L17_except_error)
+            __Pyx_AddTraceback("validr._schema.dict_validator.validate_dict", __pyx_clineno, __pyx_lineno, __pyx_filename);
+            if (__Pyx_GetException(&__pyx_t_8, &__pyx_t_7, &__pyx_t_15) < 0) __PYX_ERR(0, 66, __pyx_L17_except_error)
             __Pyx_GOTREF(__pyx_t_8);
             __Pyx_GOTREF(__pyx_t_7);
             __Pyx_GOTREF(__pyx_t_15);
-            __pyx_t_6 = PyTuple_Pack(3, __pyx_t_8, __pyx_t_7, __pyx_t_15); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 70, __pyx_L17_except_error)
+            __pyx_t_6 = PyTuple_Pack(3, __pyx_t_8, __pyx_t_7, __pyx_t_15); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 66, __pyx_L17_except_error)
             __Pyx_GOTREF(__pyx_t_6);
             __pyx_t_16 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_t_6, NULL);
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
             __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-            if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 70, __pyx_L17_except_error)
+            if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 66, __pyx_L17_except_error)
             __Pyx_GOTREF(__pyx_t_16);
             __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_16);
             __Pyx_DECREF(__pyx_t_16); __pyx_t_16 = 0;
-            if (__pyx_t_3 < 0) __PYX_ERR(0, 70, __pyx_L17_except_error)
+            if (__pyx_t_3 < 0) __PYX_ERR(0, 66, __pyx_L17_except_error)
             __pyx_t_2 = ((!(__pyx_t_3 != 0)) != 0);
             if (__pyx_t_2) {
               __Pyx_GIVEREF(__pyx_t_8);
@@ -3219,7 +2902,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
               __Pyx_XGIVEREF(__pyx_t_15);
               __Pyx_ErrRestoreWithState(__pyx_t_8, __pyx_t_7, __pyx_t_15);
               __pyx_t_8 = 0; __pyx_t_7 = 0; __pyx_t_15 = 0; 
-              __PYX_ERR(0, 70, __pyx_L17_except_error)
+              __PYX_ERR(0, 66, __pyx_L17_except_error)
             }
             __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
             __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
@@ -3245,9 +2928,9 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
       /*finally:*/ {
         /*normal exit:*/{
           if (__pyx_t_11) {
-            __pyx_t_14 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_tuple__5, NULL);
+            __pyx_t_14 = __Pyx_PyObject_Call(__pyx_t_11, __pyx_tuple__4, NULL);
             __Pyx_DECREF(__pyx_t_11); __pyx_t_11 = 0;
-            if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 70, __pyx_L1_error)
+            if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 66, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_14);
             __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
           }
@@ -3262,21 +2945,21 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
       __pyx_L26:;
     }
 
-    /* "validr/_schema.pyx":69
- *             get_item = get_object_value
+    /* "validr/_schema.pyx":65
+ *         result = {}
  *         cdef str k
- *         for k, validate in inners:             # <<<<<<<<<<<<<<
+ *         for k, inner in inners:             # <<<<<<<<<<<<<<
  *             with MarkKey(k):
- *                 result[k] = validate(get_item(value, k))
+ *                 result[k] = inner(get_item(value, k))
  */
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "validr/_schema.pyx":72
+  /* "validr/_schema.pyx":68
  *             with MarkKey(k):
- *                 result[k] = validate(get_item(value, k))
+ *                 result[k] = inner(get_item(value, k))
  *         return result             # <<<<<<<<<<<<<<
- *     return validator
+ *     return validate_dict
  * 
  */
   __Pyx_XDECREF(__pyx_r);
@@ -3284,10 +2967,10 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
   __pyx_r = __pyx_v_result;
   goto __pyx_L0;
 
-  /* "validr/_schema.pyx":59
+  /* "validr/_schema.pyx":55
  *     inners = list(inners.items())
  * 
- *     def validator(value):             # <<<<<<<<<<<<<<
+ *     def validate_dict(value):             # <<<<<<<<<<<<<<
  *         if check_optional(value, optional):
  *             return None
  */
@@ -3300,18 +2983,18 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
   __Pyx_XDECREF(__pyx_t_8);
   __Pyx_XDECREF(__pyx_t_9);
   __Pyx_XDECREF(__pyx_t_15);
-  __Pyx_AddTraceback("validr._schema.dict_validator.validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("validr._schema.dict_validator.validate_dict", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_result);
   __Pyx_XDECREF(__pyx_v_k);
-  __Pyx_XDECREF(__pyx_v_validate);
+  __Pyx_XDECREF(__pyx_v_inner);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":55
+/* "validr/_schema.pyx":51
  * 
  * 
  * def dict_validator(inners, bint optional=False, str desc=None):             # <<<<<<<<<<<<<<
@@ -3321,7 +3004,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14dict_validator_validator(PyObject *
 
 static PyObject *__pyx_pf_6validr_7_schema_2dict_validator(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_inners, int __pyx_v_optional, CYTHON_UNUSED PyObject *__pyx_v_desc) {
   struct __pyx_obj_6validr_7_schema___pyx_scope_struct_1_dict_validator *__pyx_cur_scope;
-  PyObject *__pyx_v_validator = 0;
+  PyObject *__pyx_v_validate_dict = 0;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -3332,7 +3015,7 @@ static PyObject *__pyx_pf_6validr_7_schema_2dict_validator(CYTHON_UNUSED PyObjec
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_6validr_7_schema___pyx_scope_struct_1_dict_validator *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 55, __pyx_L1_error)
+    __PYX_ERR(0, 51, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -3341,14 +3024,14 @@ static PyObject *__pyx_pf_6validr_7_schema_2dict_validator(CYTHON_UNUSED PyObjec
   __Pyx_GIVEREF(__pyx_cur_scope->__pyx_v_inners);
   __pyx_cur_scope->__pyx_v_optional = __pyx_v_optional;
 
-  /* "validr/_schema.pyx":57
+  /* "validr/_schema.pyx":53
  * def dict_validator(inners, bint optional=False, str desc=None):
  * 
  *     inners = list(inners.items())             # <<<<<<<<<<<<<<
  * 
- *     def validator(value):
+ *     def validate_dict(value):
  */
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_inners, __pyx_n_s_items); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_cur_scope->__pyx_v_inners, __pyx_n_s_items); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
@@ -3361,14 +3044,14 @@ static PyObject *__pyx_pf_6validr_7_schema_2dict_validator(CYTHON_UNUSED PyObjec
     }
   }
   if (__pyx_t_3) {
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   } else {
-    __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 53, __pyx_L1_error)
   }
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PySequence_List(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 57, __pyx_L1_error)
+  __pyx_t_2 = PySequence_List(__pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 53, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_GOTREF(__pyx_cur_scope->__pyx_v_inners);
@@ -3376,31 +3059,31 @@ static PyObject *__pyx_pf_6validr_7_schema_2dict_validator(CYTHON_UNUSED PyObjec
   __Pyx_GIVEREF(__pyx_t_2);
   __pyx_t_2 = 0;
 
-  /* "validr/_schema.pyx":59
+  /* "validr/_schema.pyx":55
  *     inners = list(inners.items())
  * 
- *     def validator(value):             # <<<<<<<<<<<<<<
+ *     def validate_dict(value):             # <<<<<<<<<<<<<<
  *         if check_optional(value, optional):
  *             return None
  */
-  __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_6validr_7_schema_14dict_validator_1validator, 0, __pyx_n_s_dict_validator_locals_validator, ((PyObject*)__pyx_cur_scope), __pyx_n_s_validr__schema, __pyx_d, ((PyObject *)__pyx_codeobj__7)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 59, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_CyFunction_NewEx(&__pyx_mdef_6validr_7_schema_14dict_validator_1validate_dict, 0, __pyx_n_s_dict_validator_locals_validate_d, ((PyObject*)__pyx_cur_scope), __pyx_n_s_validr__schema, __pyx_d, ((PyObject *)__pyx_codeobj__6)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 55, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_v_validator = __pyx_t_2;
+  __pyx_v_validate_dict = __pyx_t_2;
   __pyx_t_2 = 0;
 
-  /* "validr/_schema.pyx":73
- *                 result[k] = validate(get_item(value, k))
+  /* "validr/_schema.pyx":69
+ *                 result[k] = inner(get_item(value, k))
  *         return result
- *     return validator             # <<<<<<<<<<<<<<
+ *     return validate_dict             # <<<<<<<<<<<<<<
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,
  */
   __Pyx_XDECREF(__pyx_r);
-  __Pyx_INCREF(__pyx_v_validator);
-  __pyx_r = __pyx_v_validator;
+  __Pyx_INCREF(__pyx_v_validate_dict);
+  __pyx_r = __pyx_v_validate_dict;
   goto __pyx_L0;
 
-  /* "validr/_schema.pyx":55
+  /* "validr/_schema.pyx":51
  * 
  * 
  * def dict_validator(inners, bint optional=False, str desc=None):             # <<<<<<<<<<<<<<
@@ -3416,19 +3099,19 @@ static PyObject *__pyx_pf_6validr_7_schema_2dict_validator(CYTHON_UNUSED PyObjec
   __Pyx_AddTraceback("validr._schema.dict_validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
-  __Pyx_XDECREF(__pyx_v_validator);
+  __Pyx_XDECREF(__pyx_v_validate_dict);
   __Pyx_DECREF(((PyObject *)__pyx_cur_scope));
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":75
- *     return validator
+/* "validr/_schema.pyx":71
+ *     return validate_dict
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,             # <<<<<<<<<<<<<<
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  */
 
 /* Python wrapper */
@@ -3448,11 +3131,11 @@ static PyObject *__pyx_pw_6validr_7_schema_5list_validator(PyObject *__pyx_self,
     static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_inner,&__pyx_n_s_minlen,&__pyx_n_s_maxlen,&__pyx_n_s_unique,&__pyx_n_s_optional,&__pyx_n_s_desc,0};
     PyObject* values[6] = {0,0,0,0,0,0};
 
-    /* "validr/_schema.pyx":76
+    /* "validr/_schema.pyx":72
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,
  *                    bint optional=False, str desc=None):             # <<<<<<<<<<<<<<
- *     def validator(value):
+ *     def validate_list(value):
  *         if check_optional(value, optional):
  */
     values[5] = ((PyObject*)Py_None);
@@ -3501,7 +3184,7 @@ static PyObject *__pyx_pw_6validr_7_schema_5list_validator(PyObject *__pyx_self,
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "list_validator") < 0)) __PYX_ERR(0, 75, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "list_validator") < 0)) __PYX_ERR(0, 71, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -3517,37 +3200,37 @@ static PyObject *__pyx_pw_6validr_7_schema_5list_validator(PyObject *__pyx_self,
     }
     __pyx_v_inner = values[0];
     if (values[1]) {
-      __pyx_v_minlen = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_minlen == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 75, __pyx_L3_error)
+      __pyx_v_minlen = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_minlen == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 71, __pyx_L3_error)
     } else {
       __pyx_v_minlen = ((int)0);
     }
     if (values[2]) {
-      __pyx_v_maxlen = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_maxlen == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 75, __pyx_L3_error)
+      __pyx_v_maxlen = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_maxlen == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 71, __pyx_L3_error)
     } else {
       __pyx_v_maxlen = ((int)0x400);
     }
     if (values[3]) {
-      __pyx_v_unique = __Pyx_PyObject_IsTrue(values[3]); if (unlikely((__pyx_v_unique == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 75, __pyx_L3_error)
+      __pyx_v_unique = __Pyx_PyObject_IsTrue(values[3]); if (unlikely((__pyx_v_unique == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 71, __pyx_L3_error)
     } else {
 
-      /* "validr/_schema.pyx":75
- *     return validator
+      /* "validr/_schema.pyx":71
+ *     return validate_dict
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,             # <<<<<<<<<<<<<<
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  */
       __pyx_v_unique = ((int)0);
     }
     if (values[4]) {
-      __pyx_v_optional = __Pyx_PyObject_IsTrue(values[4]); if (unlikely((__pyx_v_optional == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 76, __pyx_L3_error)
+      __pyx_v_optional = __Pyx_PyObject_IsTrue(values[4]); if (unlikely((__pyx_v_optional == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 72, __pyx_L3_error)
     } else {
 
-      /* "validr/_schema.pyx":76
+      /* "validr/_schema.pyx":72
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,
  *                    bint optional=False, str desc=None):             # <<<<<<<<<<<<<<
- *     def validator(value):
+ *     def validate_list(value):
  *         if check_optional(value, optional):
  */
       __pyx_v_optional = ((int)0);
@@ -3556,21 +3239,21 @@ static PyObject *__pyx_pw_6validr_7_schema_5list_validator(PyObject *__pyx_self,
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("list_validator", 0, 1, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 75, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("list_validator", 0, 1, 6, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 71, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("validr._schema.list_validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_desc), (&PyString_Type), 1, "desc", 1))) __PYX_ERR(0, 76, __pyx_L1_error)
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_desc), (&PyString_Type), 1, "desc", 1))) __PYX_ERR(0, 72, __pyx_L1_error)
   __pyx_r = __pyx_pf_6validr_7_schema_4list_validator(__pyx_self, __pyx_v_inner, __pyx_v_minlen, __pyx_v_maxlen, __pyx_v_unique, __pyx_v_optional, __pyx_v_desc);
 
-  /* "validr/_schema.pyx":75
- *     return validator
+  /* "validr/_schema.pyx":71
+ *     return validate_dict
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,             # <<<<<<<<<<<<<<
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  */
 
   /* function exit code */
@@ -3582,29 +3265,29 @@ static PyObject *__pyx_pw_6validr_7_schema_5list_validator(PyObject *__pyx_self,
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":77
+/* "validr/_schema.pyx":73
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,
  *                    bint optional=False, str desc=None):
- *     def validator(value):             # <<<<<<<<<<<<<<
+ *     def validate_list(value):             # <<<<<<<<<<<<<<
  *         if check_optional(value, optional):
  *             return None
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_6validr_7_schema_14list_validator_1validator(PyObject *__pyx_self, PyObject *__pyx_v_value); /*proto*/
-static PyMethodDef __pyx_mdef_6validr_7_schema_14list_validator_1validator = {"validator", (PyCFunction)__pyx_pw_6validr_7_schema_14list_validator_1validator, METH_O, 0};
-static PyObject *__pyx_pw_6validr_7_schema_14list_validator_1validator(PyObject *__pyx_self, PyObject *__pyx_v_value) {
+static PyObject *__pyx_pw_6validr_7_schema_14list_validator_1validate_list(PyObject *__pyx_self, PyObject *__pyx_v_value); /*proto*/
+static PyMethodDef __pyx_mdef_6validr_7_schema_14list_validator_1validate_list = {"validate_list", (PyCFunction)__pyx_pw_6validr_7_schema_14list_validator_1validate_list, METH_O, 0};
+static PyObject *__pyx_pw_6validr_7_schema_14list_validator_1validate_list(PyObject *__pyx_self, PyObject *__pyx_v_value) {
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
-  __Pyx_RefNannySetupContext("validator (wrapper)", 0);
-  __pyx_r = __pyx_pf_6validr_7_schema_14list_validator_validator(__pyx_self, ((PyObject *)__pyx_v_value));
+  __Pyx_RefNannySetupContext("validate_list (wrapper)", 0);
+  __pyx_r = __pyx_pf_6validr_7_schema_14list_validator_validate_list(__pyx_self, ((PyObject *)__pyx_v_value));
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *__pyx_self, PyObject *__pyx_v_value) {
+static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validate_list(PyObject *__pyx_self, PyObject *__pyx_v_value) {
   struct __pyx_obj_6validr_7_schema___pyx_scope_struct_2_list_validator *__pyx_cur_scope;
   struct __pyx_obj_6validr_7_schema___pyx_scope_struct_2_list_validator *__pyx_outer_scope;
   PyObject *__pyx_v_result = NULL;
@@ -3632,26 +3315,26 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
   int __pyx_t_17;
   PyObject *__pyx_t_18 = NULL;
   int __pyx_t_19;
-  __Pyx_RefNannySetupContext("validator", 0);
+  __Pyx_RefNannySetupContext("validate_list", 0);
   __pyx_outer_scope = (struct __pyx_obj_6validr_7_schema___pyx_scope_struct_2_list_validator *) __Pyx_CyFunction_GetClosure(__pyx_self);
   __pyx_cur_scope = __pyx_outer_scope;
   __Pyx_INCREF(__pyx_v_value);
 
-  /* "validr/_schema.pyx":78
+  /* "validr/_schema.pyx":74
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  *         if check_optional(value, optional):             # <<<<<<<<<<<<<<
  *             return None
  *         try:
  */
-  __pyx_t_1 = __pyx_f_6validr_7_schema_check_optional(__pyx_v_value, __pyx_cur_scope->__pyx_v_optional); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 78, __pyx_L1_error)
+  __pyx_t_1 = __pyx_f_6validr_7_schema_check_optional(__pyx_v_value, __pyx_cur_scope->__pyx_v_optional); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 78, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_1); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 74, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "validr/_schema.pyx":79
- *     def validator(value):
+    /* "validr/_schema.pyx":75
+ *     def validate_list(value):
  *         if check_optional(value, optional):
  *             return None             # <<<<<<<<<<<<<<
  *         try:
@@ -3662,16 +3345,16 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
     __pyx_r = Py_None;
     goto __pyx_L0;
 
-    /* "validr/_schema.pyx":78
+    /* "validr/_schema.pyx":74
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  *         if check_optional(value, optional):             # <<<<<<<<<<<<<<
  *             return None
  *         try:
  */
   }
 
-  /* "validr/_schema.pyx":80
+  /* "validr/_schema.pyx":76
  *         if check_optional(value, optional):
  *             return None
  *         try:             # <<<<<<<<<<<<<<
@@ -3687,25 +3370,25 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
     __Pyx_XGOTREF(__pyx_t_5);
     /*try:*/ {
 
-      /* "validr/_schema.pyx":81
+      /* "validr/_schema.pyx":77
  *             return None
  *         try:
  *             value = enumerate(value)             # <<<<<<<<<<<<<<
  *         except TypeError:
  *             raise Invalid("not list")
  */
-      __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 81, __pyx_L4_error)
+      __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 77, __pyx_L4_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_INCREF(__pyx_v_value);
       __Pyx_GIVEREF(__pyx_v_value);
       PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_v_value);
-      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_builtin_enumerate, __pyx_t_1, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 81, __pyx_L4_error)
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_builtin_enumerate, __pyx_t_1, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 77, __pyx_L4_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF_SET(__pyx_v_value, __pyx_t_6);
       __pyx_t_6 = 0;
 
-      /* "validr/_schema.pyx":80
+      /* "validr/_schema.pyx":76
  *         if check_optional(value, optional):
  *             return None
  *         try:             # <<<<<<<<<<<<<<
@@ -3722,7 +3405,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "validr/_schema.pyx":82
+    /* "validr/_schema.pyx":78
  *         try:
  *             value = enumerate(value)
  *         except TypeError:             # <<<<<<<<<<<<<<
@@ -3731,32 +3414,32 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
  */
     __pyx_t_7 = __Pyx_PyErr_ExceptionMatches(__pyx_builtin_TypeError);
     if (__pyx_t_7) {
-      __Pyx_AddTraceback("validr._schema.list_validator.validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
-      if (__Pyx_GetException(&__pyx_t_6, &__pyx_t_1, &__pyx_t_8) < 0) __PYX_ERR(0, 82, __pyx_L6_except_error)
+      __Pyx_AddTraceback("validr._schema.list_validator.validate_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      if (__Pyx_GetException(&__pyx_t_6, &__pyx_t_1, &__pyx_t_8) < 0) __PYX_ERR(0, 78, __pyx_L6_except_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_GOTREF(__pyx_t_8);
 
-      /* "validr/_schema.pyx":83
+      /* "validr/_schema.pyx":79
  *             value = enumerate(value)
  *         except TypeError:
  *             raise Invalid("not list")             # <<<<<<<<<<<<<<
  *         result = []
  *         cdef int i = -1
  */
-      __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 83, __pyx_L6_except_error)
+      __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 79, __pyx_L6_except_error)
       __Pyx_GOTREF(__pyx_t_9);
-      __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_tuple__8, NULL); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 83, __pyx_L6_except_error)
+      __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_tuple__7, NULL); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 79, __pyx_L6_except_error)
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       __Pyx_Raise(__pyx_t_10, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
-      __PYX_ERR(0, 83, __pyx_L6_except_error)
+      __PYX_ERR(0, 79, __pyx_L6_except_error)
     }
     goto __pyx_L6_except_error;
     __pyx_L6_except_error:;
 
-    /* "validr/_schema.pyx":80
+    /* "validr/_schema.pyx":76
  *         if check_optional(value, optional):
  *             return None
  *         try:             # <<<<<<<<<<<<<<
@@ -3772,19 +3455,19 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
     __pyx_L11_try_end:;
   }
 
-  /* "validr/_schema.pyx":84
+  /* "validr/_schema.pyx":80
  *         except TypeError:
  *             raise Invalid("not list")
  *         result = []             # <<<<<<<<<<<<<<
  *         cdef int i = -1
  *         for i, x in value:
  */
-  __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 84, __pyx_L1_error)
+  __pyx_t_8 = PyList_New(0); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 80, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_8);
   __pyx_v_result = ((PyObject*)__pyx_t_8);
   __pyx_t_8 = 0;
 
-  /* "validr/_schema.pyx":85
+  /* "validr/_schema.pyx":81
  *             raise Invalid("not list")
  *         result = []
  *         cdef int i = -1             # <<<<<<<<<<<<<<
@@ -3793,7 +3476,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
  */
   __pyx_v_i = -1;
 
-  /* "validr/_schema.pyx":86
+  /* "validr/_schema.pyx":82
  *         result = []
  *         cdef int i = -1
  *         for i, x in value:             # <<<<<<<<<<<<<<
@@ -3804,26 +3487,26 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
     __pyx_t_8 = __pyx_v_value; __Pyx_INCREF(__pyx_t_8); __pyx_t_11 = 0;
     __pyx_t_12 = NULL;
   } else {
-    __pyx_t_11 = -1; __pyx_t_8 = PyObject_GetIter(__pyx_v_value); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 86, __pyx_L1_error)
+    __pyx_t_11 = -1; __pyx_t_8 = PyObject_GetIter(__pyx_v_value); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_8);
-    __pyx_t_12 = Py_TYPE(__pyx_t_8)->tp_iternext; if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 86, __pyx_L1_error)
+    __pyx_t_12 = Py_TYPE(__pyx_t_8)->tp_iternext; if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 82, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_12)) {
       if (likely(PyList_CheckExact(__pyx_t_8))) {
         if (__pyx_t_11 >= PyList_GET_SIZE(__pyx_t_8)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_8, __pyx_t_11); __Pyx_INCREF(__pyx_t_1); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 86, __pyx_L1_error)
+        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_8, __pyx_t_11); __Pyx_INCREF(__pyx_t_1); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 82, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_8, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 86, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_8, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 82, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       } else {
         if (__pyx_t_11 >= PyTuple_GET_SIZE(__pyx_t_8)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_8, __pyx_t_11); __Pyx_INCREF(__pyx_t_1); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 86, __pyx_L1_error)
+        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_8, __pyx_t_11); __Pyx_INCREF(__pyx_t_1); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 82, __pyx_L1_error)
         #else
-        __pyx_t_1 = PySequence_ITEM(__pyx_t_8, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 86, __pyx_L1_error)
+        __pyx_t_1 = PySequence_ITEM(__pyx_t_8, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 82, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       }
@@ -3833,7 +3516,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(exc_type == PyExc_StopIteration || PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 86, __pyx_L1_error)
+          else __PYX_ERR(0, 82, __pyx_L1_error)
         }
         break;
       }
@@ -3849,7 +3532,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
       if (unlikely(size != 2)) {
         if (size > 2) __Pyx_RaiseTooManyValuesError(2);
         else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-        __PYX_ERR(0, 86, __pyx_L1_error)
+        __PYX_ERR(0, 82, __pyx_L1_error)
       }
       #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
       if (likely(PyTuple_CheckExact(sequence))) {
@@ -3862,15 +3545,15 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
       __Pyx_INCREF(__pyx_t_6);
       __Pyx_INCREF(__pyx_t_10);
       #else
-      __pyx_t_6 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 86, __pyx_L1_error)
+      __pyx_t_6 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 82, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_10 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 86, __pyx_L1_error)
+      __pyx_t_10 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 82, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       #endif
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     } else {
       Py_ssize_t index = -1;
-      __pyx_t_9 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 86, __pyx_L1_error)
+      __pyx_t_9 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 82, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __pyx_t_13 = Py_TYPE(__pyx_t_9)->tp_iternext;
@@ -3878,7 +3561,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
       __Pyx_GOTREF(__pyx_t_6);
       index = 1; __pyx_t_10 = __pyx_t_13(__pyx_t_9); if (unlikely(!__pyx_t_10)) goto __pyx_L16_unpacking_failed;
       __Pyx_GOTREF(__pyx_t_10);
-      if (__Pyx_IternextUnpackEndCheck(__pyx_t_13(__pyx_t_9), 2) < 0) __PYX_ERR(0, 86, __pyx_L1_error)
+      if (__Pyx_IternextUnpackEndCheck(__pyx_t_13(__pyx_t_9), 2) < 0) __PYX_ERR(0, 82, __pyx_L1_error)
       __pyx_t_13 = NULL;
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       goto __pyx_L17_unpacking_done;
@@ -3886,16 +3569,16 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       __pyx_t_13 = NULL;
       if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-      __PYX_ERR(0, 86, __pyx_L1_error)
+      __PYX_ERR(0, 82, __pyx_L1_error)
       __pyx_L17_unpacking_done:;
     }
-    __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_6); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 86, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_6); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __pyx_v_i = __pyx_t_7;
     __Pyx_XDECREF_SET(__pyx_v_x, __pyx_t_10);
     __pyx_t_10 = 0;
 
-    /* "validr/_schema.pyx":87
+    /* "validr/_schema.pyx":83
  *         cdef int i = -1
  *         for i, x in value:
  *             if i >= maxlen:             # <<<<<<<<<<<<<<
@@ -3905,18 +3588,18 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
     __pyx_t_2 = ((__pyx_v_i >= __pyx_cur_scope->__pyx_v_maxlen) != 0);
     if (__pyx_t_2) {
 
-      /* "validr/_schema.pyx":88
+      /* "validr/_schema.pyx":84
  *         for i, x in value:
  *             if i >= maxlen:
  *                 raise Invalid("list length must <= %d" % maxlen)             # <<<<<<<<<<<<<<
  *             with MarkIndex(result):
  *                 v = inner(x)
  */
-      __pyx_t_10 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 88, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 84, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
-      __pyx_t_6 = __Pyx_PyInt_From_int(__pyx_cur_scope->__pyx_v_maxlen); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 88, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyInt_From_int(__pyx_cur_scope->__pyx_v_maxlen); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 84, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_9 = __Pyx_PyString_Format(__pyx_kp_s_list_length_must_d, __pyx_t_6); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 88, __pyx_L1_error)
+      __pyx_t_9 = __Pyx_PyString_Format(__pyx_kp_s_list_length_must_d, __pyx_t_6); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 84, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __pyx_t_6 = NULL;
@@ -3930,14 +3613,14 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
         }
       }
       if (!__pyx_t_6) {
-        __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_10, __pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_10, __pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
         __Pyx_GOTREF(__pyx_t_1);
       } else {
         #if CYTHON_FAST_PYCALL
         if (PyFunction_Check(__pyx_t_10)) {
           PyObject *__pyx_temp[2] = {__pyx_t_6, __pyx_t_9};
-          __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_10, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L1_error)
+          __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_10, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
           __Pyx_GOTREF(__pyx_t_1);
           __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
@@ -3946,20 +3629,20 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
         #if CYTHON_FAST_PYCCALL
         if (__Pyx_PyFastCFunction_Check(__pyx_t_10)) {
           PyObject *__pyx_temp[2] = {__pyx_t_6, __pyx_t_9};
-          __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_10, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L1_error)
+          __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_10, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
           __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
           __Pyx_GOTREF(__pyx_t_1);
           __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
         } else
         #endif
         {
-          __pyx_t_14 = PyTuple_New(1+1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 88, __pyx_L1_error)
+          __pyx_t_14 = PyTuple_New(1+1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 84, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_14);
           __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_14, 0, __pyx_t_6); __pyx_t_6 = NULL;
           __Pyx_GIVEREF(__pyx_t_9);
           PyTuple_SET_ITEM(__pyx_t_14, 0+1, __pyx_t_9);
           __pyx_t_9 = 0;
-          __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_10, __pyx_t_14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L1_error)
+          __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_10, __pyx_t_14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
           __Pyx_GOTREF(__pyx_t_1);
           __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
         }
@@ -3967,9 +3650,9 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
       __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
       __Pyx_Raise(__pyx_t_1, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __PYX_ERR(0, 88, __pyx_L1_error)
+      __PYX_ERR(0, 84, __pyx_L1_error)
 
-      /* "validr/_schema.pyx":87
+      /* "validr/_schema.pyx":83
  *         cdef int i = -1
  *         for i, x in value:
  *             if i >= maxlen:             # <<<<<<<<<<<<<<
@@ -3978,7 +3661,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
  */
     }
 
-    /* "validr/_schema.pyx":89
+    /* "validr/_schema.pyx":85
  *             if i >= maxlen:
  *                 raise Invalid("list length must <= %d" % maxlen)
  *             with MarkIndex(result):             # <<<<<<<<<<<<<<
@@ -3986,17 +3669,17 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
  *                 if unique and v in result:
  */
     /*with:*/ {
-      __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 89, __pyx_L1_error)
+      __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_INCREF(__pyx_v_result);
       __Pyx_GIVEREF(__pyx_v_result);
       PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_v_result);
-      __pyx_t_10 = __Pyx_PyObject_Call(((PyObject *)__pyx_ptype_6validr_7_schema_MarkIndex), __pyx_t_1, NULL); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 89, __pyx_L1_error)
+      __pyx_t_10 = __Pyx_PyObject_Call(((PyObject *)__pyx_ptype_6validr_7_schema_MarkIndex), __pyx_t_1, NULL); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 85, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_10);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-      __pyx_t_5 = __Pyx_PyObject_LookupSpecial(__pyx_t_10, __pyx_n_s_exit); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 89, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_LookupSpecial(__pyx_t_10, __pyx_n_s_exit); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 85, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_14 = __Pyx_PyObject_LookupSpecial(__pyx_t_10, __pyx_n_s_enter); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 89, __pyx_L19_error)
+      __pyx_t_14 = __Pyx_PyObject_LookupSpecial(__pyx_t_10, __pyx_n_s_enter); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 85, __pyx_L19_error)
       __Pyx_GOTREF(__pyx_t_14);
       __pyx_t_9 = NULL;
       if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_14))) {
@@ -4009,10 +3692,10 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
         }
       }
       if (__pyx_t_9) {
-        __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_14, __pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 89, __pyx_L19_error)
+        __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_t_14, __pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L19_error)
         __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
       } else {
-        __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_14); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 89, __pyx_L19_error)
+        __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_t_14); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L19_error)
       }
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
@@ -4028,14 +3711,14 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
           __Pyx_XGOTREF(__pyx_t_15);
           /*try:*/ {
 
-            /* "validr/_schema.pyx":90
+            /* "validr/_schema.pyx":86
  *                 raise Invalid("list length must <= %d" % maxlen)
  *             with MarkIndex(result):
  *                 v = inner(x)             # <<<<<<<<<<<<<<
  *                 if unique and v in result:
  *                     raise Invalid("not unique")
  */
-            if (unlikely(!__pyx_cur_scope->__pyx_v_inner)) { __Pyx_RaiseClosureNameError("inner"); __PYX_ERR(0, 90, __pyx_L25_error) }
+            if (unlikely(!__pyx_cur_scope->__pyx_v_inner)) { __Pyx_RaiseClosureNameError("inner"); __PYX_ERR(0, 86, __pyx_L25_error) }
             __Pyx_INCREF(__pyx_cur_scope->__pyx_v_inner);
             __pyx_t_1 = __pyx_cur_scope->__pyx_v_inner; __pyx_t_14 = NULL;
             if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_1))) {
@@ -4048,13 +3731,13 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
               }
             }
             if (!__pyx_t_14) {
-              __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_v_x); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 90, __pyx_L25_error)
+              __pyx_t_10 = __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_v_x); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 86, __pyx_L25_error)
               __Pyx_GOTREF(__pyx_t_10);
             } else {
               #if CYTHON_FAST_PYCALL
               if (PyFunction_Check(__pyx_t_1)) {
                 PyObject *__pyx_temp[2] = {__pyx_t_14, __pyx_v_x};
-                __pyx_t_10 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 90, __pyx_L25_error)
+                __pyx_t_10 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 86, __pyx_L25_error)
                 __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
                 __Pyx_GOTREF(__pyx_t_10);
               } else
@@ -4062,19 +3745,19 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
               #if CYTHON_FAST_PYCCALL
               if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
                 PyObject *__pyx_temp[2] = {__pyx_t_14, __pyx_v_x};
-                __pyx_t_10 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 90, __pyx_L25_error)
+                __pyx_t_10 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 86, __pyx_L25_error)
                 __Pyx_XDECREF(__pyx_t_14); __pyx_t_14 = 0;
                 __Pyx_GOTREF(__pyx_t_10);
               } else
               #endif
               {
-                __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 90, __pyx_L25_error)
+                __pyx_t_9 = PyTuple_New(1+1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 86, __pyx_L25_error)
                 __Pyx_GOTREF(__pyx_t_9);
                 __Pyx_GIVEREF(__pyx_t_14); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_14); __pyx_t_14 = NULL;
                 __Pyx_INCREF(__pyx_v_x);
                 __Pyx_GIVEREF(__pyx_v_x);
                 PyTuple_SET_ITEM(__pyx_t_9, 0+1, __pyx_v_x);
-                __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_9, NULL); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 90, __pyx_L25_error)
+                __pyx_t_10 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_9, NULL); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 86, __pyx_L25_error)
                 __Pyx_GOTREF(__pyx_t_10);
                 __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
               }
@@ -4083,7 +3766,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
             __Pyx_XDECREF_SET(__pyx_v_v, __pyx_t_10);
             __pyx_t_10 = 0;
 
-            /* "validr/_schema.pyx":91
+            /* "validr/_schema.pyx":87
  *             with MarkIndex(result):
  *                 v = inner(x)
  *                 if unique and v in result:             # <<<<<<<<<<<<<<
@@ -4096,29 +3779,29 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
               __pyx_t_2 = __pyx_t_16;
               goto __pyx_L34_bool_binop_done;
             }
-            __pyx_t_16 = (__Pyx_PySequence_ContainsTF(__pyx_v_v, __pyx_v_result, Py_EQ)); if (unlikely(__pyx_t_16 < 0)) __PYX_ERR(0, 91, __pyx_L25_error)
+            __pyx_t_16 = (__Pyx_PySequence_ContainsTF(__pyx_v_v, __pyx_v_result, Py_EQ)); if (unlikely(__pyx_t_16 < 0)) __PYX_ERR(0, 87, __pyx_L25_error)
             __pyx_t_17 = (__pyx_t_16 != 0);
             __pyx_t_2 = __pyx_t_17;
             __pyx_L34_bool_binop_done:;
             if (__pyx_t_2) {
 
-              /* "validr/_schema.pyx":92
+              /* "validr/_schema.pyx":88
  *                 v = inner(x)
  *                 if unique and v in result:
  *                     raise Invalid("not unique")             # <<<<<<<<<<<<<<
  *             result.append(v)
  *         if i + 1 < minlen:
  */
-              __pyx_t_10 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 92, __pyx_L25_error)
+              __pyx_t_10 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 88, __pyx_L25_error)
               __Pyx_GOTREF(__pyx_t_10);
-              __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_10, __pyx_tuple__9, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 92, __pyx_L25_error)
+              __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_10, __pyx_tuple__8, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L25_error)
               __Pyx_GOTREF(__pyx_t_1);
               __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
               __Pyx_Raise(__pyx_t_1, 0, 0, 0);
               __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-              __PYX_ERR(0, 92, __pyx_L25_error)
+              __PYX_ERR(0, 88, __pyx_L25_error)
 
-              /* "validr/_schema.pyx":91
+              /* "validr/_schema.pyx":87
  *             with MarkIndex(result):
  *                 v = inner(x)
  *                 if unique and v in result:             # <<<<<<<<<<<<<<
@@ -4127,7 +3810,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
  */
             }
 
-            /* "validr/_schema.pyx":89
+            /* "validr/_schema.pyx":85
  *             if i >= maxlen:
  *                 raise Invalid("list length must <= %d" % maxlen)
  *             with MarkIndex(result):             # <<<<<<<<<<<<<<
@@ -4147,21 +3830,21 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
           __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
           __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
           /*except:*/ {
-            __Pyx_AddTraceback("validr._schema.list_validator.validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
-            if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_10, &__pyx_t_9) < 0) __PYX_ERR(0, 89, __pyx_L27_except_error)
+            __Pyx_AddTraceback("validr._schema.list_validator.validate_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
+            if (__Pyx_GetException(&__pyx_t_1, &__pyx_t_10, &__pyx_t_9) < 0) __PYX_ERR(0, 85, __pyx_L27_except_error)
             __Pyx_GOTREF(__pyx_t_1);
             __Pyx_GOTREF(__pyx_t_10);
             __Pyx_GOTREF(__pyx_t_9);
-            __pyx_t_14 = PyTuple_Pack(3, __pyx_t_1, __pyx_t_10, __pyx_t_9); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 89, __pyx_L27_except_error)
+            __pyx_t_14 = PyTuple_Pack(3, __pyx_t_1, __pyx_t_10, __pyx_t_9); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 85, __pyx_L27_except_error)
             __Pyx_GOTREF(__pyx_t_14);
             __pyx_t_18 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_14, NULL);
             __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
             __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
-            if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 89, __pyx_L27_except_error)
+            if (unlikely(!__pyx_t_18)) __PYX_ERR(0, 85, __pyx_L27_except_error)
             __Pyx_GOTREF(__pyx_t_18);
             __pyx_t_2 = __Pyx_PyObject_IsTrue(__pyx_t_18);
             __Pyx_DECREF(__pyx_t_18); __pyx_t_18 = 0;
-            if (__pyx_t_2 < 0) __PYX_ERR(0, 89, __pyx_L27_except_error)
+            if (__pyx_t_2 < 0) __PYX_ERR(0, 85, __pyx_L27_except_error)
             __pyx_t_17 = ((!(__pyx_t_2 != 0)) != 0);
             if (__pyx_t_17) {
               __Pyx_GIVEREF(__pyx_t_1);
@@ -4169,7 +3852,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
               __Pyx_XGIVEREF(__pyx_t_9);
               __Pyx_ErrRestoreWithState(__pyx_t_1, __pyx_t_10, __pyx_t_9);
               __pyx_t_1 = 0; __pyx_t_10 = 0; __pyx_t_9 = 0; 
-              __PYX_ERR(0, 89, __pyx_L27_except_error)
+              __PYX_ERR(0, 85, __pyx_L27_except_error)
             }
             __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
             __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
@@ -4195,9 +3878,9 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
       /*finally:*/ {
         /*normal exit:*/{
           if (__pyx_t_5) {
-            __pyx_t_15 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_tuple__10, NULL);
+            __pyx_t_15 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_tuple__9, NULL);
             __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-            if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 89, __pyx_L1_error)
+            if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 85, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_15);
             __Pyx_DECREF(__pyx_t_15); __pyx_t_15 = 0;
           }
@@ -4212,17 +3895,17 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
       __pyx_L39:;
     }
 
-    /* "validr/_schema.pyx":93
+    /* "validr/_schema.pyx":89
  *                 if unique and v in result:
  *                     raise Invalid("not unique")
  *             result.append(v)             # <<<<<<<<<<<<<<
  *         if i + 1 < minlen:
  *             raise Invalid("list length must >= %d" % minlen)
  */
-    if (unlikely(!__pyx_v_v)) { __Pyx_RaiseUnboundLocalError("v"); __PYX_ERR(0, 93, __pyx_L1_error) }
-    __pyx_t_19 = __Pyx_PyList_Append(__pyx_v_result, __pyx_v_v); if (unlikely(__pyx_t_19 == -1)) __PYX_ERR(0, 93, __pyx_L1_error)
+    if (unlikely(!__pyx_v_v)) { __Pyx_RaiseUnboundLocalError("v"); __PYX_ERR(0, 89, __pyx_L1_error) }
+    __pyx_t_19 = __Pyx_PyList_Append(__pyx_v_result, __pyx_v_v); if (unlikely(__pyx_t_19 == -1)) __PYX_ERR(0, 89, __pyx_L1_error)
 
-    /* "validr/_schema.pyx":86
+    /* "validr/_schema.pyx":82
  *         result = []
  *         cdef int i = -1
  *         for i, x in value:             # <<<<<<<<<<<<<<
@@ -4232,7 +3915,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
   }
   __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
 
-  /* "validr/_schema.pyx":94
+  /* "validr/_schema.pyx":90
  *                     raise Invalid("not unique")
  *             result.append(v)
  *         if i + 1 < minlen:             # <<<<<<<<<<<<<<
@@ -4242,18 +3925,18 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
   __pyx_t_17 = (((__pyx_v_i + 1) < __pyx_cur_scope->__pyx_v_minlen) != 0);
   if (__pyx_t_17) {
 
-    /* "validr/_schema.pyx":95
+    /* "validr/_schema.pyx":91
  *             result.append(v)
  *         if i + 1 < minlen:
  *             raise Invalid("list length must >= %d" % minlen)             # <<<<<<<<<<<<<<
  *         return result
- *     return validator
+ *     return validate_list
  */
-    __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 95, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 91, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
-    __pyx_t_10 = __Pyx_PyInt_From_int(__pyx_cur_scope->__pyx_v_minlen); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 95, __pyx_L1_error)
+    __pyx_t_10 = __Pyx_PyInt_From_int(__pyx_cur_scope->__pyx_v_minlen); if (unlikely(!__pyx_t_10)) __PYX_ERR(0, 91, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_10);
-    __pyx_t_1 = __Pyx_PyString_Format(__pyx_kp_s_list_length_must_d_2, __pyx_t_10); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 95, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyString_Format(__pyx_kp_s_list_length_must_d_2, __pyx_t_10); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 91, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_10); __pyx_t_10 = 0;
     __pyx_t_10 = NULL;
@@ -4267,14 +3950,14 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
       }
     }
     if (!__pyx_t_10) {
-      __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_t_1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 95, __pyx_L1_error)
+      __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_t_9, __pyx_t_1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 91, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_GOTREF(__pyx_t_8);
     } else {
       #if CYTHON_FAST_PYCALL
       if (PyFunction_Check(__pyx_t_9)) {
         PyObject *__pyx_temp[2] = {__pyx_t_10, __pyx_t_1};
-        __pyx_t_8 = __Pyx_PyFunction_FastCall(__pyx_t_9, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 95, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyFunction_FastCall(__pyx_t_9, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 91, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
@@ -4283,20 +3966,20 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
       #if CYTHON_FAST_PYCCALL
       if (__Pyx_PyFastCFunction_Check(__pyx_t_9)) {
         PyObject *__pyx_temp[2] = {__pyx_t_10, __pyx_t_1};
-        __pyx_t_8 = __Pyx_PyCFunction_FastCall(__pyx_t_9, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 95, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyCFunction_FastCall(__pyx_t_9, __pyx_temp+1-1, 1+1); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 91, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_10); __pyx_t_10 = 0;
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       } else
       #endif
       {
-        __pyx_t_14 = PyTuple_New(1+1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 95, __pyx_L1_error)
+        __pyx_t_14 = PyTuple_New(1+1); if (unlikely(!__pyx_t_14)) __PYX_ERR(0, 91, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_14);
         __Pyx_GIVEREF(__pyx_t_10); PyTuple_SET_ITEM(__pyx_t_14, 0, __pyx_t_10); __pyx_t_10 = NULL;
         __Pyx_GIVEREF(__pyx_t_1);
         PyTuple_SET_ITEM(__pyx_t_14, 0+1, __pyx_t_1);
         __pyx_t_1 = 0;
-        __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_t_14, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 95, __pyx_L1_error)
+        __pyx_t_8 = __Pyx_PyObject_Call(__pyx_t_9, __pyx_t_14, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 91, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_8);
         __Pyx_DECREF(__pyx_t_14); __pyx_t_14 = 0;
       }
@@ -4304,9 +3987,9 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     __Pyx_Raise(__pyx_t_8, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
-    __PYX_ERR(0, 95, __pyx_L1_error)
+    __PYX_ERR(0, 91, __pyx_L1_error)
 
-    /* "validr/_schema.pyx":94
+    /* "validr/_schema.pyx":90
  *                     raise Invalid("not unique")
  *             result.append(v)
  *         if i + 1 < minlen:             # <<<<<<<<<<<<<<
@@ -4315,11 +3998,11 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
  */
   }
 
-  /* "validr/_schema.pyx":96
+  /* "validr/_schema.pyx":92
  *         if i + 1 < minlen:
  *             raise Invalid("list length must >= %d" % minlen)
  *         return result             # <<<<<<<<<<<<<<
- *     return validator
+ *     return validate_list
  * 
  */
   __Pyx_XDECREF(__pyx_r);
@@ -4327,10 +4010,10 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
   __pyx_r = __pyx_v_result;
   goto __pyx_L0;
 
-  /* "validr/_schema.pyx":77
+  /* "validr/_schema.pyx":73
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,
  *                    bint optional=False, str desc=None):
- *     def validator(value):             # <<<<<<<<<<<<<<
+ *     def validate_list(value):             # <<<<<<<<<<<<<<
  *         if check_optional(value, optional):
  *             return None
  */
@@ -4343,7 +4026,7 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
   __Pyx_XDECREF(__pyx_t_9);
   __Pyx_XDECREF(__pyx_t_10);
   __Pyx_XDECREF(__pyx_t_14);
-  __Pyx_AddTraceback("validr._schema.list_validator.validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("validr._schema.list_validator.validate_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_result);
@@ -4355,17 +4038,17 @@ static PyObject *__pyx_pf_6validr_7_schema_14list_validator_validator(PyObject *
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":75
- *     return validator
+/* "validr/_schema.pyx":71
+ *     return validate_dict
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,             # <<<<<<<<<<<<<<
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  */
 
 static PyObject *__pyx_pf_6validr_7_schema_4list_validator(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_inner, int __pyx_v_minlen, int __pyx_v_maxlen, int __pyx_v_unique, int __pyx_v_optional, CYTHON_UNUSED PyObject *__pyx_v_desc) {
   struct __pyx_obj_6validr_7_schema___pyx_scope_struct_2_list_validator *__pyx_cur_scope;
-  PyObject *__pyx_v_validator = 0;
+  PyObject *__pyx_v_validate_list = 0;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -4374,7 +4057,7 @@ static PyObject *__pyx_pf_6validr_7_schema_4list_validator(CYTHON_UNUSED PyObjec
   if (unlikely(!__pyx_cur_scope)) {
     __pyx_cur_scope = ((struct __pyx_obj_6validr_7_schema___pyx_scope_struct_2_list_validator *)Py_None);
     __Pyx_INCREF(Py_None);
-    __PYX_ERR(0, 75, __pyx_L1_error)
+    __PYX_ERR(0, 71, __pyx_L1_error)
   } else {
     __Pyx_GOTREF(__pyx_cur_scope);
   }
@@ -4386,36 +4069,36 @@ static PyObject *__pyx_pf_6validr_7_schema_4list_validator(CYTHON_UNUSED PyObjec
   __pyx_cur_scope->__pyx_v_unique = __pyx_v_unique;
   __pyx_cur_scope->__pyx_v_optional = __pyx_v_optional;
 
-  /* "validr/_schema.pyx":77
+  /* "validr/_schema.pyx":73
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,
  *                    bint optional=False, str desc=None):
- *     def validator(value):             # <<<<<<<<<<<<<<
+ *     def validate_list(value):             # <<<<<<<<<<<<<<
  *         if check_optional(value, optional):
  *             return None
  */
-  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_6validr_7_schema_14list_validator_1validator, 0, __pyx_n_s_list_validator_locals_validator, ((PyObject*)__pyx_cur_scope), __pyx_n_s_validr__schema, __pyx_d, ((PyObject *)__pyx_codeobj__12)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 77, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_CyFunction_NewEx(&__pyx_mdef_6validr_7_schema_14list_validator_1validate_list, 0, __pyx_n_s_list_validator_locals_validate_l, ((PyObject*)__pyx_cur_scope), __pyx_n_s_validr__schema, __pyx_d, ((PyObject *)__pyx_codeobj__11)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 73, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_v_validator = __pyx_t_1;
+  __pyx_v_validate_list = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "validr/_schema.pyx":97
+  /* "validr/_schema.pyx":93
  *             raise Invalid("list length must >= %d" % minlen)
  *         return result
- *     return validator             # <<<<<<<<<<<<<<
+ *     return validate_list             # <<<<<<<<<<<<<<
  * 
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __Pyx_INCREF(__pyx_v_validator);
-  __pyx_r = __pyx_v_validator;
+  __Pyx_INCREF(__pyx_v_validate_list);
+  __pyx_r = __pyx_v_validate_list;
   goto __pyx_L0;
 
-  /* "validr/_schema.pyx":75
- *     return validator
+  /* "validr/_schema.pyx":71
+ *     return validate_dict
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,             # <<<<<<<<<<<<<<
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  */
 
   /* function exit code */
@@ -4424,14 +4107,14 @@ static PyObject *__pyx_pf_6validr_7_schema_4list_validator(CYTHON_UNUSED PyObjec
   __Pyx_AddTraceback("validr._schema.list_validator", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
-  __Pyx_XDECREF(__pyx_v_validator);
+  __Pyx_XDECREF(__pyx_v_validate_list);
   __Pyx_DECREF(((PyObject *)__pyx_cur_scope));
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":100
+/* "validr/_schema.pyx":96
  * 
  * 
  * cdef check_optional(value, bint optional):             # <<<<<<<<<<<<<<
@@ -4448,7 +4131,7 @@ static PyObject *__pyx_f_6validr_7_schema_check_optional(PyObject *__pyx_v_value
   PyObject *__pyx_t_4 = NULL;
   __Pyx_RefNannySetupContext("check_optional", 0);
 
-  /* "validr/_schema.pyx":102
+  /* "validr/_schema.pyx":98
  * cdef check_optional(value, bint optional):
  *     """Return should_return_none"""
  *     if value is None:             # <<<<<<<<<<<<<<
@@ -4459,7 +4142,7 @@ static PyObject *__pyx_f_6validr_7_schema_check_optional(PyObject *__pyx_v_value
   __pyx_t_2 = (__pyx_t_1 != 0);
   if (__pyx_t_2) {
 
-    /* "validr/_schema.pyx":103
+    /* "validr/_schema.pyx":99
  *     """Return should_return_none"""
  *     if value is None:
  *         if optional:             # <<<<<<<<<<<<<<
@@ -4469,7 +4152,7 @@ static PyObject *__pyx_f_6validr_7_schema_check_optional(PyObject *__pyx_v_value
     __pyx_t_2 = (__pyx_v_optional != 0);
     if (__pyx_t_2) {
 
-      /* "validr/_schema.pyx":104
+      /* "validr/_schema.pyx":100
  *     if value is None:
  *         if optional:
  *             return True             # <<<<<<<<<<<<<<
@@ -4481,7 +4164,7 @@ static PyObject *__pyx_f_6validr_7_schema_check_optional(PyObject *__pyx_v_value
       __pyx_r = Py_True;
       goto __pyx_L0;
 
-      /* "validr/_schema.pyx":103
+      /* "validr/_schema.pyx":99
  *     """Return should_return_none"""
  *     if value is None:
  *         if optional:             # <<<<<<<<<<<<<<
@@ -4490,7 +4173,7 @@ static PyObject *__pyx_f_6validr_7_schema_check_optional(PyObject *__pyx_v_value
  */
     }
 
-    /* "validr/_schema.pyx":106
+    /* "validr/_schema.pyx":102
  *             return True
  *         else:
  *             raise Invalid("required")             # <<<<<<<<<<<<<<
@@ -4498,17 +4181,17 @@ static PyObject *__pyx_f_6validr_7_schema_check_optional(PyObject *__pyx_v_value
  * 
  */
     /*else*/ {
-      __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 106, __pyx_L1_error)
+      __pyx_t_3 = __Pyx_GetModuleGlobalName(__pyx_n_s_Invalid); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 102, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_3);
-      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_tuple__13, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 106, __pyx_L1_error)
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_tuple__12, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 102, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_4);
       __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
       __Pyx_Raise(__pyx_t_4, 0, 0, 0);
       __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-      __PYX_ERR(0, 106, __pyx_L1_error)
+      __PYX_ERR(0, 102, __pyx_L1_error)
     }
 
-    /* "validr/_schema.pyx":102
+    /* "validr/_schema.pyx":98
  * cdef check_optional(value, bint optional):
  *     """Return should_return_none"""
  *     if value is None:             # <<<<<<<<<<<<<<
@@ -4517,7 +4200,7 @@ static PyObject *__pyx_f_6validr_7_schema_check_optional(PyObject *__pyx_v_value
  */
   }
 
-  /* "validr/_schema.pyx":107
+  /* "validr/_schema.pyx":103
  *         else:
  *             raise Invalid("required")
  *     return False             # <<<<<<<<<<<<<<
@@ -4529,7 +4212,7 @@ static PyObject *__pyx_f_6validr_7_schema_check_optional(PyObject *__pyx_v_value
   __pyx_r = Py_False;
   goto __pyx_L0;
 
-  /* "validr/_schema.pyx":100
+  /* "validr/_schema.pyx":96
  * 
  * 
  * cdef check_optional(value, bint optional):             # <<<<<<<<<<<<<<
@@ -4549,7 +4232,7 @@ static PyObject *__pyx_f_6validr_7_schema_check_optional(PyObject *__pyx_v_value
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":110
+/* "validr/_schema.pyx":106
  * 
  * 
  * cdef get_dict_value(obj, str key):             # <<<<<<<<<<<<<<
@@ -4567,7 +4250,7 @@ static PyObject *__pyx_f_6validr_7_schema_get_dict_value(PyObject *__pyx_v_obj, 
   PyObject *__pyx_t_5 = NULL;
   __Pyx_RefNannySetupContext("get_dict_value", 0);
 
-  /* "validr/_schema.pyx":111
+  /* "validr/_schema.pyx":107
  * 
  * cdef get_dict_value(obj, str key):
  *     return obj.get(key, None)             # <<<<<<<<<<<<<<
@@ -4575,7 +4258,7 @@ static PyObject *__pyx_f_6validr_7_schema_get_dict_value(PyObject *__pyx_v_obj, 
  * 
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 111, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_obj, __pyx_n_s_get); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_3 = NULL;
   __pyx_t_4 = 0;
@@ -4592,7 +4275,7 @@ static PyObject *__pyx_f_6validr_7_schema_get_dict_value(PyObject *__pyx_v_obj, 
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_3, __pyx_v_key, Py_None};
-    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 111, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else
@@ -4600,13 +4283,13 @@ static PyObject *__pyx_f_6validr_7_schema_get_dict_value(PyObject *__pyx_v_obj, 
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
     PyObject *__pyx_temp[3] = {__pyx_t_3, __pyx_v_key, Py_None};
-    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 111, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_4, 2+__pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else
   #endif
   {
-    __pyx_t_5 = PyTuple_New(2+__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 111, __pyx_L1_error)
+    __pyx_t_5 = PyTuple_New(2+__pyx_t_4); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 107, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     if (__pyx_t_3) {
       __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_3); __pyx_t_3 = NULL;
@@ -4617,7 +4300,7 @@ static PyObject *__pyx_f_6validr_7_schema_get_dict_value(PyObject *__pyx_v_obj, 
     __Pyx_INCREF(Py_None);
     __Pyx_GIVEREF(Py_None);
     PyTuple_SET_ITEM(__pyx_t_5, 1+__pyx_t_4, Py_None);
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 111, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   }
@@ -4626,7 +4309,7 @@ static PyObject *__pyx_f_6validr_7_schema_get_dict_value(PyObject *__pyx_v_obj, 
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "validr/_schema.pyx":110
+  /* "validr/_schema.pyx":106
  * 
  * 
  * cdef get_dict_value(obj, str key):             # <<<<<<<<<<<<<<
@@ -4648,7 +4331,7 @@ static PyObject *__pyx_f_6validr_7_schema_get_dict_value(PyObject *__pyx_v_obj, 
   return __pyx_r;
 }
 
-/* "validr/_schema.pyx":114
+/* "validr/_schema.pyx":110
  * 
  * 
  * cdef get_object_value(obj, str key):             # <<<<<<<<<<<<<<
@@ -4661,19 +4344,19 @@ static PyObject *__pyx_f_6validr_7_schema_get_object_value(PyObject *__pyx_v_obj
   PyObject *__pyx_t_1 = NULL;
   __Pyx_RefNannySetupContext("get_object_value", 0);
 
-  /* "validr/_schema.pyx":115
+  /* "validr/_schema.pyx":111
  * 
  * cdef get_object_value(obj, str key):
  *     return getattr(obj, key, None)             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
-  __pyx_t_1 = __Pyx_GetAttr3(__pyx_v_obj, __pyx_v_key, Py_None); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 115, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetAttr3(__pyx_v_obj, __pyx_v_key, Py_None); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 111, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "validr/_schema.pyx":114
+  /* "validr/_schema.pyx":110
  * 
  * 
  * cdef get_object_value(obj, str key):             # <<<<<<<<<<<<<<
@@ -4735,28 +4418,10 @@ static int __pyx_tp_clear_6validr_7_schema_MarkIndex(PyObject *o) {
   return 0;
 }
 
-static PyObject *__pyx_getprop_6validr_7_schema_9MarkIndex_items(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_6validr_7_schema_9MarkIndex_5items_1__get__(o);
-}
-
-static int __pyx_setprop_6validr_7_schema_9MarkIndex_items(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {
-  if (v) {
-    return __pyx_pw_6validr_7_schema_9MarkIndex_5items_3__set__(o, v);
-  }
-  else {
-    return __pyx_pw_6validr_7_schema_9MarkIndex_5items_5__del__(o);
-  }
-}
-
 static PyMethodDef __pyx_methods_6validr_7_schema_MarkIndex[] = {
   {"__enter__", (PyCFunction)__pyx_pw_6validr_7_schema_9MarkIndex_3__enter__, METH_NOARGS, 0},
   {"__exit__", (PyCFunction)__pyx_pw_6validr_7_schema_9MarkIndex_5__exit__, METH_VARARGS|METH_KEYWORDS, 0},
   {0, 0, 0, 0}
-};
-
-static struct PyGetSetDef __pyx_getsets_6validr_7_schema_MarkIndex[] = {
-  {(char *)"items", __pyx_getprop_6validr_7_schema_9MarkIndex_items, __pyx_setprop_6validr_7_schema_9MarkIndex_items, (char *)0, 0},
-  {0, 0, 0, 0, 0}
 };
 
 static PyTypeObject __pyx_type_6validr_7_schema_MarkIndex = {
@@ -4794,7 +4459,7 @@ static PyTypeObject __pyx_type_6validr_7_schema_MarkIndex = {
   0, /*tp_iternext*/
   __pyx_methods_6validr_7_schema_MarkIndex, /*tp_methods*/
   0, /*tp_members*/
-  __pyx_getsets_6validr_7_schema_MarkIndex, /*tp_getset*/
+  0, /*tp_getset*/
   0, /*tp_base*/
   0, /*tp_dict*/
   0, /*tp_descr_get*/
@@ -4842,28 +4507,10 @@ static void __pyx_tp_dealloc_6validr_7_schema_MarkKey(PyObject *o) {
   (*Py_TYPE(o)->tp_free)(o);
 }
 
-static PyObject *__pyx_getprop_6validr_7_schema_7MarkKey_key(PyObject *o, CYTHON_UNUSED void *x) {
-  return __pyx_pw_6validr_7_schema_7MarkKey_3key_1__get__(o);
-}
-
-static int __pyx_setprop_6validr_7_schema_7MarkKey_key(PyObject *o, PyObject *v, CYTHON_UNUSED void *x) {
-  if (v) {
-    return __pyx_pw_6validr_7_schema_7MarkKey_3key_3__set__(o, v);
-  }
-  else {
-    return __pyx_pw_6validr_7_schema_7MarkKey_3key_5__del__(o);
-  }
-}
-
 static PyMethodDef __pyx_methods_6validr_7_schema_MarkKey[] = {
   {"__enter__", (PyCFunction)__pyx_pw_6validr_7_schema_7MarkKey_3__enter__, METH_NOARGS, 0},
   {"__exit__", (PyCFunction)__pyx_pw_6validr_7_schema_7MarkKey_5__exit__, METH_VARARGS|METH_KEYWORDS, 0},
   {0, 0, 0, 0}
-};
-
-static struct PyGetSetDef __pyx_getsets_6validr_7_schema_MarkKey[] = {
-  {(char *)"key", __pyx_getprop_6validr_7_schema_7MarkKey_key, __pyx_setprop_6validr_7_schema_7MarkKey_key, (char *)0, 0},
-  {0, 0, 0, 0, 0}
 };
 
 static PyTypeObject __pyx_type_6validr_7_schema_MarkKey = {
@@ -4901,7 +4548,7 @@ static PyTypeObject __pyx_type_6validr_7_schema_MarkKey = {
   0, /*tp_iternext*/
   __pyx_methods_6validr_7_schema_MarkKey, /*tp_methods*/
   0, /*tp_members*/
-  __pyx_getsets_6validr_7_schema_MarkKey, /*tp_getset*/
+  0, /*tp_getset*/
   0, /*tp_base*/
   0, /*tp_dict*/
   0, /*tp_descr_get*/
@@ -5265,12 +4912,10 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_TypeError, __pyx_k_TypeError, sizeof(__pyx_k_TypeError), 0, 0, 1, 1},
   {&__pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_k_Users_xiachufang_dev_validr_val, sizeof(__pyx_k_Users_xiachufang_dev_validr_val), 0, 0, 1, 0},
   {&__pyx_n_s_ValidrError, __pyx_k_ValidrError, sizeof(__pyx_k_ValidrError), 0, 0, 1, 1},
-  {&__pyx_kp_s_can_t_merge_non_dict_value, __pyx_k_can_t_merge_non_dict_value, sizeof(__pyx_k_can_t_merge_non_dict_value), 0, 0, 1, 0},
   {&__pyx_n_s_collections_abc, __pyx_k_collections_abc, sizeof(__pyx_k_collections_abc), 0, 0, 1, 1},
-  {&__pyx_n_s_data, __pyx_k_data, sizeof(__pyx_k_data), 0, 0, 1, 1},
   {&__pyx_n_s_desc, __pyx_k_desc, sizeof(__pyx_k_desc), 0, 0, 1, 1},
   {&__pyx_n_s_dict_validator, __pyx_k_dict_validator, sizeof(__pyx_k_dict_validator), 0, 0, 1, 1},
-  {&__pyx_n_s_dict_validator_locals_validator, __pyx_k_dict_validator_locals_validator, sizeof(__pyx_k_dict_validator_locals_validator), 0, 0, 1, 1},
+  {&__pyx_n_s_dict_validator_locals_validate_d, __pyx_k_dict_validator_locals_validate_d, sizeof(__pyx_k_dict_validator_locals_validate_d), 0, 0, 1, 1},
   {&__pyx_n_s_enter, __pyx_k_enter, sizeof(__pyx_k_enter), 0, 0, 1, 1},
   {&__pyx_n_s_enumerate, __pyx_k_enumerate, sizeof(__pyx_k_enumerate), 0, 0, 1, 1},
   {&__pyx_n_s_exc_tb, __pyx_k_exc_tb, sizeof(__pyx_k_exc_tb), 0, 0, 1, 1},
@@ -5290,7 +4935,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_kp_s_list_length_must_d, __pyx_k_list_length_must_d, sizeof(__pyx_k_list_length_must_d), 0, 0, 1, 0},
   {&__pyx_kp_s_list_length_must_d_2, __pyx_k_list_length_must_d_2, sizeof(__pyx_k_list_length_must_d_2), 0, 0, 1, 0},
   {&__pyx_n_s_list_validator, __pyx_k_list_validator, sizeof(__pyx_k_list_validator), 0, 0, 1, 1},
-  {&__pyx_n_s_list_validator_locals_validator, __pyx_k_list_validator_locals_validator, sizeof(__pyx_k_list_validator_locals_validator), 0, 0, 1, 1},
+  {&__pyx_n_s_list_validator_locals_validate_l, __pyx_k_list_validator_locals_validate_l, sizeof(__pyx_k_list_validator_locals_validate_l), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
   {&__pyx_n_s_mark_index, __pyx_k_mark_index, sizeof(__pyx_k_mark_index), 0, 0, 1, 1},
   {&__pyx_n_s_mark_key, __pyx_k_mark_key, sizeof(__pyx_k_mark_key), 0, 0, 1, 1},
@@ -5308,8 +4953,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_unique, __pyx_k_unique, sizeof(__pyx_k_unique), 0, 0, 1, 1},
   {&__pyx_n_s_update, __pyx_k_update, sizeof(__pyx_k_update), 0, 0, 1, 1},
   {&__pyx_n_s_v, __pyx_k_v, sizeof(__pyx_k_v), 0, 0, 1, 1},
-  {&__pyx_n_s_validate, __pyx_k_validate, sizeof(__pyx_k_validate), 0, 0, 1, 1},
-  {&__pyx_n_s_validator, __pyx_k_validator, sizeof(__pyx_k_validator), 0, 0, 1, 1},
+  {&__pyx_n_s_validate_dict, __pyx_k_validate_dict, sizeof(__pyx_k_validate_dict), 0, 0, 1, 1},
+  {&__pyx_n_s_validate_list, __pyx_k_validate_list, sizeof(__pyx_k_validate_list), 0, 0, 1, 1},
   {&__pyx_n_s_validators, __pyx_k_validators, sizeof(__pyx_k_validators), 0, 0, 1, 1},
   {&__pyx_n_s_validr__schema, __pyx_k_validr__schema, sizeof(__pyx_k_validr__schema), 0, 0, 1, 1},
   {&__pyx_n_s_value, __pyx_k_value, sizeof(__pyx_k_value), 0, 0, 1, 1},
@@ -5317,8 +4962,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_TypeError = __Pyx_GetBuiltinName(__pyx_n_s_TypeError); if (!__pyx_builtin_TypeError) __PYX_ERR(0, 49, __pyx_L1_error)
-  __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(0, 81, __pyx_L1_error)
+  __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(0, 77, __pyx_L1_error)
+  __pyx_builtin_TypeError = __Pyx_GetBuiltinName(__pyx_n_s_TypeError); if (!__pyx_builtin_TypeError) __PYX_ERR(0, 78, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
   return -1;
@@ -5339,17 +4984,6 @@ static int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "validr/_schema.pyx":50
- *                 result.update(data)
- *             except TypeError:
- *                 raise SchemaError("can't merge non-dict value")             # <<<<<<<<<<<<<<
- *         return result
- *     return merged_validator
- */
-  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_s_can_t_merge_non_dict_value); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 50, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__2);
-  __Pyx_GIVEREF(__pyx_tuple__2);
-
   /* "validr/_schema.pyx":41
  * 
  * def merge_validators(list validators, bint optional=False, str desc=None):
@@ -5357,89 +4991,89 @@ static int __Pyx_InitCachedConstants(void) {
  *         if check_optional(value, optional):
  *             return None
  */
-  __pyx_tuple__3 = PyTuple_Pack(4, __pyx_n_s_value, __pyx_n_s_result, __pyx_n_s_v, __pyx_n_s_data); if (unlikely(!__pyx_tuple__3)) __PYX_ERR(0, 41, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__3);
-  __Pyx_GIVEREF(__pyx_tuple__3);
-  __pyx_codeobj__4 = (PyObject*)__Pyx_PyCode_New(1, 0, 4, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__3, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_merged_validator, 41, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__4)) __PYX_ERR(0, 41, __pyx_L1_error)
+  __pyx_tuple__2 = PyTuple_Pack(3, __pyx_n_s_value, __pyx_n_s_result, __pyx_n_s_v); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 41, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__2);
+  __Pyx_GIVEREF(__pyx_tuple__2);
+  __pyx_codeobj__3 = (PyObject*)__Pyx_PyCode_New(1, 0, 3, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__2, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_merged_validator, 41, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__3)) __PYX_ERR(0, 41, __pyx_L1_error)
 
-  /* "validr/_schema.pyx":70
+  /* "validr/_schema.pyx":66
  *         cdef str k
- *         for k, validate in inners:
+ *         for k, inner in inners:
  *             with MarkKey(k):             # <<<<<<<<<<<<<<
- *                 result[k] = validate(get_item(value, k))
+ *                 result[k] = inner(get_item(value, k))
  *         return result
  */
-  __pyx_tuple__5 = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_tuple__5)) __PYX_ERR(0, 70, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__5);
-  __Pyx_GIVEREF(__pyx_tuple__5);
+  __pyx_tuple__4 = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_tuple__4)) __PYX_ERR(0, 66, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__4);
+  __Pyx_GIVEREF(__pyx_tuple__4);
 
-  /* "validr/_schema.pyx":59
+  /* "validr/_schema.pyx":55
  *     inners = list(inners.items())
  * 
- *     def validator(value):             # <<<<<<<<<<<<<<
+ *     def validate_dict(value):             # <<<<<<<<<<<<<<
  *         if check_optional(value, optional):
  *             return None
  */
-  __pyx_tuple__6 = PyTuple_Pack(5, __pyx_n_s_value, __pyx_n_s_result, __pyx_n_s_get_item, __pyx_n_s_k, __pyx_n_s_validate); if (unlikely(!__pyx_tuple__6)) __PYX_ERR(0, 59, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__6);
-  __Pyx_GIVEREF(__pyx_tuple__6);
-  __pyx_codeobj__7 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__6, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_validator, 59, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__7)) __PYX_ERR(0, 59, __pyx_L1_error)
+  __pyx_tuple__5 = PyTuple_Pack(5, __pyx_n_s_value, __pyx_n_s_get_item, __pyx_n_s_result, __pyx_n_s_k, __pyx_n_s_inner); if (unlikely(!__pyx_tuple__5)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__5);
+  __Pyx_GIVEREF(__pyx_tuple__5);
+  __pyx_codeobj__6 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__5, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_validate_dict, 55, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__6)) __PYX_ERR(0, 55, __pyx_L1_error)
 
-  /* "validr/_schema.pyx":83
+  /* "validr/_schema.pyx":79
  *             value = enumerate(value)
  *         except TypeError:
  *             raise Invalid("not list")             # <<<<<<<<<<<<<<
  *         result = []
  *         cdef int i = -1
  */
-  __pyx_tuple__8 = PyTuple_Pack(1, __pyx_kp_s_not_list); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(0, 83, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__8);
-  __Pyx_GIVEREF(__pyx_tuple__8);
+  __pyx_tuple__7 = PyTuple_Pack(1, __pyx_kp_s_not_list); if (unlikely(!__pyx_tuple__7)) __PYX_ERR(0, 79, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__7);
+  __Pyx_GIVEREF(__pyx_tuple__7);
 
-  /* "validr/_schema.pyx":92
+  /* "validr/_schema.pyx":88
  *                 v = inner(x)
  *                 if unique and v in result:
  *                     raise Invalid("not unique")             # <<<<<<<<<<<<<<
  *             result.append(v)
  *         if i + 1 < minlen:
  */
-  __pyx_tuple__9 = PyTuple_Pack(1, __pyx_kp_s_not_unique); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 92, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__9);
-  __Pyx_GIVEREF(__pyx_tuple__9);
+  __pyx_tuple__8 = PyTuple_Pack(1, __pyx_kp_s_not_unique); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(0, 88, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__8);
+  __Pyx_GIVEREF(__pyx_tuple__8);
 
-  /* "validr/_schema.pyx":89
+  /* "validr/_schema.pyx":85
  *             if i >= maxlen:
  *                 raise Invalid("list length must <= %d" % maxlen)
  *             with MarkIndex(result):             # <<<<<<<<<<<<<<
  *                 v = inner(x)
  *                 if unique and v in result:
  */
-  __pyx_tuple__10 = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 89, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__10);
-  __Pyx_GIVEREF(__pyx_tuple__10);
+  __pyx_tuple__9 = PyTuple_Pack(3, Py_None, Py_None, Py_None); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(0, 85, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__9);
+  __Pyx_GIVEREF(__pyx_tuple__9);
 
-  /* "validr/_schema.pyx":77
+  /* "validr/_schema.pyx":73
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,
  *                    bint optional=False, str desc=None):
- *     def validator(value):             # <<<<<<<<<<<<<<
+ *     def validate_list(value):             # <<<<<<<<<<<<<<
  *         if check_optional(value, optional):
  *             return None
  */
-  __pyx_tuple__11 = PyTuple_Pack(5, __pyx_n_s_value, __pyx_n_s_result, __pyx_n_s_i, __pyx_n_s_x, __pyx_n_s_v); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(0, 77, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__11);
-  __Pyx_GIVEREF(__pyx_tuple__11);
-  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_validator, 77, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(0, 77, __pyx_L1_error)
+  __pyx_tuple__10 = PyTuple_Pack(5, __pyx_n_s_value, __pyx_n_s_result, __pyx_n_s_i, __pyx_n_s_x, __pyx_n_s_v); if (unlikely(!__pyx_tuple__10)) __PYX_ERR(0, 73, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__10);
+  __Pyx_GIVEREF(__pyx_tuple__10);
+  __pyx_codeobj__11 = (PyObject*)__Pyx_PyCode_New(1, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__10, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_validate_list, 73, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__11)) __PYX_ERR(0, 73, __pyx_L1_error)
 
-  /* "validr/_schema.pyx":106
+  /* "validr/_schema.pyx":102
  *             return True
  *         else:
  *             raise Invalid("required")             # <<<<<<<<<<<<<<
  *     return False
  * 
  */
-  __pyx_tuple__13 = PyTuple_Pack(1, __pyx_n_s_required); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 106, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__13);
-  __Pyx_GIVEREF(__pyx_tuple__13);
+  __pyx_tuple__12 = PyTuple_Pack(1, __pyx_n_s_required); if (unlikely(!__pyx_tuple__12)) __PYX_ERR(0, 102, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__12);
+  __Pyx_GIVEREF(__pyx_tuple__12);
 
   /* "validr/_schema.pyx":40
  * 
@@ -5448,34 +5082,34 @@ static int __Pyx_InitCachedConstants(void) {
  *     def merged_validator(value):
  *         if check_optional(value, optional):
  */
-  __pyx_tuple__14 = PyTuple_Pack(5, __pyx_n_s_validators, __pyx_n_s_optional, __pyx_n_s_desc, __pyx_n_s_merged_validator, __pyx_n_s_merged_validator); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 40, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__14);
-  __Pyx_GIVEREF(__pyx_tuple__14);
-  __pyx_codeobj__15 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__14, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_merge_validators, 40, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__15)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __pyx_tuple__13 = PyTuple_Pack(5, __pyx_n_s_validators, __pyx_n_s_optional, __pyx_n_s_desc, __pyx_n_s_merged_validator, __pyx_n_s_merged_validator); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 40, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__13);
+  __Pyx_GIVEREF(__pyx_tuple__13);
+  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_merge_validators, 40, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(0, 40, __pyx_L1_error)
 
-  /* "validr/_schema.pyx":55
+  /* "validr/_schema.pyx":51
  * 
  * 
  * def dict_validator(inners, bint optional=False, str desc=None):             # <<<<<<<<<<<<<<
  * 
  *     inners = list(inners.items())
  */
-  __pyx_tuple__16 = PyTuple_Pack(5, __pyx_n_s_inners, __pyx_n_s_optional, __pyx_n_s_desc, __pyx_n_s_validator, __pyx_n_s_validator); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 55, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__16);
-  __Pyx_GIVEREF(__pyx_tuple__16);
-  __pyx_codeobj__17 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__16, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_dict_validator, 55, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__17)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_tuple__15 = PyTuple_Pack(5, __pyx_n_s_inners, __pyx_n_s_optional, __pyx_n_s_desc, __pyx_n_s_validate_dict, __pyx_n_s_validate_dict); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(0, 51, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__15);
+  __Pyx_GIVEREF(__pyx_tuple__15);
+  __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_dict_validator, 51, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(0, 51, __pyx_L1_error)
 
-  /* "validr/_schema.pyx":75
- *     return validator
+  /* "validr/_schema.pyx":71
+ *     return validate_dict
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,             # <<<<<<<<<<<<<<
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  */
-  __pyx_tuple__18 = PyTuple_Pack(8, __pyx_n_s_inner, __pyx_n_s_minlen, __pyx_n_s_maxlen, __pyx_n_s_unique, __pyx_n_s_optional, __pyx_n_s_desc, __pyx_n_s_validator, __pyx_n_s_validator); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 75, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_tuple__18);
-  __Pyx_GIVEREF(__pyx_tuple__18);
-  __pyx_codeobj__19 = (PyObject*)__Pyx_PyCode_New(6, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__18, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_list_validator, 75, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__19)) __PYX_ERR(0, 75, __pyx_L1_error)
+  __pyx_tuple__17 = PyTuple_Pack(8, __pyx_n_s_inner, __pyx_n_s_minlen, __pyx_n_s_maxlen, __pyx_n_s_unique, __pyx_n_s_optional, __pyx_n_s_desc, __pyx_n_s_validate_list, __pyx_n_s_validate_list); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 71, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_tuple__17);
+  __Pyx_GIVEREF(__pyx_tuple__17);
+  __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(6, 0, 8, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_Users_xiachufang_dev_validr_val, __pyx_n_s_list_validator, 71, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(0, 71, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -5586,10 +5220,10 @@ PyMODINIT_FUNC PyInit__schema(void)
   if (PyType_Ready(&__pyx_type_6validr_7_schema___pyx_scope_struct__merge_validators) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
   __pyx_type_6validr_7_schema___pyx_scope_struct__merge_validators.tp_print = 0;
   __pyx_ptype_6validr_7_schema___pyx_scope_struct__merge_validators = &__pyx_type_6validr_7_schema___pyx_scope_struct__merge_validators;
-  if (PyType_Ready(&__pyx_type_6validr_7_schema___pyx_scope_struct_1_dict_validator) < 0) __PYX_ERR(0, 55, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_6validr_7_schema___pyx_scope_struct_1_dict_validator) < 0) __PYX_ERR(0, 51, __pyx_L1_error)
   __pyx_type_6validr_7_schema___pyx_scope_struct_1_dict_validator.tp_print = 0;
   __pyx_ptype_6validr_7_schema___pyx_scope_struct_1_dict_validator = &__pyx_type_6validr_7_schema___pyx_scope_struct_1_dict_validator;
-  if (PyType_Ready(&__pyx_type_6validr_7_schema___pyx_scope_struct_2_list_validator) < 0) __PYX_ERR(0, 75, __pyx_L1_error)
+  if (PyType_Ready(&__pyx_type_6validr_7_schema___pyx_scope_struct_2_list_validator) < 0) __PYX_ERR(0, 71, __pyx_L1_error)
   __pyx_type_6validr_7_schema___pyx_scope_struct_2_list_validator.tp_print = 0;
   __pyx_ptype_6validr_7_schema___pyx_scope_struct_2_list_validator = &__pyx_type_6validr_7_schema___pyx_scope_struct_2_list_validator;
   /*--- Type import code ---*/
@@ -5665,28 +5299,28 @@ PyMODINIT_FUNC PyInit__schema(void)
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_merge_validators, __pyx_t_1) < 0) __PYX_ERR(0, 40, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "validr/_schema.pyx":55
+  /* "validr/_schema.pyx":51
  * 
  * 
  * def dict_validator(inners, bint optional=False, str desc=None):             # <<<<<<<<<<<<<<
  * 
  *     inners = list(inners.items())
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6validr_7_schema_3dict_validator, NULL, __pyx_n_s_validr__schema); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 55, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6validr_7_schema_3dict_validator, NULL, __pyx_n_s_validr__schema); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_dict_validator, __pyx_t_1) < 0) __PYX_ERR(0, 55, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_dict_validator, __pyx_t_1) < 0) __PYX_ERR(0, 51, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "validr/_schema.pyx":75
- *     return validator
+  /* "validr/_schema.pyx":71
+ *     return validate_dict
  * 
  * def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,             # <<<<<<<<<<<<<<
  *                    bint optional=False, str desc=None):
- *     def validator(value):
+ *     def validate_list(value):
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6validr_7_schema_5list_validator, NULL, __pyx_n_s_validr__schema); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 75, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_6validr_7_schema_5list_validator, NULL, __pyx_n_s_validr__schema); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 71, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_list_validator, __pyx_t_1) < 0) __PYX_ERR(0, 75, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_list_validator, __pyx_t_1) < 0) __PYX_ERR(0, 71, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "validr/_schema.pyx":1
@@ -6168,290 +5802,8 @@ static CYTHON_INLINE int __Pyx_ArgTypeTest(PyObject *obj, PyTypeObject *type, in
     PyErr_Format(PyExc_NameError, "free variable '%s' referenced before assignment in enclosing scope", varname);
 }
 
-/* SaveResetException */
-    #if CYTHON_FAST_THREAD_STATE
-static CYTHON_INLINE void __Pyx__ExceptionSave(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
-    *type = tstate->exc_type;
-    *value = tstate->exc_value;
-    *tb = tstate->exc_traceback;
-    Py_XINCREF(*type);
-    Py_XINCREF(*value);
-    Py_XINCREF(*tb);
-}
-static CYTHON_INLINE void __Pyx__ExceptionReset(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {
-    PyObject *tmp_type, *tmp_value, *tmp_tb;
-    tmp_type = tstate->exc_type;
-    tmp_value = tstate->exc_value;
-    tmp_tb = tstate->exc_traceback;
-    tstate->exc_type = type;
-    tstate->exc_value = value;
-    tstate->exc_traceback = tb;
-    Py_XDECREF(tmp_type);
-    Py_XDECREF(tmp_value);
-    Py_XDECREF(tmp_tb);
-}
-#endif
-
-/* PyErrExceptionMatches */
-    #if CYTHON_FAST_THREAD_STATE
-static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err) {
-    PyObject *exc_type = tstate->curexc_type;
-    if (exc_type == err) return 1;
-    if (unlikely(!exc_type)) return 0;
-    return PyErr_GivenExceptionMatches(exc_type, err);
-}
-#endif
-
-/* GetException */
-    #if CYTHON_FAST_THREAD_STATE
-static int __Pyx__GetException(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
-#else
-static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb) {
-#endif
-    PyObject *local_type, *local_value, *local_tb;
-#if CYTHON_FAST_THREAD_STATE
-    PyObject *tmp_type, *tmp_value, *tmp_tb;
-    local_type = tstate->curexc_type;
-    local_value = tstate->curexc_value;
-    local_tb = tstate->curexc_traceback;
-    tstate->curexc_type = 0;
-    tstate->curexc_value = 0;
-    tstate->curexc_traceback = 0;
-#else
-    PyErr_Fetch(&local_type, &local_value, &local_tb);
-#endif
-    PyErr_NormalizeException(&local_type, &local_value, &local_tb);
-#if CYTHON_FAST_THREAD_STATE
-    if (unlikely(tstate->curexc_type))
-#else
-    if (unlikely(PyErr_Occurred()))
-#endif
-        goto bad;
-    #if PY_MAJOR_VERSION >= 3
-    if (local_tb) {
-        if (unlikely(PyException_SetTraceback(local_value, local_tb) < 0))
-            goto bad;
-    }
-    #endif
-    Py_XINCREF(local_tb);
-    Py_XINCREF(local_type);
-    Py_XINCREF(local_value);
-    *type = local_type;
-    *value = local_value;
-    *tb = local_tb;
-#if CYTHON_FAST_THREAD_STATE
-    tmp_type = tstate->exc_type;
-    tmp_value = tstate->exc_value;
-    tmp_tb = tstate->exc_traceback;
-    tstate->exc_type = local_type;
-    tstate->exc_value = local_value;
-    tstate->exc_traceback = local_tb;
-    Py_XDECREF(tmp_type);
-    Py_XDECREF(tmp_value);
-    Py_XDECREF(tmp_tb);
-#else
-    PyErr_SetExcInfo(local_type, local_value, local_tb);
-#endif
-    return 0;
-bad:
-    *type = 0;
-    *value = 0;
-    *tb = 0;
-    Py_XDECREF(local_type);
-    Py_XDECREF(local_value);
-    Py_XDECREF(local_tb);
-    return -1;
-}
-
-/* PyErrFetchRestore */
-      #if CYTHON_FAST_THREAD_STATE
-static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {
-    PyObject *tmp_type, *tmp_value, *tmp_tb;
-    tmp_type = tstate->curexc_type;
-    tmp_value = tstate->curexc_value;
-    tmp_tb = tstate->curexc_traceback;
-    tstate->curexc_type = type;
-    tstate->curexc_value = value;
-    tstate->curexc_traceback = tb;
-    Py_XDECREF(tmp_type);
-    Py_XDECREF(tmp_value);
-    Py_XDECREF(tmp_tb);
-}
-static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
-    *type = tstate->curexc_type;
-    *value = tstate->curexc_value;
-    *tb = tstate->curexc_traceback;
-    tstate->curexc_type = 0;
-    tstate->curexc_value = 0;
-    tstate->curexc_traceback = 0;
-}
-#endif
-
-/* RaiseException */
-      #if PY_MAJOR_VERSION < 3
-static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb,
-                        CYTHON_UNUSED PyObject *cause) {
-    __Pyx_PyThreadState_declare
-    Py_XINCREF(type);
-    if (!value || value == Py_None)
-        value = NULL;
-    else
-        Py_INCREF(value);
-    if (!tb || tb == Py_None)
-        tb = NULL;
-    else {
-        Py_INCREF(tb);
-        if (!PyTraceBack_Check(tb)) {
-            PyErr_SetString(PyExc_TypeError,
-                "raise: arg 3 must be a traceback or None");
-            goto raise_error;
-        }
-    }
-    if (PyType_Check(type)) {
-#if CYTHON_COMPILING_IN_PYPY
-        if (!value) {
-            Py_INCREF(Py_None);
-            value = Py_None;
-        }
-#endif
-        PyErr_NormalizeException(&type, &value, &tb);
-    } else {
-        if (value) {
-            PyErr_SetString(PyExc_TypeError,
-                "instance exception may not have a separate value");
-            goto raise_error;
-        }
-        value = type;
-        type = (PyObject*) Py_TYPE(type);
-        Py_INCREF(type);
-        if (!PyType_IsSubtype((PyTypeObject *)type, (PyTypeObject *)PyExc_BaseException)) {
-            PyErr_SetString(PyExc_TypeError,
-                "raise: exception class must be a subclass of BaseException");
-            goto raise_error;
-        }
-    }
-    __Pyx_PyThreadState_assign
-    __Pyx_ErrRestore(type, value, tb);
-    return;
-raise_error:
-    Py_XDECREF(value);
-    Py_XDECREF(type);
-    Py_XDECREF(tb);
-    return;
-}
-#else
-static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause) {
-    PyObject* owned_instance = NULL;
-    if (tb == Py_None) {
-        tb = 0;
-    } else if (tb && !PyTraceBack_Check(tb)) {
-        PyErr_SetString(PyExc_TypeError,
-            "raise: arg 3 must be a traceback or None");
-        goto bad;
-    }
-    if (value == Py_None)
-        value = 0;
-    if (PyExceptionInstance_Check(type)) {
-        if (value) {
-            PyErr_SetString(PyExc_TypeError,
-                "instance exception may not have a separate value");
-            goto bad;
-        }
-        value = type;
-        type = (PyObject*) Py_TYPE(value);
-    } else if (PyExceptionClass_Check(type)) {
-        PyObject *instance_class = NULL;
-        if (value && PyExceptionInstance_Check(value)) {
-            instance_class = (PyObject*) Py_TYPE(value);
-            if (instance_class != type) {
-                int is_subclass = PyObject_IsSubclass(instance_class, type);
-                if (!is_subclass) {
-                    instance_class = NULL;
-                } else if (unlikely(is_subclass == -1)) {
-                    goto bad;
-                } else {
-                    type = instance_class;
-                }
-            }
-        }
-        if (!instance_class) {
-            PyObject *args;
-            if (!value)
-                args = PyTuple_New(0);
-            else if (PyTuple_Check(value)) {
-                Py_INCREF(value);
-                args = value;
-            } else
-                args = PyTuple_Pack(1, value);
-            if (!args)
-                goto bad;
-            owned_instance = PyObject_Call(type, args, NULL);
-            Py_DECREF(args);
-            if (!owned_instance)
-                goto bad;
-            value = owned_instance;
-            if (!PyExceptionInstance_Check(value)) {
-                PyErr_Format(PyExc_TypeError,
-                             "calling %R should have returned an instance of "
-                             "BaseException, not %R",
-                             type, Py_TYPE(value));
-                goto bad;
-            }
-        }
-    } else {
-        PyErr_SetString(PyExc_TypeError,
-            "raise: exception class must be a subclass of BaseException");
-        goto bad;
-    }
-#if PY_VERSION_HEX >= 0x03030000
-    if (cause) {
-#else
-    if (cause && cause != Py_None) {
-#endif
-        PyObject *fixed_cause;
-        if (cause == Py_None) {
-            fixed_cause = NULL;
-        } else if (PyExceptionClass_Check(cause)) {
-            fixed_cause = PyObject_CallObject(cause, NULL);
-            if (fixed_cause == NULL)
-                goto bad;
-        } else if (PyExceptionInstance_Check(cause)) {
-            fixed_cause = cause;
-            Py_INCREF(fixed_cause);
-        } else {
-            PyErr_SetString(PyExc_TypeError,
-                            "exception causes must derive from "
-                            "BaseException");
-            goto bad;
-        }
-        PyException_SetCause(value, fixed_cause);
-    }
-    PyErr_SetObject(type, value);
-    if (tb) {
-#if CYTHON_COMPILING_IN_PYPY
-        PyObject *tmp_type, *tmp_value, *tmp_tb;
-        PyErr_Fetch(&tmp_type, &tmp_value, &tmp_tb);
-        Py_INCREF(tb);
-        PyErr_Restore(tmp_type, tmp_value, tb);
-        Py_XDECREF(tmp_tb);
-#else
-        PyThreadState *tstate = PyThreadState_GET();
-        PyObject* tmp_tb = tstate->curexc_traceback;
-        if (tb != tmp_tb) {
-            Py_INCREF(tb);
-            tstate->curexc_traceback = tb;
-            Py_XDECREF(tmp_tb);
-        }
-#endif
-    }
-bad:
-    Py_XDECREF(owned_instance);
-    return;
-}
-#endif
-
 /* FetchCommonType */
-        static PyTypeObject* __Pyx_FetchCommonType(PyTypeObject* type) {
+    static PyTypeObject* __Pyx_FetchCommonType(PyTypeObject* type) {
     PyObject* fake_module;
     PyTypeObject* cached_type = NULL;
     fake_module = PyImport_AddModule((char*) "_cython_" CYTHON_ABI);
@@ -6490,7 +5842,7 @@ bad:
 }
 
 /* CythonFunction */
-        static PyObject *
+    static PyObject *
 __Pyx_CyFunction_get_doc(__pyx_CyFunctionObject *op, CYTHON_UNUSED void *closure)
 {
     if (unlikely(op->func_doc == NULL)) {
@@ -7073,20 +6425,20 @@ static CYTHON_INLINE void __Pyx_CyFunction_SetAnnotationsDict(PyObject *func, Py
 }
 
 /* RaiseTooManyValuesToUnpack */
-            static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
+        static CYTHON_INLINE void __Pyx_RaiseTooManyValuesError(Py_ssize_t expected) {
     PyErr_Format(PyExc_ValueError,
                  "too many values to unpack (expected %" CYTHON_FORMAT_SSIZE_T "d)", expected);
 }
 
 /* RaiseNeedMoreValuesToUnpack */
-            static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
+        static CYTHON_INLINE void __Pyx_RaiseNeedMoreValuesError(Py_ssize_t index) {
     PyErr_Format(PyExc_ValueError,
                  "need more than %" CYTHON_FORMAT_SSIZE_T "d value%.1s to unpack",
                  index, (index == 1) ? "" : "s");
 }
 
 /* IterFinish */
-            static CYTHON_INLINE int __Pyx_IterFinish(void) {
+        static CYTHON_INLINE int __Pyx_IterFinish(void) {
 #if CYTHON_FAST_THREAD_STATE
     PyThreadState *tstate = PyThreadState_GET();
     PyObject* exc_type = tstate->curexc_type;
@@ -7121,7 +6473,7 @@ static CYTHON_INLINE void __Pyx_CyFunction_SetAnnotationsDict(PyObject *func, Py
 }
 
 /* UnpackItemEndCheck */
-            static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {
+        static int __Pyx_IternextUnpackEndCheck(PyObject *retval, Py_ssize_t expected) {
     if (unlikely(retval)) {
         Py_DECREF(retval);
         __Pyx_RaiseTooManyValuesError(expected);
@@ -7133,7 +6485,7 @@ static CYTHON_INLINE void __Pyx_CyFunction_SetAnnotationsDict(PyObject *func, Py
 }
 
 /* PyObjectCallNoArg */
-            #if CYTHON_COMPILING_IN_CPYTHON
+        #if CYTHON_COMPILING_IN_CPYTHON
 static CYTHON_INLINE PyObject* __Pyx_PyObject_CallNoArg(PyObject *func) {
 #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(func)) {
@@ -7150,6 +6502,288 @@ static CYTHON_INLINE PyObject* __Pyx_PyObject_CallNoArg(PyObject *func) {
         }
     }
     return __Pyx_PyObject_Call(func, __pyx_empty_tuple, NULL);
+}
+#endif
+
+/* SaveResetException */
+          #if CYTHON_FAST_THREAD_STATE
+static CYTHON_INLINE void __Pyx__ExceptionSave(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
+    *type = tstate->exc_type;
+    *value = tstate->exc_value;
+    *tb = tstate->exc_traceback;
+    Py_XINCREF(*type);
+    Py_XINCREF(*value);
+    Py_XINCREF(*tb);
+}
+static CYTHON_INLINE void __Pyx__ExceptionReset(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+    tmp_type = tstate->exc_type;
+    tmp_value = tstate->exc_value;
+    tmp_tb = tstate->exc_traceback;
+    tstate->exc_type = type;
+    tstate->exc_value = value;
+    tstate->exc_traceback = tb;
+    Py_XDECREF(tmp_type);
+    Py_XDECREF(tmp_value);
+    Py_XDECREF(tmp_tb);
+}
+#endif
+
+/* GetException */
+          #if CYTHON_FAST_THREAD_STATE
+static int __Pyx__GetException(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
+#else
+static int __Pyx_GetException(PyObject **type, PyObject **value, PyObject **tb) {
+#endif
+    PyObject *local_type, *local_value, *local_tb;
+#if CYTHON_FAST_THREAD_STATE
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+    local_type = tstate->curexc_type;
+    local_value = tstate->curexc_value;
+    local_tb = tstate->curexc_traceback;
+    tstate->curexc_type = 0;
+    tstate->curexc_value = 0;
+    tstate->curexc_traceback = 0;
+#else
+    PyErr_Fetch(&local_type, &local_value, &local_tb);
+#endif
+    PyErr_NormalizeException(&local_type, &local_value, &local_tb);
+#if CYTHON_FAST_THREAD_STATE
+    if (unlikely(tstate->curexc_type))
+#else
+    if (unlikely(PyErr_Occurred()))
+#endif
+        goto bad;
+    #if PY_MAJOR_VERSION >= 3
+    if (local_tb) {
+        if (unlikely(PyException_SetTraceback(local_value, local_tb) < 0))
+            goto bad;
+    }
+    #endif
+    Py_XINCREF(local_tb);
+    Py_XINCREF(local_type);
+    Py_XINCREF(local_value);
+    *type = local_type;
+    *value = local_value;
+    *tb = local_tb;
+#if CYTHON_FAST_THREAD_STATE
+    tmp_type = tstate->exc_type;
+    tmp_value = tstate->exc_value;
+    tmp_tb = tstate->exc_traceback;
+    tstate->exc_type = local_type;
+    tstate->exc_value = local_value;
+    tstate->exc_traceback = local_tb;
+    Py_XDECREF(tmp_type);
+    Py_XDECREF(tmp_value);
+    Py_XDECREF(tmp_tb);
+#else
+    PyErr_SetExcInfo(local_type, local_value, local_tb);
+#endif
+    return 0;
+bad:
+    *type = 0;
+    *value = 0;
+    *tb = 0;
+    Py_XDECREF(local_type);
+    Py_XDECREF(local_value);
+    Py_XDECREF(local_tb);
+    return -1;
+}
+
+/* PyErrFetchRestore */
+            #if CYTHON_FAST_THREAD_STATE
+static CYTHON_INLINE void __Pyx_ErrRestoreInState(PyThreadState *tstate, PyObject *type, PyObject *value, PyObject *tb) {
+    PyObject *tmp_type, *tmp_value, *tmp_tb;
+    tmp_type = tstate->curexc_type;
+    tmp_value = tstate->curexc_value;
+    tmp_tb = tstate->curexc_traceback;
+    tstate->curexc_type = type;
+    tstate->curexc_value = value;
+    tstate->curexc_traceback = tb;
+    Py_XDECREF(tmp_type);
+    Py_XDECREF(tmp_value);
+    Py_XDECREF(tmp_tb);
+}
+static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject **type, PyObject **value, PyObject **tb) {
+    *type = tstate->curexc_type;
+    *value = tstate->curexc_value;
+    *tb = tstate->curexc_traceback;
+    tstate->curexc_type = 0;
+    tstate->curexc_value = 0;
+    tstate->curexc_traceback = 0;
+}
+#endif
+
+/* PyErrExceptionMatches */
+            #if CYTHON_FAST_THREAD_STATE
+static CYTHON_INLINE int __Pyx_PyErr_ExceptionMatchesInState(PyThreadState* tstate, PyObject* err) {
+    PyObject *exc_type = tstate->curexc_type;
+    if (exc_type == err) return 1;
+    if (unlikely(!exc_type)) return 0;
+    return PyErr_GivenExceptionMatches(exc_type, err);
+}
+#endif
+
+/* RaiseException */
+            #if PY_MAJOR_VERSION < 3
+static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb,
+                        CYTHON_UNUSED PyObject *cause) {
+    __Pyx_PyThreadState_declare
+    Py_XINCREF(type);
+    if (!value || value == Py_None)
+        value = NULL;
+    else
+        Py_INCREF(value);
+    if (!tb || tb == Py_None)
+        tb = NULL;
+    else {
+        Py_INCREF(tb);
+        if (!PyTraceBack_Check(tb)) {
+            PyErr_SetString(PyExc_TypeError,
+                "raise: arg 3 must be a traceback or None");
+            goto raise_error;
+        }
+    }
+    if (PyType_Check(type)) {
+#if CYTHON_COMPILING_IN_PYPY
+        if (!value) {
+            Py_INCREF(Py_None);
+            value = Py_None;
+        }
+#endif
+        PyErr_NormalizeException(&type, &value, &tb);
+    } else {
+        if (value) {
+            PyErr_SetString(PyExc_TypeError,
+                "instance exception may not have a separate value");
+            goto raise_error;
+        }
+        value = type;
+        type = (PyObject*) Py_TYPE(type);
+        Py_INCREF(type);
+        if (!PyType_IsSubtype((PyTypeObject *)type, (PyTypeObject *)PyExc_BaseException)) {
+            PyErr_SetString(PyExc_TypeError,
+                "raise: exception class must be a subclass of BaseException");
+            goto raise_error;
+        }
+    }
+    __Pyx_PyThreadState_assign
+    __Pyx_ErrRestore(type, value, tb);
+    return;
+raise_error:
+    Py_XDECREF(value);
+    Py_XDECREF(type);
+    Py_XDECREF(tb);
+    return;
+}
+#else
+static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause) {
+    PyObject* owned_instance = NULL;
+    if (tb == Py_None) {
+        tb = 0;
+    } else if (tb && !PyTraceBack_Check(tb)) {
+        PyErr_SetString(PyExc_TypeError,
+            "raise: arg 3 must be a traceback or None");
+        goto bad;
+    }
+    if (value == Py_None)
+        value = 0;
+    if (PyExceptionInstance_Check(type)) {
+        if (value) {
+            PyErr_SetString(PyExc_TypeError,
+                "instance exception may not have a separate value");
+            goto bad;
+        }
+        value = type;
+        type = (PyObject*) Py_TYPE(value);
+    } else if (PyExceptionClass_Check(type)) {
+        PyObject *instance_class = NULL;
+        if (value && PyExceptionInstance_Check(value)) {
+            instance_class = (PyObject*) Py_TYPE(value);
+            if (instance_class != type) {
+                int is_subclass = PyObject_IsSubclass(instance_class, type);
+                if (!is_subclass) {
+                    instance_class = NULL;
+                } else if (unlikely(is_subclass == -1)) {
+                    goto bad;
+                } else {
+                    type = instance_class;
+                }
+            }
+        }
+        if (!instance_class) {
+            PyObject *args;
+            if (!value)
+                args = PyTuple_New(0);
+            else if (PyTuple_Check(value)) {
+                Py_INCREF(value);
+                args = value;
+            } else
+                args = PyTuple_Pack(1, value);
+            if (!args)
+                goto bad;
+            owned_instance = PyObject_Call(type, args, NULL);
+            Py_DECREF(args);
+            if (!owned_instance)
+                goto bad;
+            value = owned_instance;
+            if (!PyExceptionInstance_Check(value)) {
+                PyErr_Format(PyExc_TypeError,
+                             "calling %R should have returned an instance of "
+                             "BaseException, not %R",
+                             type, Py_TYPE(value));
+                goto bad;
+            }
+        }
+    } else {
+        PyErr_SetString(PyExc_TypeError,
+            "raise: exception class must be a subclass of BaseException");
+        goto bad;
+    }
+#if PY_VERSION_HEX >= 0x03030000
+    if (cause) {
+#else
+    if (cause && cause != Py_None) {
+#endif
+        PyObject *fixed_cause;
+        if (cause == Py_None) {
+            fixed_cause = NULL;
+        } else if (PyExceptionClass_Check(cause)) {
+            fixed_cause = PyObject_CallObject(cause, NULL);
+            if (fixed_cause == NULL)
+                goto bad;
+        } else if (PyExceptionInstance_Check(cause)) {
+            fixed_cause = cause;
+            Py_INCREF(fixed_cause);
+        } else {
+            PyErr_SetString(PyExc_TypeError,
+                            "exception causes must derive from "
+                            "BaseException");
+            goto bad;
+        }
+        PyException_SetCause(value, fixed_cause);
+    }
+    PyErr_SetObject(type, value);
+    if (tb) {
+#if CYTHON_COMPILING_IN_PYPY
+        PyObject *tmp_type, *tmp_value, *tmp_tb;
+        PyErr_Fetch(&tmp_type, &tmp_value, &tmp_tb);
+        Py_INCREF(tb);
+        PyErr_Restore(tmp_type, tmp_value, tb);
+        Py_XDECREF(tmp_tb);
+#else
+        PyThreadState *tstate = PyThreadState_GET();
+        PyObject* tmp_tb = tstate->curexc_traceback;
+        if (tb != tmp_tb) {
+            Py_INCREF(tb);
+            tstate->curexc_traceback = tb;
+            Py_XDECREF(tmp_tb);
+        }
+#endif
+    }
+bad:
+    Py_XDECREF(owned_instance);
+    return;
 }
 #endif
 

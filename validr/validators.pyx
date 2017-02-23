@@ -4,7 +4,7 @@ import sys
 from .exceptions import Invalid
 
 
-def handle_default_optional_desc(string=False):
+def handle_default_optional_desc(bint string=False):
     """
     Decorator for handling params: default,optional,desc
 
@@ -13,7 +13,7 @@ def handle_default_optional_desc(string=False):
     def handler(some_validator):
         def wrapped_validator(*args, **kwargs):
             default = kwargs.pop("default", None)
-            optional = kwargs.pop("optional", False)
+            cdef bint optional = kwargs.pop("optional", False)
             kwargs.pop("desc", None)
             origin_validator = some_validator(*args, **kwargs)
             if string:
@@ -104,7 +104,7 @@ def float_validator(min=-sys.float_info.max, max=sys.float_info.max,
 
 
 @handle_default_optional_desc(string=True)
-def str_validator(minlen=0, maxlen=1024 * 1024, escape=False):
+def str_validator(int minlen=0, int maxlen=1024 * 1024, bint escape=False):
     """Validate string
 
     :param minlen: min length of string, default 0
@@ -114,9 +114,10 @@ def str_validator(minlen=0, maxlen=1024 * 1024, escape=False):
     def validator(value):
         if not isinstance(value, str):
             raise Invalid("invalid string")
-        if len(value) < minlen:
+        cdef int length = len(value)
+        if length < minlen:
             raise Invalid("string length must >= %d" % minlen)
-        elif len(value) > maxlen:
+        elif length > maxlen:
             raise Invalid("string length must <= %d" % maxlen)
         if escape:
             return (value.replace("&", "&amp;")

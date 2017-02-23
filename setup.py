@@ -34,7 +34,9 @@ setup(
     url="https://github.com/guyskk/validr",
     license="MIT",
     packages=['validr'],
-    ext_modules=cythonize("validr/_schema.pyx"),
+    ext_modules=cythonize([
+        "validr/_schema.pyx", "validr/validators.pyx",
+    ]),
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',

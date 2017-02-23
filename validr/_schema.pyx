@@ -1,5 +1,5 @@
 from collections.abc import Mapping
-from .exceptions import Invalid, SchemaError
+from .exceptions import ValidrError, Invalid, SchemaError
 
 
 cdef class MarkIndex:
@@ -14,13 +14,11 @@ cdef class MarkIndex:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is Invalid or exc_type is SchemaError:
+        if exc_type is not None and issubclass(exc_type, ValidrError):
             if self.items is None:
                 exc_val.mark_index(None)
             else:
                 exc_val.mark_index(len(self.items))
-        if exc_type is not None:
-            return False
 
 
 cdef class MarkKey:
@@ -35,17 +33,15 @@ cdef class MarkKey:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is Invalid or exc_type is SchemaError:
+        if exc_type is not None and issubclass(exc_type, ValidrError):
             exc_val.mark_key(self.key)
-        if exc_type is not None:
-            return False
-    
+
 
 def merge_validators(list validators, bint optional=False, str desc=None):
     def merged_validator(value):
         if check_optional(value, optional):
             return None
-        cdef dict result = {}
+        result = {}
         for v in validators:
             data = v(value)
             try:
@@ -54,8 +50,8 @@ def merge_validators(list validators, bint optional=False, str desc=None):
                 raise SchemaError("can't merge non-dict value")
         return result
     return merged_validator
-    
-    
+
+
 def dict_validator(inners, bint optional=False, str desc=None):
 
     inners = list(inners.items())

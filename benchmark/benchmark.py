@@ -18,7 +18,7 @@ from timeit import repeat
 
 import click
 
-from analyze import scores
+from analyze import analyze, scores
 from beeprint import pp
 
 DATA = {
@@ -107,7 +107,11 @@ def benchmark(validr):
             params = {"f": f, "data": make_data()}
             times = repeat("f(data)", repeat=1000, number=100, globals=params)
             result['{}:{}'.format(name, subname)] = times
-    print(scores(result, plot=True, block=False))
+    speeds = analyze(result)
+    print('speeds'.center(60, '-'))
+    print(speeds)
+    print('scores'.center(60, '-'))
+    print(scores(speeds))
 
 
 @cli.command()

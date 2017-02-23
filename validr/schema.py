@@ -164,12 +164,14 @@ class SchemaParser:
             if not vs.refers:
                 return dict_validator(inner, *vs.args, **vs.kwargs)
             else:
-                # mixins
                 _mixins = []
                 for refer in vs.refers:
                     if refer not in self.shared:
                         raise SchemaError("shared '%s' not found" % refer)
-                    _mixins.append(self.shared[refer])
+                    validate = self.shared[refer]
+                    if validate.__name__ != "validate_dict":
+                        raise SchemaError("can't merge non-dict '@%s'" % refer)
+                    _mixins.append(validate)
                 _mixins.append(dict_validator(inner))
                 return merge_validators(_mixins, *vs.args, **vs.kwargs)
         else:

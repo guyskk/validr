@@ -5,7 +5,7 @@ from .exceptions import ValidrError, Invalid, SchemaError
 cdef class MarkIndex:
     """Add current index to Invalid/SchemaError"""
 
-    cdef public list items
+    cdef list items
 
     def __init__(self, items):
         self.items = items
@@ -24,7 +24,7 @@ cdef class MarkIndex:
 cdef class MarkKey:
     """Add current key to Invalid/SchemaError"""
 
-    cdef public str key
+    cdef str key
 
     def __init__(self, key):
         self.key = key
@@ -43,11 +43,7 @@ def merge_validators(list validators, bint optional=False, str desc=None):
             return None
         result = {}
         for v in validators:
-            data = v(value)
-            try:
-                result.update(data)
-            except TypeError:
-                raise SchemaError("can't merge non-dict value")
+            result.update(v(value))
         return result
     return merged_validator
 
@@ -56,25 +52,25 @@ def dict_validator(inners, bint optional=False, str desc=None):
 
     inners = list(inners.items())
 
-    def validator(value):
+    def validate_dict(value):
         if check_optional(value, optional):
             return None
-        result = {}
         # use dict instead of Mapping can speed up about 10%
         if isinstance(value, Mapping):
             get_item = get_dict_value
         else:
             get_item = get_object_value
+        result = {}
         cdef str k
-        for k, validate in inners:
+        for k, inner in inners:
             with MarkKey(k):
-                result[k] = validate(get_item(value, k))
+                result[k] = inner(get_item(value, k))
         return result
-    return validator
+    return validate_dict
 
 def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,
                    bint optional=False, str desc=None):
-    def validator(value):
+    def validate_list(value):
         if check_optional(value, optional):
             return None
         try:
@@ -94,7 +90,7 @@ def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False,
         if i + 1 < minlen:
             raise Invalid("list length must >= %d" % minlen)
         return result
-    return validator
+    return validate_list
 
 
 cdef check_optional(value, bint optional):

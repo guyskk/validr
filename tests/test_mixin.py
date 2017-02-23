@@ -46,11 +46,14 @@ def test_shared_not_found():
 
 
 def test_merge_non_dict_value_error():
-    sp = SchemaParser(shared={"a": "int", "b": "str"})
-    f = sp.parse({"key": {"$self@a@b": "invalid mixins"}})
+    sp = SchemaParser(shared={
+        "a": "int",
+        "b": {"k?str": "v"}
+    })
     with pytest.raises(SchemaError) as exinfo:
-        f({"key": "123"})
+        sp.parse({"key": {"$self@a@b": "invalid mixins"}})
     assert exinfo.value.position == "key"
+    assert '@a' in exinfo.value.message
 
 
 def test_required():

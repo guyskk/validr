@@ -14,12 +14,12 @@ import json
 from cProfile import runctx
 from glob import glob
 from os.path import basename, dirname, splitext
-from timeit import repeat
+from timeit import timeit
 
 import click
 
-from analyze import analyze, scores
 from beeprint import pp
+from stable_timeit import stable_timeit
 
 DATA = {
     "user": {"userid": 5},
@@ -105,13 +105,17 @@ def benchmark(validr):
     for name, suncases in cases.items():
         for subname, f in suncases.items():
             params = {"f": f, "data": make_data()}
-            times = repeat("f(data)", repeat=1000, number=100, globals=params)
-            result['{}:{}'.format(name, subname)] = times
-    speeds = analyze(result)
+            t = stable_timeit("f(data)", number=100, repeat=100, globals=params)
+            # t = timeit("f(data)", number=10000, globals=params)
+            result['{}:{}'.format(name, subname)] = t
+    with open('result7.json', 'w') as f:
+        json.dump(result, f)
+    from beeprint import pp
     print('speeds'.center(60, '-'))
-    print(speeds)
-    print('scores'.center(60, '-'))
-    print(scores(speeds))
+    pp({k: round(10/v) for k, v in result.items()})
+    # print('scores'.center(60, '-'))
+    # base = result['json:loads-dumps']
+    # pp({k: round(base/v*100) for k, v in result.items()})
 
 
 @cli.command()

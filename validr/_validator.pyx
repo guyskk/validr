@@ -5,13 +5,6 @@ import sys
 from ._exception import Invalid, SchemaError
 
 
-cdef _is_empty(bint string):
-    if string:
-        return lambda x: x is None or x == ""
-    else:
-        return lambda x: x is None
-
-
 def validator(bint string=False):
     """
     Decorator for create validator.
@@ -41,9 +34,11 @@ def validator(bint string=False):
             except:
                 pass
 
-            is_empty = _is_empty(string)
-            empty = "" if string else None
-            cdef bint has_default = not is_empty(default)
+            cdef bint has_default
+            if string:
+                has_default = not (default is None or default == "")
+            else:
+                has_default = not (default is None)
 
             # check default value
             if has_default:
@@ -53,15 +48,27 @@ def validator(bint string=False):
                     msg = "invalid default value {}".format(repr(default))
                     raise SchemaError(msg) from None
 
-            def _validator(value):
-                if is_empty(value):
-                    if has_default:
-                        return default
-                    elif optional:
-                        return empty
-                    else:
-                        raise Invalid("required")
-                return f(value, *args, **kwargs)
+            # optimize, speedup 5%
+            if string:
+                def _validator(value):
+                    if value is None or value == "":
+                        if has_default:
+                            return default
+                        elif optional:
+                            return ""
+                        else:
+                            raise Invalid("required")
+                    return f(value, *args, **kwargs)
+            else:
+                def _validator(value):
+                    if value is None:
+                        if has_default:
+                            return default
+                        elif optional:
+                            return None
+                        else:
+                            raise Invalid("required")
+                    return f(value, *args, **kwargs)
 
             # make friendly validator representation
             params = [repr(x) for x in args]

@@ -5,8 +5,8 @@ Overview:
 
     from validr import SchemaParser
 
-    sp = SchemaParser()
-    validate = sp.parse({
+    parser = SchemaParser()
+    validate = parser.parse({
         "id?int": "product ID",
         "name?str": "product name",
         "price?float&min=0&exmin": "product price",
@@ -35,7 +35,9 @@ setup(
     license="MIT",
     packages=['validr'],
     ext_modules=cythonize([
-        "validr/_schema.pyx", "validr/validators.pyx",
+        "validr/_schema.pyx",
+        "validr/_exception.pyx",
+        "validr/_validator.pyx",
     ]),
     classifiers=[
         'Intended Audience :: Developers',

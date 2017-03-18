@@ -1,8 +1,8 @@
 #!/bin/bash
 # build & benchmark
 set -ex
-rm validr/*.c
-rm validr/*.so
+rm -f validr/*.c
+rm -f validr/*.so
 pip install --upgrade --force-reinstall -e .
-pytest
+pytest -s
 python benchmark/benchmark.py benchmark --validr

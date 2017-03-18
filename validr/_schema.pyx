@@ -1,40 +1,4 @@
-from collections.abc import Mapping
-from .exceptions import ValidrError, Invalid, SchemaError
-
-
-cdef class MarkIndex:
-    """Add current index to Invalid/SchemaError"""
-
-    cdef list items
-
-    def __init__(self, items):
-        self.items = items
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is not None and issubclass(exc_type, ValidrError):
-            if self.items is None:
-                exc_val.mark_index(None)
-            else:
-                exc_val.mark_index(len(self.items))
-
-
-cdef class MarkKey:
-    """Add current key to Invalid/SchemaError"""
-
-    cdef str key
-
-    def __init__(self, key):
-        self.key = key
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        if exc_type is not None and issubclass(exc_type, ValidrError):
-            exc_val.mark_key(self.key)
+from ._exception import ValidrError, Invalid, SchemaError, MarkIndex, MarkKey
 
 
 def merge_validators(list validators, bint optional=False, str desc=None):
@@ -55,8 +19,9 @@ def dict_validator(inners, bint optional=False, str desc=None):
     def validate_dict(value):
         if check_optional(value, optional):
             return None
-        # use dict instead of Mapping can speed up about 10%
-        if isinstance(value, Mapping):
+        # use dict instead of Mapping can speed up about 30%
+        # so use dict until someone meet problems and need Mapping
+        if isinstance(value, dict):
             get_item = get_dict_value
         else:
             get_item = get_object_value

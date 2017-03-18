@@ -1,10 +1,8 @@
 import json
 
-from ._schema import (
-    MarkIndex, MarkKey, dict_validator, list_validator, merge_validators
-)
-from .exceptions import Invalid, SchemaError
-from .validators import builtin_validators
+from ._schema import dict_validator, list_validator, merge_validators
+from ._exception import MarkIndex, MarkKey, SchemaError
+from ._validator import builtin_validators
 
 
 class ValidatorString:
@@ -223,17 +221,7 @@ class SchemaParser:
                 validator = builtin_validators[vs.name]
             else:
                 raise SchemaError("validator '%s' not found" % vs.name)
-            try:
-                _validator = validator(*vs.args, **vs.kwargs)
-            except TypeError as ex:
-                raise SchemaError(str(ex))
-            default = vs.kwargs.get("default", None)
-            if default is not None:
-                try:
-                    _validator(default)
-                except Invalid:
-                    raise SchemaError("invalid default value")
-            return _validator
+            return validator(*vs.args, **vs.kwargs)
 
     def _parse(self, schema, vs=None):
         """Parse schema

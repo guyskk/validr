@@ -69,3 +69,34 @@ class Invalid(ValidrError):
 
 class SchemaError(ValidrError):
     """Schema error"""
+
+
+class MarkIndex:
+    """Add current index to Invalid/SchemaError"""
+
+    def __init__(self, items):
+        self.items = items
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None and issubclass(exc_type, ValidrError):
+            if self.items is None:
+                exc_val.mark_index(None)
+            else:
+                exc_val.mark_index(len(self.items))
+
+
+class MarkKey:
+    """Add current key to Invalid/SchemaError"""
+
+    def __init__(self, key):
+        self.key = key
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None and issubclass(exc_type, ValidrError):
+            exc_val.mark_key(self.key)

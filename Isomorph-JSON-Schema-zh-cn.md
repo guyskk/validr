@@ -100,7 +100,7 @@ JSON数据可以分为3种结构：
         "key@shared&optional": "this value is optional"
     }
 
-### 混合(Mixin)
+### 混合(Merge)
 
 在映射结构中可以多个Schema进行组合:
 

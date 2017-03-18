@@ -151,7 +151,7 @@ friends[0].userid
 validr.exceptions.SchemaError: shared 'userid' not found in user.userid
 ```
 
-#### 混合(mixin)
+#### 混合(merge)
 
 ```python
 >>> shared = {
@@ -166,7 +166,7 @@ validr.exceptions.SchemaError: shared 'userid' not found in user.userid
       }
     }
 >>> sp = SchemaParser(shared=shared)
->>> f = sp.parse({"$self@size@border": "mixins"})
+>>> f = sp.parse({"$self@size@border": "merges"})
 >>> value = {
         "width": "400",
         "height": "400",
@@ -272,7 +272,7 @@ validr.exceptions.Invalid: invalid time
 
     ----------------time---the-result-of-timeit-----------------
     validr:default 3.9474168669985374
-    validr:use-refer-mixin 4.608337737998227
+    validr:use-refer-merge 4.608337737998227
     json:loads-dumps 1.6587990809930488
     voluptuous:default 18.96944373799488
     schema:default 40.53439778399479
@@ -281,7 +281,7 @@ validr.exceptions.Invalid: invalid time
     jsonschema:draft4 9.953055930993287
     ------------speed---time(json)/time(case)*10000-------------
     validr:default 4202
-    validr:use-refer-mixin 3600
+    validr:use-refer-merge 3600
     json:loads-dumps 10000
     voluptuous:default 874
     schema:default 409

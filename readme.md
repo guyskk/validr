@@ -150,7 +150,7 @@ Note: You can only refer to the back of the front, and you should use OrderedDic
 validr.exceptions.SchemaError: shared 'userid' not found in user.userid
 ```
 
-#### Mixin:
+#### Merge:
 
 ```python
 >>> shared = {
@@ -165,7 +165,7 @@ validr.exceptions.SchemaError: shared 'userid' not found in user.userid
       }
     }
 >>> sp = SchemaParser(shared=shared)
->>> f = sp.parse({"$self@size@border": "mixins"})
+>>> f = sp.parse({"$self@size@border": "merges"})
 >>> value = {
         "width": "400",
         "height": "400",
@@ -178,9 +178,7 @@ validr.exceptions.SchemaError: shared 'userid' not found in user.userid
 >>>
 ```
 
-Note:   
-Only dict schema can mixin, non-dict schema mixin will cause SchemaError on validating data.   
-And don't mixin schemas which have the same key.  
+Note: Don't merge schemas which have the same key.  
 
 
 #### Custom validator
@@ -257,7 +255,7 @@ benchmark result in my computer, Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz
 
     ----------------time---the-result-of-timeit-----------------
     validr:default 3.9474168669985374
-    validr:use-refer-mixin 4.608337737998227
+    validr:use-refer-merge 4.608337737998227
     json:loads-dumps 1.6587990809930488
     voluptuous:default 18.96944373799488
     schema:default 40.53439778399479
@@ -266,7 +264,7 @@ benchmark result in my computer, Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz
     jsonschema:draft4 9.953055930993287
     ------------speed---time(json)/time(case)*10000-------------
     validr:default 4202
-    validr:use-refer-mixin 3600
+    validr:use-refer-merge 3600
     json:loads-dumps 10000
     voluptuous:default 874
     schema:default 409

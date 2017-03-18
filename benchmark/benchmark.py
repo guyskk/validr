@@ -108,8 +108,8 @@ def benchmark(validr):
             t = stable_timeit("f(data)", number=100, repeat=500, globals=params)
             # t = timeit("f(data)", number=10000, globals=params)
             result['{}:{}'.format(name, subname)] = t
-    with open('result7.json', 'w') as f:
-        json.dump(result, f)
+    # with open('result7.json', 'w') as f:
+    #     json.dump(result, f)
     from beeprint import pp
     print('speeds'.center(60, '-'))
     pp({k: round(0.1/v) for k, v in result.items()})

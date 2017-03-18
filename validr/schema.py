@@ -1,6 +1,6 @@
 import json
 
-from ._schema import dict_validator, list_validator, merge_validators
+from ._schema import dict_validator, list_validator, merged_validator
 from ._exception import MarkIndex, MarkKey, SchemaError
 from ._validator import builtin_validators
 
@@ -139,7 +139,7 @@ class SchemaParser:
         return self._parse(schema)
 
     def _parse_dict(self, schema):
-        inner = {}
+        inners = {}
         vs = None
         for k, v in schema.items():
             with MarkKey(schema_key(k)):
@@ -152,28 +152,29 @@ class SchemaParser:
                     if isinstance(v, (dict, list)):
                         if any(char in k for char in"?@&()"):
                             raise SchemaError("invalid key %s" % repr(k))
-                        inner[k] = self._parse(v)
+                        inners[k] = self._parse(v)
                     else:
                         if "?" not in k and "@" not in k:
                             raise SchemaError("missing validator or refer")
                         inner_vs = ValidatorString(k)
-                        inner[inner_vs.key] = self._parse(v, inner_vs)
+                        inners[inner_vs.key] = self._parse(v, inner_vs)
+        inners = list(inners.items())
         if vs:
             if not vs.refers:
-                return dict_validator(inner, *vs.args, **vs.kwargs)
+                return dict_validator(inners, *vs.args, **vs.kwargs)
             else:
-                _mixins = []
+                _validators = []
                 for refer in vs.refers:
                     if refer not in self.shared:
                         raise SchemaError("shared '%s' not found" % refer)
-                    validate = self.shared[refer]
-                    if validate.__name__ != "validate_dict":
+                    validator = self.shared[refer]
+                    if not validator.__name__.startswith("dict_validator"):
                         raise SchemaError("can't merge non-dict '@%s'" % refer)
-                    _mixins.append(validate)
-                _mixins.append(dict_validator(inner))
-                return merge_validators(_mixins, *vs.args, **vs.kwargs)
+                    _validators.append(validator)
+                _validators.append(dict_validator(inners))
+                return merged_validator(_validators, *vs.args, **vs.kwargs)
         else:
-            return dict_validator(inner)
+            return dict_validator(inners)
 
     def _parse_list(self, schema):
         vs = None

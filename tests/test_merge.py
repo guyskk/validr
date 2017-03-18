@@ -51,7 +51,7 @@ def test_merge_non_dict_value_error():
         "b": {"k?str": "v"}
     })
     with pytest.raises(SchemaError) as exinfo:
-        sp.parse({"key": {"$self@a@b": "invalid mixins"}})
+        sp.parse({"key": {"$self@a@b": "invalid merges"}})
     assert exinfo.value.position == "key"
     assert '@a' in exinfo.value.message
 

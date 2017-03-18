@@ -5,7 +5,7 @@ import sys
 from ._exception import Invalid, SchemaError
 
 
-def _is_empty(bint string):
+cdef _is_empty(bint string):
     if string:
         return lambda x: x is None or x == ""
     else:

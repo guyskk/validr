@@ -1,7 +1,7 @@
 import json
 
 from ._schema import dict_validator, list_validator, merged_validator
-from ._exception import MarkIndex, MarkKey, SchemaError
+from ._exception import mark_index, mark_key, SchemaError
 from ._validator import builtin_validators
 
 
@@ -131,7 +131,7 @@ class SchemaParser:
         self.shared = {}
         if shared is not None:
             for k, v in shared.items():
-                with MarkKey(k):
+                with mark_key(k):
                     self.shared[k] = self.parse(v)
 
     def parse(self, schema):
@@ -142,7 +142,7 @@ class SchemaParser:
         inners = {}
         vs = None
         for k, v in schema.items():
-            with MarkKey(schema_key(k)):
+            with mark_key(schema_key(k)):
                 if k[:5] == "$self":
                     if vs is not None:
                         raise SchemaError("multi $self not allowed")
@@ -185,7 +185,7 @@ class SchemaParser:
             schema = schema[1]
         else:
             raise SchemaError("invalid length of list schema")
-        with MarkIndex(None):
+        with mark_index(-1):
             inner = self._parse(schema)
             if vs:
                 return list_validator(inner, *vs.args, **vs.kwargs)

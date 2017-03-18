@@ -1,6 +1,6 @@
-from ._exception import Invalid, MarkIndex, MarkKey, SchemaError
+from ._exception import Invalid, SchemaError, ValidrError, mark_index, mark_key
 from ._validator import builtin_validators, validator
 from .schema import SchemaParser
 
-__all__ = ('Invalid', 'MarkIndex', 'MarkKey', 'SchemaError',
+__all__ = ('ValidrError', 'Invalid', 'SchemaError', 'mark_index', 'mark_key',
            'builtin_validators', 'validator', 'SchemaParser',)

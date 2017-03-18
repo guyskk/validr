@@ -1,4 +1,4 @@
-from ._exception import ValidrError, Invalid, MarkIndex, MarkKey
+from ._exception import ValidrError, Invalid, mark_index, mark_key
 from ._validator import validator
 
 
@@ -21,7 +21,7 @@ def dict_validator(value, list inners):
     result = {}
     cdef str k
     for k, inner in inners:
-        with MarkKey(k):
+        with mark_key(k):
             result[k] = inner(get_item(value, k))
     return result
 
@@ -37,7 +37,7 @@ def list_validator(value, inner, int minlen=0, int maxlen=1024, bint unique=Fals
     for i, x in value:
         if i >= maxlen:
             raise Invalid("list length must <= %d" % maxlen)
-        with MarkIndex(result):
+        with mark_index(i):
             v = inner(x)
             if unique and v in result:
                 raise Invalid("not unique")

@@ -20,9 +20,14 @@ Overview:
     })
     print(data)
 """
-from setuptools import setup
+from setuptools import Extension, setup
 
-from Cython.Build import cythonize
+try:
+    from Cython.Build import cythonize
+    ext_modules = cythonize("validr/*.pyx")
+except:
+    from glob import glob
+    ext_modules = [Extension("*", glob("validr/*.c"))]
 
 setup(
     name="validr",
@@ -33,17 +38,13 @@ setup(
     author_email='guyskk@qq.com',
     url="https://github.com/guyskk/validr",
     license="MIT",
-    packages=['validr'],
-    ext_modules=cythonize([
-        "validr/_schema.pyx",
-        "validr/_exception.pyx",
-        "validr/_validator.pyx",
-    ]),
+    packages=["validr"],
+    ext_modules=ext_modules,
     classifiers=[
-        'Intended Audience :: Developers',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python :: 3 :: Only',
-        'Topic :: Software Development :: Libraries :: Python Modules'
+        "Intended Audience :: Developers",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+        "Programming Language :: Python :: 3 :: Only",
+        "Topic :: Software Development :: Libraries :: Python Modules"
     ]
 )

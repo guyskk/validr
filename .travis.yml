@@ -12,7 +12,10 @@ install:
     - pip install flake8
     - pip install codecov
     - pip install cython
-    - pip install .
+    - python setup.py sdist
+    - pip install --ignore-installed dist/validr-*.tar.gz
+    - pip uninstall cython
+    - pip install --ignore-installed dist/validr-*.tar.gz
 
 script:
     - export VALIDR_PATH=$(cd /tmp && python -c "print(__import__('validr').__path__[0])")

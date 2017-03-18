@@ -14,7 +14,7 @@ install:
     - pip install cython
     - python setup.py sdist
     - pip install --ignore-installed dist/validr-*.tar.gz
-    - pip uninstall cython
+    - pip uninstall -y cython
     - pip install --ignore-installed dist/validr-*.tar.gz
 
 script:

@@ -83,12 +83,8 @@ def test():
                 pp(value)
 
 
-def warmup():
-    data = make_data()
-    validates = list(CASES['json'].values()) + list(CASES['validr'].values())
-    for i in range(10000):
-        for f in validates:
-            f(data)
+def print_item(name, subname, value):
+    print('{}:{} {}'.format(name.rjust(12), subname.ljust(24), value))
 
 
 @cli.command()
@@ -96,22 +92,27 @@ def warmup():
 def benchmark(validr):
     """do benchmark"""
     if validr:
-        # warmup()
         cases = {'json': CASES['json'], 'validr': CASES['validr']}
     else:
         cases = CASES
     result = {}
+
+    print('timeits'.center(60, '-'))
     for name, suncases in cases.items():
         for subname, f in suncases.items():
-            params = {"f": f, "data": make_data()}
-            t = timeit("f(data)", number=100, repeat=500, globals=params)
-            result['{}:{}'.format(name, subname)] = t
-    from beeprint import pp
+            params = {'f': f, 'data': make_data()}
+            t = timeit('f(data)', number=100, repeat=500, globals=params)
+            result[name, subname] = t
+            print_item(name, subname, t)
+
     print('speeds'.center(60, '-'))
-    pp({k: round(0.1/v) for k, v in result.items()})
-    # print('scores'.center(60, '-'))
-    # base = result['json:loads-dumps']
-    # pp({k: round(base/v*100) for k, v in result.items()})
+    for (name, subname), v in result.items():
+        print_item(name, subname, round(0.1/v))
+
+    print('scores'.center(60, '-'))
+    base = result['json', 'loads-dumps']
+    for (name, subname), v in result.items():
+        print_item(name, subname, round(base/v*100))
 
 
 @cli.command()

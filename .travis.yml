@@ -19,7 +19,7 @@ install:
 
 script:
     - export VALIDR_PATH=$(cd /tmp && python -c "print(__import__('validr').__path__[0])")
-    - pytest --cov=$VALIDR_PATH --cov-report=term-missing
+    - py.test --cov=$VALIDR_PATH --cov-report=term-missing
     - flake8
     - pip install -r requires-dev.txt
     - python benchmark/benchmark.py benchmark

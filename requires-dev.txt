@@ -9,3 +9,4 @@ pytest-cov>=2.4.0
 flake8>=3.2.1
 tox>=2.6.0
 cython>=0.25.2
+pytest-warnings>=0.2.0

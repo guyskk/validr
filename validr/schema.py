@@ -1,8 +1,50 @@
 import json
 
+from ._exception import SchemaError, mark_index, mark_key
 from ._schema import dict_validator, list_validator, merged_validator
-from ._exception import mark_index, mark_key, SchemaError
 from ._validator import builtin_validators
+
+
+# -------------------------deprecated------------------------- #
+
+
+class MarkKey(mark_key):
+    """for compatibility with version 0.13.0 and before"""
+
+    def __init__(self, *args, **kwargs):
+        import warnings
+        warnings.warn(DeprecationWarning(
+            "`MarkKey` is deprecated, it will be "
+            "removed in v1.0, please use `mark_key` instead."
+        ))
+        super().__init__(*args, **kwargs)
+
+
+class MarkIndex:
+    """Add current index to Invalid/SchemaError"""
+
+    def __init__(self, items):
+        import warnings
+        warnings.warn(DeprecationWarning(
+            "`MarkIndex` is deprecated, it will be "
+            "removed in v1.0, please use `mark_index` instead."
+        ))
+        self.items = items
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        from ._exception import Invalid
+        if exc_type is Invalid or exc_type is SchemaError:
+            if self.items is None:
+                exc_val.mark_index(None)
+            else:
+                exc_val.mark_index(len(self.items))
+        if exc_type is not None:
+            return False
+
+# -------------------------deprecated------------------------- #
 
 
 class ValidatorString:

@@ -9,6 +9,7 @@ python:
 install:
     - pip install pytest>=3.0.6
     - pip install pytest-cov>=2.4.0
+    - pip install pytest-warnings>=0.2.0
     - pip install flake8>=3.3.0
     - pip install codecov>=2.0.5
     - pip install cython>=0.25.2
@@ -19,7 +20,7 @@ install:
 
 script:
     - export VALIDR_PATH=$(cd /tmp && python -c "print(__import__('validr').__path__[0])")
-    - py.test --cov=$VALIDR_PATH --cov-report=term-missing
+    - py.test --cov=$VALIDR_PATH --cov-report=term-missing -r w
     - flake8
     - pip install -r requires-dev.txt
     - python benchmark/benchmark.py benchmark

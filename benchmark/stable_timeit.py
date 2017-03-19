@@ -13,11 +13,11 @@ def closeness(a1, a2):
 
 
 def stable_timeit(stmt="pass", setup="pass", timer=default_timer,
-                  repeat=default_repeat, number=default_number, globals=None):
+                  repeat=default_repeat, number=default_number):
     times = []
     for i in range(3):
         t = _repeat(stmt=stmt, setup=setup, timer=timer,
-                    repeat=repeat, number=number, globals=globals)
+                    repeat=repeat, number=number)
         times.append(t)
     return analyze(times, repeat)
 

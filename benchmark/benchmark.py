@@ -77,7 +77,7 @@ def test():
             except:
                 ok = False
             if ok:
-                print('{}:{} OK'.format(name, subname))
+                print_item(name, subname, 'OK')
             else:
                 print('{}:{}'.format(name, subname).center(60, '-'))
                 pp(value)
@@ -100,19 +100,19 @@ def benchmark(validr):
     print('timeits'.center(60, '-'))
     for name, suncases in cases.items():
         for subname, f in suncases.items():
-            params = {'f': f, 'data': make_data()}
-            t = timeit('f(data)', number=100, repeat=500, globals=params)
+            data = make_data()
+            t = timeit(lambda: f(data), number=100, repeat=500)
             result[name, subname] = t
             print_item(name, subname, t)
 
     print('speeds'.center(60, '-'))
     for (name, subname), v in result.items():
-        print_item(name, subname, round(0.1/v))
+        print_item(name, subname, round(1.0/v))
 
     print('scores'.center(60, '-'))
     base = result['json', 'loads-dumps']
     for (name, subname), v in result.items():
-        print_item(name, subname, round(base/v*100))
+        print_item(name, subname, round(base/v*1000))
 
 
 @cli.command()
@@ -120,8 +120,8 @@ def profile():
     """profile validr"""
     for name, f in CASES['validr'].items():
         print(name.center(60, '-'))
-        params = {"f": f, "data": make_data()}
-        runctx("for i in range(1000000):f(data)", globals=params, locals=None)
+        params = {'f': f, 'data': make_data()}
+        runctx('for i in range(1000000):f(data)', globals=params, locals=None)
 
 
 if __name__ == "__main__":

@@ -7,8 +7,9 @@
 A simple,fast,extensible python library for data validation.
 
 - Simple and readable schema
-- 20%~30% speed compare with json.loads
-- Can serialize any object
+- 10X faster than [jsonschema](https://github.com/Julian/jsonschema),
+  40X faster than [schematics](https://github.com/schematics/schematics)
+- Can validate and serialize any object
 - Easy to create custom validators
 - Accurate error messages include reason and position
 
@@ -249,27 +250,18 @@ use pytest
     pip install -r requires-dev.txt
     python benchmark/benchmark.py benchmark
 
-benchmark result in my computer, Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz
+benchmark result in travis-ci:
 
-    ----------------time---the-result-of-timeit-----------------
-    validr:default 3.9474168669985374
-    validr:use-refer-merge 4.608337737998227
-    json:loads-dumps 1.6587990809930488
-    voluptuous:default 18.96944373799488
-    schema:default 40.53439778399479
-    schematics:default 34.1044494890084
-    jsonschema:draft3 9.507412713996018
-    jsonschema:draft4 9.953055930993287
-    ------------speed---time(json)/time(case)*10000-------------
-    validr:default 4202
-    validr:use-refer-merge 3600
-    json:loads-dumps 10000
-    voluptuous:default 874
-    schema:default 409
-    schematics:default 486
-    jsonschema:draft3 1745
-    jsonschema:draft4 1667
-
+```
+        json:loads-dumps              1000
+  jsonschema:draft3                   180
+  jsonschema:draft4                   184
+      schema:default                  41
+  schematics:default                  51
+      validr:default                  2384
+      validr:use-refer-merge          2106
+  voluptuous:default                  100
+```
 
 ## License
 

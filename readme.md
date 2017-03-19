@@ -52,10 +52,10 @@ print(validate(version_info))
 3
 >>> f(-1)
 ...
-validr.exceptions.Invalid: value must >= 0
+validr._exception.Invalid: value must >= 0
 >>> f("abc")
 ...
-validr.exceptions.Invalid: invalid int
+validr._exception.Invalid: invalid int
 >>>
 ```
 
@@ -66,7 +66,7 @@ validr.exceptions.Invalid: invalid int
 >>> user = {"userid": 15}
 >>> f(user)
 ...
-validr.exceptions.Invalid: value must <= 9 in userid
+validr._exception.Invalid: value must <= 9 in userid
 >>> class User:pass
 ...
 >>> user = User()
@@ -76,11 +76,11 @@ validr.exceptions.Invalid: value must <= 9 in userid
 >>> user.userid = 15
 >>> f(user)
 ...
-validr.exceptions.Invalid: value must <= 9 in userid
+validr._exception.Invalid: value must <= 9 in userid
 >>> f = sp.parse({"friends":[{"userid?int(0,9)":"UserID"}]})
 >>> f({"friends":[user,user]})
 ...
-validr.exceptions.Invalid: value must <= 9 in friends[0].userid
+validr._exception.Invalid: value must <= 9 in friends[0].userid
 >>> user.userid=5
 >>> f({"friends":[user,user]})
 {'friends': [{'userid': 5}, {'userid': 5}]}
@@ -147,7 +147,7 @@ Note: You can only refer to the back of the front, and you should use OrderedDic
 ])
 >>> sp = SchemaParser(shared=shared)
 ...
-validr.exceptions.SchemaError: shared 'userid' not found in user.userid
+validr._exception.SchemaError: shared 'userid' not found in user.userid
 ```
 
 #### Merge:
@@ -183,41 +183,39 @@ Note: Don't merge schemas which have the same key.
 
 #### Custom validator
 
-`handle_default_optional_desc` decorater can make you validator support `default`, `optional`, `desc` params.
+`validator()` decorater can make you validator support `default`, `optional`, `desc` params.
 
 ```python
->>> from validr.validators import handle_default_optional_desc
->>> @handle_default_optional_desc()
-... def multiple_validator(n):
-...     def validr(value):
-...         if value%n==0:
-...             return value
-...         else:
-...             raise Invalid("not a multiple of %d"%n)
-...     return validr
-...
->>> validators={"multiple":multiple_validator}
->>> sp = SchemaParser(validators=validators)
+>>> from validr import validator
+>>> @validator(string=False)
+    def multiple_validator(value, n):
+        try:
+            if value%n == 0:
+                return value
+        except:
+            pass
+        raise Invalid("not a multiple of %d"%n)
+>>> sp = SchemaParser(validators={"multiple": multiple_validator})
 >>> f = sp.parse("multiple(3)")
 >>> f(6)
 6
 >>> f(5)
 ...
-validr.exceptions.Invalid: not a multiple of 3
+validr._exception.Invalid: not a multiple of 3
 >>> f = sp.parse("multiple(3)&default=3")
 >>> f(None)
 3
 >>>
 ```
 
-string like validator should use `@handle_default_optional_desc(string=True)` decorator,
+string like validator should use `@validator(string=True)` decorator,
 it will treat the empty string as null, more suitable for default and optional semantic.
 
 
 #### Create regex validator:
 
 ```python
->>> from validr.validators import build_re_validator
+>>> from validr import build_re_validator
 >>> regex_time = r'([01]?\d|2[0-3]):[0-5]?\d:[0-5]?\d'
 >>> time_validator = build_re_validr("time", regex_time)
 >>> sp = SchemaParser(validators={"time":time_validator})
@@ -226,7 +224,7 @@ it will treat the empty string as null, more suitable for default and optional s
 '12:00:00'
 >>> f("12:00:00123")
 ...
-validr.exceptions.Invalid: invalid time
+validr._exception.Invalid: invalid time
 >>> f(None)
 '00:00:00'
 >>>

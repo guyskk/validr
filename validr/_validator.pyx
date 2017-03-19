@@ -72,11 +72,11 @@ def validator(bint string=False):
 
             # make friendly validator representation
             params = [repr(x) for x in args]
-            params.extend([
-                "default={}".format(repr(default)),
-                "optional={}".format(repr(optional)),
-            ])
-            params.extend(["{}={}".format(k, v) for k, v in kwargs.items()])
+            if has_default:
+                params.extend(["default={}".format(repr(default))])
+            else:
+                params.extend(["optional={}".format(repr(optional))])
+            params.extend(["{}={}".format(k, repr(v)) for k, v in kwargs.items()])
             params = ", ".join(params)
             _validator.__module__ = f.__module__
             _validator.__name__ = "{}({})".format(f.__name__, params)
@@ -120,7 +120,7 @@ def bool_validator(value):
 
 @validator(string=False)
 def float_validator(value, min=-sys.float_info.max, max=sys.float_info.max,
-                    exmin=False, exmax=False):
+                    bint exmin=False, bint exmax=False):
     """Validate float string
 
     :param min: the min value, default -sys.float_info.max
@@ -214,7 +214,7 @@ def datetime_validator(value, format="%Y-%m-%dT%H:%M:%S.%fZ"):
         raise Invalid("invalid datetime") from None
 
 
-def build_re_validator(name, r):
+def build_re_validator(str name, r):
     """Build validator by regex string
 
     The regex string will be compiled make sure that the entire string matches
@@ -223,16 +223,18 @@ def build_re_validator(name, r):
     :param r: regex string
     """
     # To make sure that the entire string matches
-    r = re.compile(r"(?:%s)\Z" % r)
+    match = re.compile(r"(?:%s)\Z" % r).match
+    message = "invalid %s" % name
 
     def re_validator(value):
         if not isinstance(value, str):
             raise Invalid("value must be string")
-        if r.match(value):
+        if match(value):
             return value
         else:
-            raise Invalid("invalid %s" % name)
-    re_validator.__name__ = name + '_validator'
+            raise Invalid(message)
+    re_validator.__name__ = name + "_validator"
+    re_validator.__qualname__ = name + "_validator"
     return validator(string=True)(re_validator)
 
 

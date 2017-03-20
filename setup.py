@@ -27,7 +27,9 @@ try:
     ext_modules = cythonize("validr/*.pyx")
 except:
     from glob import glob
-    ext_modules = [Extension("*", glob("validr/*.c"))]
+    from os.path import basename, splitext
+    ext_modules = [Extension('validr.'+splitext(basename(x))[0], [x])
+                   for x in glob("validr/*.c")]
 
 setup(
     name="validr",

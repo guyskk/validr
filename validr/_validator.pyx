@@ -6,16 +6,18 @@ from ._exception import Invalid, SchemaError
 
 
 def validator(bint string=False):
-    """
-    Decorator for create validator.
+    """Decorator for create validator
 
-    it will handle default,optional,desc params auto
+    It will handle params default,optional,desc automatically.
 
     Usage:
 
         @validator(string=False)
-        def int_validator():
-            pass
+        def xxx_validator(value, args..., kwargs...):
+            try:
+                return value  # validate/convert the value
+            except:
+                raise Invalid('invalid xxx')
 
     Args:
         string (bool): treat empty string as None or not
@@ -93,10 +95,11 @@ def validator(bint string=False):
 
 @validator(string=False)
 def int_validator(value, min=-sys.maxsize, max=sys.maxsize):
-    """Validate int string
+    """Validate int or convert string to int
 
-    :param min: the min value, default -sys.maxsize
-    :param max: the max value, default sys.maxsize
+    Args:
+        min (int): the min value, default -sys.maxsize
+        max (int): the max value, default sys.maxsize
     """
     try:
         v = int(value)
@@ -123,10 +126,11 @@ def float_validator(value, min=-sys.float_info.max, max=sys.float_info.max,
                     bint exmin=False, bint exmax=False):
     """Validate float string
 
-    :param min: the min value, default -sys.float_info.max
-    :param max: the max value, default sys.float_info.max
-    :param exmin: exclude min value or not, default false
-    :param exmax: exclude max value or not, default false
+    Args:
+        min (float): the min value, default -sys.float_info.max
+        max (float): the max value, default sys.float_info.max
+        exmin (bool): exclude min value or not, default false
+        exmax (bool): exclude max value or not, default false
     """
     try:
         v = float(value)
@@ -151,9 +155,10 @@ def float_validator(value, min=-sys.float_info.max, max=sys.float_info.max,
 def str_validator(value, int minlen=0, int maxlen=1024 * 1024, bint escape=False):
     """Validate string
 
-    :param minlen: min length of string, default 0
-    :param maxlen: max length of string, default 1024*1024
-    :param escape: escape to safe string or not, default false
+    Args:
+        minlen (int): min length of string, default 0
+        maxlen (int): max length of string, default 1024*1024
+        escape (bool): escape to safe string or not, default false
     """
     if not isinstance(value, str):
         raise Invalid("invalid string")
@@ -174,9 +179,10 @@ def str_validator(value, int minlen=0, int maxlen=1024 * 1024, bint escape=False
 
 @validator(string=True)
 def date_validator(value, format="%Y-%m-%d"):
-    """Validate date string, convert value to string
+    """Validate date string or convert date to string
 
-    :param format: date format, default ISO8601
+    Args:
+        format (str): date format, default ISO8601 format
     """
     try:
         if not isinstance(value, (datetime.datetime, datetime.date)):
@@ -188,9 +194,10 @@ def date_validator(value, format="%Y-%m-%d"):
 
 @validator(string=True)
 def time_validator(value, format="%H:%M:%S"):
-    """Validate time string, convert value to string
+    """Validate time string or convert time to string
 
-    :param format: time format, default ISO8601
+    Args:
+        format (str): time format, default ISO8601 format
     """
     try:
         if not isinstance(value, (datetime.datetime, datetime.time)):
@@ -202,9 +209,10 @@ def time_validator(value, format="%H:%M:%S"):
 
 @validator(string=True)
 def datetime_validator(value, format="%Y-%m-%dT%H:%M:%S.%fZ"):
-    """Validate datetime string, convert value to string
+    """Validate datetime string or convert datetime to string
 
-    :param format: datetime format, default ISO8601
+    Args:
+        format (str): datetime format, default ISO8601 format
     """
     try:
         if not isinstance(value, datetime.datetime):
@@ -217,10 +225,12 @@ def datetime_validator(value, format="%Y-%m-%dT%H:%M:%S.%fZ"):
 def build_re_validator(str name, r):
     """Build validator by regex string
 
-    The regex string will be compiled make sure that the entire string matches
+    It will make sure that the entire string matches, so needn't
+    add `^`,`$` to regex string.
 
-    :param name: validator name, used in error message
-    :param r: regex string
+    Args:
+        name (str): validator name, used in error message
+        r (str): regex string
     """
     # To make sure that the entire string matches
     match = re.compile(r"(?:%s)\Z" % r).match

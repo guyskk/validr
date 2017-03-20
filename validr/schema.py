@@ -48,8 +48,7 @@ class MarkIndex:
 
 
 class ValidatorString:
-    """
-    ValidatorString
+    """ValidatorString
 
     eg::
 
@@ -148,7 +147,7 @@ class ValidatorString:
         })
 
 
-def schema_key(k):
+def _schema_key(k):
     cut = k.find("?")
     if cut < 0:
         cut = k.find("@")
@@ -161,8 +160,9 @@ def schema_key(k):
 class SchemaParser:
     """SchemaParser
 
-    :param validators: custom validators
-    :param shared: shared schema
+    Args:
+        validators (dict): custom validators
+        shared (dict): shared schema
     """
 
     def __init__(self, validators=None, shared=None):
@@ -184,7 +184,7 @@ class SchemaParser:
         inners = {}
         vs = None
         for k, v in schema.items():
-            with mark_key(schema_key(k)):
+            with mark_key(_schema_key(k)):
                 if k[:5] == "$self":
                     if vs is not None:
                         raise SchemaError("multi $self not allowed")
@@ -269,8 +269,9 @@ class SchemaParser:
     def _parse(self, schema, vs=None):
         """Parse schema
 
-        :param schema: schema
-        :param vs: ValidatorString
+        Args:
+            schema: schema
+            vs: ValidatorString
         """
         if isinstance(schema, dict):
             return self._parse_dict(schema)

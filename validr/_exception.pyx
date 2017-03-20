@@ -78,7 +78,7 @@ cdef class mark_index:
     cdef int index
 
     def __init__(self, index):
-        """index = -1 means the position is meaningless"""
+        """index = -1 means the position is uncertainty"""
         self.index = index
 
     def __enter__(self):

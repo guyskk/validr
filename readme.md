@@ -21,8 +21,8 @@ Note: Only support python 3.3+
 from sys import version_info
 from validr import SchemaParser
 
-sp = SchemaParser()
-validate = sp.parse({
+parser = SchemaParser()
+validate = parser.parse({
     "major?int&min=3": "Major version",
     "minor?int&min=3": "Minor version",
     "micro?int&min=0": "Micro version",
@@ -182,9 +182,9 @@ validr._exception.SchemaError: shared 'userid' not found in user.userid
 Note: Don't merge schemas which have the same key.  
 
 
-#### Custom validator
+#### Custom validator:
 
-`validator()` decorater can make you validator support `default`, `optional`, `desc` params.
+`validator()` decorater is used to create validator, and it can make you validator support params `default`, `optional`, `desc`.
 
 ```python
 >>> from validr import validator
@@ -210,7 +210,7 @@ validr._exception.Invalid: not a multiple of 3
 ```
 
 string like validator should use `@validator(string=True)` decorator,
-it will treat the empty string as null, more suitable for default and optional semantic.
+it will treat the empty string as None, more suitable for default and optional semantic.
 
 
 #### Create regex validator:
@@ -229,6 +229,22 @@ validr._exception.Invalid: invalid time
 >>> f(None)
 '00:00:00'
 >>>
+```
+
+
+#### `mark_index` and `mark_key`:
+
+`mark_index` and `mark_key` are used to add position infomations to ValidrError or it's subclass(eg: Invalid and SchemaError) object.
+
+```python
+from validr import mark_index, mark_key, ValidrError
+try:
+    with mark_index(0):
+        with mark_key('key'):
+            with mark_index(-1):  # `-1` means the position is uncertainty
+                raise ValidrError('message')
+except ValidrError as ex:
+    print(ex.position)  # [0].key[], the `[]` is corresponding to mark_index(-1)
 ```
 
 

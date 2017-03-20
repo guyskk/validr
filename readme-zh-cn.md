@@ -231,6 +231,23 @@ validr._exception.Invalid: invalid time
 ```
 
 
+#### `mark_index` 和 `mark_key`:
+
+`mark_index` 和 `mark_key` 是用来向 ValidrError 或者它的子类对象
+（例如：Invalid 和 SchemaError）中添加出错位置信息。
+
+```python
+from validr import mark_index, mark_key, ValidrError
+try:
+    with mark_index(0):
+        with mark_key('key'):
+            with mark_index(-1):  # `-1` 表示位置不确定
+                raise ValidrError('message')
+except ValidrError as ex:
+    print(ex.position)  # [0].key[], 其中的 `[]` 对应于 mark_index(-1)
+```
+
+
 ## 关于内置校验函数
 
 ### idcard

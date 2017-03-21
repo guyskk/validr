@@ -1,8 +1,9 @@
 #!/bin/bash
 # build & benchmark
 set -ex
-rm -f validr/*.c
-rm -f validr/*.so
-pip install --upgrade --force-reinstall -e .
-pytest -s -rw
+git clean -Xdf
+export VALIDR_DEBUG=1
+pip install --upgrade --force-reinstall --verbose -e .
+pytest --cov=validr --cov-report=term-missing -r w
 python benchmark/benchmark.py benchmark --validr
+python benchmark/benchmark.py profile

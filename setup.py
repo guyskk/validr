@@ -16,16 +16,36 @@ Overview:
     })
     print(validate(version_info))
 """
+import os
+
 from setuptools import Extension, setup
+
+DEBUG = bool(os.getenv('VALIDR_DEBUG'))
+print('VALIDR_DEBUG={}'.format(DEBUG))
 
 try:
     from Cython.Build import cythonize
-    ext_modules = cythonize('validr/*.pyx')
 except:
     from glob import glob
     from os.path import basename, splitext
     ext_modules = [Extension('validr.'+splitext(basename(x))[0], [x])
                    for x in glob('validr/*.c')]
+else:
+    directives = {'language_level': 3}
+    if DEBUG:
+        directives.update({
+            'profile': True,
+            'linetrace': True,
+        })
+    ext_modules = cythonize('validr/*.pyx', compiler_directives=directives)
+
+if DEBUG:
+    for m in ext_modules:
+        m.define_macros.extend([
+            ('CYTHON_TRACE', '1'),
+            ('CYTHON_TRACE_NOGIL', '1'),
+            ('CYTHON_PROFILE', '1'),
+        ])
 
 setup(
     name='validr',

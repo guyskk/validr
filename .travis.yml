@@ -7,20 +7,26 @@ python:
   - "3.6"
   - "nightly"
 
+env:
+  - VALIDR_DEBUG=0
+  - VALIDR_DEBUG=1
+
 install:
     - pip install -U pip
-    - pip install -U py
+    - pip install -U py  # work around pytest requirement
     - pip install -r requires-dev.txt
     - python setup.py sdist
     - pip install --ignore-installed dist/validr-*.tar.gz
-    - pip uninstall -y cython
+    - pip uninstall -y cython  # test install without cython
     - pip install --ignore-installed dist/validr-*.tar.gz
+    - pip install cython  # cython is need for coverage
 
 script:
+    - pre-commit run --all-files
     - export VALIDR_PATH=$(cd /tmp && python -c "print(__import__('validr').__path__[0])")
-    - pytest --cov=$VALIDR_PATH --cov-report=term-missing -r w
-    - flake8
+    - pytest --cov=$VALIDR_PATH --cov-report=term-missing -r w --verbose
     - python benchmark/benchmark.py benchmark
+    - python benchmark/benchmark.py profile
 
 after_success:
     - codecov

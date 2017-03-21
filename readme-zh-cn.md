@@ -6,7 +6,7 @@
 
 简单，快速，可拓展的数据校验库。
 
-- 比 [JSON Schema](http://json-schema.org) 更简洁的 Schema
+- 简洁，易读的 Schema
 - 速度是 [jsonschema](https://github.com/Julian/jsonschema) 的 10 倍，[schematics](https://github.com/schematics/schematics) 的 40 倍
 - 能够校验&序列化任意类型对象
 - 实现自定义校验器非常容易

@@ -3,22 +3,18 @@ Overview:
 
 .. code-block:: python
 
+    from sys import version_info
     from validr import SchemaParser
 
     parser = SchemaParser()
     validate = parser.parse({
-        "id?int": "product ID",
-        "name?str": "product name",
-        "price?float&min=0&exmin": "product price",
-        "tags": ["&minlen=1&unique", "str&desc=\"product tag\""]
+        "major?int&min=3": "Major version",
+        "minor?int&min=3": "Minor version",
+        "micro?int&min=0": "Micro version",
+        "releaselevel?str": "Release level",
+        "serial?int": "Serial number"
     })
-    data = validate({
-        "id": 1,
-        "name": "TeaCup",
-        "price": 9.9,
-        "tags": ["Cup"]
-    })
-    print(data)
+    print(validate(version_info))
 """
 from setuptools import Extension, setup
 
@@ -28,19 +24,21 @@ try:
 except:
     from glob import glob
     from os.path import basename, splitext
-    ext_modules = [Extension('validr.'+splitext(basename(x))[0], [x])
+    ext_modules = [Extension("validr."+splitext(basename(x))[0], [x])
                    for x in glob("validr/*.c")]
 
 setup(
     name="validr",
     version="0.13.0",
+    keywords="validation validator validate schema jsonschema",
     description="A simple,fast,extensible python library for data validation.",
     long_description=__doc__,
     author="guyskk",
-    author_email='guyskk@qq.com',
+    author_email="guyskk@qq.com",
     url="https://github.com/guyskk/validr",
     license="MIT",
     packages=["validr"],
+    zip_safe=False,
     ext_modules=ext_modules,
     classifiers=[
         "Intended Audience :: Developers",

@@ -2,7 +2,7 @@
 
 [![travis-ci](https://api.travis-ci.org/guyskk/validr.svg)](https://travis-ci.org/guyskk/validr) [![codecov](https://codecov.io/gh/guyskk/validr/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validr)
 
-[English](readme.md) [中文](readme-zh-cn.md)
+[English](readme.md) | [中文](readme-zh-cn.md)
 
 简单，快速，可拓展的数据校验库。
 

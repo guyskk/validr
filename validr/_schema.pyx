@@ -37,19 +37,19 @@ def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False, opti
         try:
             value = enumerate(value)
         except TypeError:
-            raise Invalid("not list")
+            raise Invalid('not list')
         result = []
         cdef int i = -1
         for i, x in value:
             if i >= maxlen:
-                raise Invalid("list length must <= %d" % maxlen)
+                raise Invalid('list length must <= %d' % maxlen)
             with mark_index(i):
                 v = inner(x)
                 if unique and v in result:
-                    raise Invalid("not unique")
+                    raise Invalid('not unique')
             result.append(v)
         if i + 1 < minlen:
-            raise Invalid("list length must >= %d" % minlen)
+            raise Invalid('list length must >= %d' % minlen)
         return result
     return _validator
 

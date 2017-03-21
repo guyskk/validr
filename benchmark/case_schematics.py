@@ -29,5 +29,5 @@ def validate(data):
 
 
 CASES = {
-    "default": validate
+    'default': validate
 }

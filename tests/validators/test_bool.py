@@ -2,14 +2,14 @@ from util import case
 
 
 @case({
-    "bool": [
+    'bool': [
         (True, True),
         (False, False),
-        [None, "", "true", "false", "True", "False", 0, 1]
+        [None, '', 'true', 'false', 'True', 'False', 0, 1]
     ],
-    "bool&default=false": [
+    'bool&default=false': [
         (None, False),
-        ["", 0]
+        ['', 0]
     ],
 })
 def test_bool():

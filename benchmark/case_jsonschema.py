@@ -1,37 +1,37 @@
 from jsonschema import Draft3Validator, Draft4Validator
 
 schema = {
-    "type": "object",
-    "properties": {
-        "user": {
-            "type": "object",
-            "properties": {
-                "userid": {"type": "number"}
+    'type': 'object',
+    'properties': {
+        'user': {
+            'type': 'object',
+            'properties': {
+                'userid': {'type': 'number'}
             },
-            "required": ["userid"]
+            'required': ['userid']
         },
-        "tags": {
-            "type": "array",
-            "items": {"type": "number"}
+        'tags': {
+            'type': 'array',
+            'items': {'type': 'number'}
         },
-        "style": {
-            "type": "object",
-            "properties": {
-                "width": {"type": "number"},
-                "height": {"type": "number"},
-                "border_width": {"type": "number"},
-                "border_style": {"type": "string"},
-                "border_color": {"type": "string"},
-                "color": {"type": "string"},
+        'style': {
+            'type': 'object',
+            'properties': {
+                'width': {'type': 'number'},
+                'height': {'type': 'number'},
+                'border_width': {'type': 'number'},
+                'border_style': {'type': 'string'},
+                'border_color': {'type': 'string'},
+                'color': {'type': 'string'},
             },
-            "required": [
-                "width", "height", "border_width",
-                "border_style", "border_color", "color"
+            'required': [
+                'width', 'height', 'border_width',
+                'border_style', 'border_color', 'color'
             ]
         },
-        "optional": {"type": "string"},
+        'optional': {'type': 'string'},
     },
-    "required": ["user", "tags", "style"]
+    'required': ['user', 'tags', 'style']
 }
 
 d3 = Draft3Validator(schema)
@@ -49,6 +49,6 @@ def draft4(data):
 
 
 CASES = {
-    "draft3": draft3,
-    "draft4": draft4,
+    'draft3': draft3,
+    'draft4': draft4,
 }

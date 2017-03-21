@@ -28,16 +28,16 @@ class ValidrError(ValueError):
                 }
             }
         """
-        cdef str text = ""
+        cdef str text = ''
         cdef bint is_key
         for is_key, index_or_key in reversed(self.marks):
             if is_key:
-                text = "%s.%s" % (text, index_or_key)
+                text = '%s.%s' % (text, index_or_key)
             else:
                 if index_or_key == -1:
-                    text = "%s[]" % text
+                    text = '%s[]' % text
                 else:
-                    text = "%s[%d]" % (text, index_or_key)
+                    text = '%s[%d]' % (text, index_or_key)
         if text and text[0] == '.':
             text = text[1:]
         return text
@@ -54,12 +54,12 @@ class ValidrError(ValueError):
         cdef str position = self.position
         if self.args:
             if position:
-                return "%s in %s" % (self.args[0], position)
+                return '%s in %s' % (self.args[0], position)
             else:
                 return self.args[0]
         else:
             if position:
-                return "in %s" % position
+                return 'in %s' % position
             else:
                 return super().__str__()
 

@@ -8,14 +8,14 @@ def test_custom_validator():
         @handle_default_optional_desc()
         def choice_validator():
             def validator(value):
-                if value in "ABCD":
+                if value in 'ABCD':
                     return value
-                raise Invalid("invalid choice")
+                raise Invalid('invalid choice')
             return validator
-    sp = SchemaParser(validators={"choice": choice_validator})
-    for value in "ABCD":
-        assert sp.parse("choice")(value) == value
-    assert sp.parse("choice&optional")(None) is None
+    sp = SchemaParser(validators={'choice': choice_validator})
+    for value in 'ABCD':
+        assert sp.parse('choice')(value) == value
+    assert sp.parse('choice&optional')(None) is None
 
 
 def test_deprecated():
@@ -25,12 +25,12 @@ def test_deprecated():
     with pytest.warns(DeprecationWarning):
         try:
             with MarkIndex([1, 2, 3]):
-                raise Invalid("test")
+                raise Invalid('test')
         except Invalid:
             pass
     with pytest.warns(DeprecationWarning):
         try:
-            with MarkKey("key"):
-                raise Invalid("test")
+            with MarkKey('key'):
+                raise Invalid('test')
         except Invalid:
             pass

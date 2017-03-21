@@ -30,9 +30,9 @@ def expend(cases):
     """
     for schema, items in cases.items():
         if isinstance(items, dict):
-            for value in items.get("valid", []):
+            for value in items.get('valid', []):
                 yield schema, value, value
-            for value in items.get("invalid", []):
+            for value in items.get('invalid', []):
                 yield schema, value, Invalid
         else:
             for item in items:
@@ -50,7 +50,7 @@ sp = SchemaParser()
 def case(cases):
     """Genereate test from cases data"""
     def decorator(f):
-        @pytest.mark.parametrize("schema,value,expect", expend(cases))
+        @pytest.mark.parametrize('schema,value,expect', expend(cases))
         def wrapped(schema, value, expect):
             f = sp.parse(schema)
             if expect is Invalid:

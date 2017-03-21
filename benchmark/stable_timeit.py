@@ -1,4 +1,3 @@
-# coding:utf-8
 from timeit import repeat as _repeat
 from timeit import default_timer
 
@@ -12,7 +11,7 @@ def closeness(a1, a2):
     return sum((x-y)**2 for x, y in zip(a1, a2))/len(a1)
 
 
-def stable_timeit(stmt="pass", setup="pass", timer=default_timer,
+def stable_timeit(stmt='pass', setup='pass', timer=default_timer,
                   repeat=default_repeat, number=default_number):
     times = []
     for i in range(3):

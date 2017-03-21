@@ -14,8 +14,8 @@ class MarkKey(mark_key):
     def __init__(self, *args, **kwargs):
         import warnings
         warnings.warn(DeprecationWarning(
-            "`MarkKey` is deprecated, it will be "
-            "removed in v1.0, please use `mark_key` instead."
+            '`MarkKey` is deprecated, it will be '
+            'removed in v1.0, please use `mark_key` instead.'
         ))
         super().__init__(*args, **kwargs)
 
@@ -26,8 +26,8 @@ class MarkIndex:
     def __init__(self, items):
         import warnings
         warnings.warn(DeprecationWarning(
-            "`MarkIndex` is deprecated, it will be "
-            "removed in v1.0, please use `mark_index` instead."
+            '`MarkIndex` is deprecated, it will be '
+            'removed in v1.0, please use `mark_index` instead.'
         ))
         self.items = items
 
@@ -65,7 +65,7 @@ class ValidatorString:
 
         # first: name, key?name, @refer or key@refer@refer
         # last: (args,args)&k&k=v or &k&k=v
-        cuts = [text.find("("), text.find("&"), len(text)]
+        cuts = [text.find('('), text.find('&'), len(text)]
         cut = min([x for x in cuts if x >= 0])
         first, last = text[:cut], text[cut:]
         self.init_first_part(first)
@@ -74,34 +74,34 @@ class ValidatorString:
     def init_first_part(self, first):
         key = name = refers = None
         if first:
-            if ("?" in first and "@" in first) or first[-1] in "?@":
-                raise SchemaError("invalid syntax %s" % repr(first))
+            if ('?' in first and '@' in first) or first[-1] in '?@':
+                raise SchemaError('invalid syntax %s' % repr(first))
 
-            if "@" in first:
+            if '@' in first:
                 # key@refer@refer / key@@refer
-                items = first.split("@")
+                items = first.split('@')
                 if items[0]:
                     key = items[0]
                 refers = items[1:]
                 if not all(refers):
-                    raise SchemaError("invalid syntax %s" % repr(first))
+                    raise SchemaError('invalid syntax %s' % repr(first))
             else:
                 # key, key?name / key?name?name
-                items = first.split("?")
+                items = first.split('?')
                 if len(items) == 2:
                     key, name = items
                 elif len(items) == 1:
                     name = items[0]
                 else:
-                    raise SchemaError("invalid syntax %s" % repr(first))
+                    raise SchemaError('invalid syntax %s' % repr(first))
         self.key = key
         self.name = name
         self.refers = refers
 
     def init_last_part(self, last):
         text_args = text_kwargs = None
-        if last and last[0] == "(":
-            cut = last.find(")")
+        if last and last[0] == '(':
+            cut = last.find(')')
             if cut < 0:
                 raise SchemaError("missing ')'")
             text_args = last[1:cut].rstrip(' ,')
@@ -115,42 +115,42 @@ class ValidatorString:
         if not text:
             return tuple()
         args = []
-        for x in text.split(","):
+        for x in text.split(','):
             try:
                 args.append(json.loads(x))
             except ValueError:
-                raise SchemaError("invalid JSON value in %s" % repr(text))
+                raise SchemaError('invalid JSON value in %s' % repr(text))
         return tuple(args)
 
     def parse_kwargs(self, text):
         if not text:
             return {}
         kwargs = {}
-        for kv in text.split("&"):
-            cut = kv.find("=")
+        for kv in text.split('&'):
+            cut = kv.find('=')
             if cut >= 0:
                 try:
                     kwargs[kv[:cut]] = json.loads(kv[cut + 1:])
                 except ValueError:
-                    raise SchemaError("invalid JSON value in %s" % repr(kv))
+                    raise SchemaError('invalid JSON value in %s' % repr(kv))
             else:
                 kwargs[kv] = True
         return kwargs
 
     def __repr__(self):
         return repr({
-            "key": self.key,
-            "name": self.name,
-            "refers": self.refers,
-            "args": self.args,
-            "kwargs": self.kwargs
+            'key': self.key,
+            'name': self.name,
+            'refers': self.refers,
+            'args': self.args,
+            'kwargs': self.kwargs
         })
 
 
 def _schema_key(k):
-    cut = k.find("?")
+    cut = k.find('?')
     if cut < 0:
-        cut = k.find("@")
+        cut = k.find('@')
     if cut > 0:
         return k[:cut]
     else:
@@ -185,19 +185,19 @@ class SchemaParser:
         vs = None
         for k, v in schema.items():
             with mark_key(_schema_key(k)):
-                if k[:5] == "$self":
+                if k[:5] == '$self':
                     if vs is not None:
-                        raise SchemaError("multi $self not allowed")
+                        raise SchemaError('multi $self not allowed')
                     vs = ValidatorString(k)
-                    vs.kwargs["desc"] = v
+                    vs.kwargs['desc'] = v
                 else:
                     if isinstance(v, (dict, list)):
-                        if any(char in k for char in"?@&()"):
-                            raise SchemaError("invalid key %s" % repr(k))
+                        if any(char in k for char in'?@&()'):
+                            raise SchemaError('invalid key %s' % repr(k))
                         inners[k] = self._parse(v)
                     else:
-                        if "?" not in k and "@" not in k:
-                            raise SchemaError("missing validator or refer")
+                        if '?' not in k and '@' not in k:
+                            raise SchemaError('missing validator or refer')
                         inner_vs = ValidatorString(k)
                         inners[inner_vs.key] = self._parse(v, inner_vs)
         inners = list(inners.items())
@@ -210,7 +210,7 @@ class SchemaParser:
                     if refer not in self.shared:
                         raise SchemaError("shared '%s' not found" % refer)
                     validator = self.shared[refer]
-                    if not validator.__name__.startswith("dict_validator"):
+                    if not validator.__name__.startswith('dict_validator'):
                         raise SchemaError("can't merge non-dict '@%s'" % refer)
                     _validators.append(validator)
                 _validators.append(dict_validator(inners))
@@ -226,7 +226,7 @@ class SchemaParser:
             vs = ValidatorString(schema[0])
             schema = schema[1]
         else:
-            raise SchemaError("invalid length of list schema")
+            raise SchemaError('invalid length of list schema')
         with mark_index(-1):
             inner = self._parse(schema)
             if vs:
@@ -236,19 +236,19 @@ class SchemaParser:
 
     def _parse_scalar(self, schema, vs):
         if vs:
-            vs.kwargs["desc"] = schema
+            vs.kwargs['desc'] = schema
         else:
             vs = ValidatorString(schema)
         if vs.refers:
             # refer
             if len(vs.refers) >= 2:
-                raise SchemaError("multi refers not allowed")
+                raise SchemaError('multi refers not allowed')
             refer = vs.refers[0]
             if refer not in self.shared:
                 raise SchemaError("shared '%s' not found" % refer)
             _validator = self.shared[refer]
             # refer optional
-            if not vs.kwargs.get("optional"):
+            if not vs.kwargs.get('optional'):
                 return _validator
             else:
                 def optional_refer_validator(value):

@@ -4,13 +4,13 @@ from util import case
 
 
 @case({
-    "int(0,9)": [
+    'int(0,9)': [
         (0, 0),
         (9, 9),
-        ("5", 5),
-        [-1, 10, "abc"]
+        ('5', 5),
+        [-1, 10, 'abc']
     ],
-    "int": [
+    'int': [
         (sys.maxsize, sys.maxsize),
         (-sys.maxsize, -sys.maxsize),
         (0, 0),

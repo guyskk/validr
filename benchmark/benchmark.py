@@ -21,15 +21,15 @@ from beeprint import pp
 from stable_timeit import stable_timeit as timeit
 
 DATA = {
-    "user": {"userid": 5},
-    "tags": [1, 2, 5, 9999, 1234567890],
-    "style": {
-        "width": 400,
-        "height": 400,
-        "border_width": 5,
-        "border_style": "solid",
-        "border_color": "red",
-        "color": "black"
+    'user': {'userid': 5},
+    'tags': [1, 2, 5, 9999, 1234567890],
+    'style': {
+        'width': 400,
+        'height': 400,
+        'border_width': 5,
+        'border_style': 'solid',
+        'border_color': 'red',
+        'color': 'black'
     },
     # "optional": "string"
 }
@@ -124,5 +124,5 @@ def profile():
         runctx('for i in range(1000000):f(data)', globals=params, locals=None)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     cli()

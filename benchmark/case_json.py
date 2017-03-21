@@ -6,5 +6,5 @@ def loads_dumps(value):
 
 
 CASES = {
-    "loads-dumps": loads_dumps
+    'loads-dumps': loads_dumps
 }

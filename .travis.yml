@@ -9,6 +9,7 @@ python:
 
 install:
     - pip install -U pip
+    - pip install -U py
     - pip install -r requires-dev.txt
     - python setup.py sdist
     - pip install --ignore-installed dist/validr-*.tar.gz

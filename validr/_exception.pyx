@@ -6,12 +6,12 @@ class ValidrError(ValueError):
         # marks' item: (is_key, index_or_key)
         self.marks = []
 
-    def mark_index(self, index):
-        self.marks.insert(0, (False, index))
+    def mark_index(self, int index):
+        self.marks.append((False, index))
         return self
 
-    def mark_key(self, key):
-        self.marks.insert(0, (True, key))
+    def mark_key(self, str key):
+        self.marks.append((True, key))
         return self
 
     @property
@@ -28,12 +28,13 @@ class ValidrError(ValueError):
                 }
             }
         """
-        text = ""
-        for is_key, index_or_key in self.marks:
+        cdef str text = ""
+        cdef bint is_key
+        for is_key, index_or_key in reversed(self.marks):
             if is_key:
                 text = "%s.%s" % (text, index_or_key)
             else:
-                if index_or_key is None:
+                if index_or_key == -1:
                     text = "%s[]" % text
                 else:
                     text = "%s[%d]" % (text, index_or_key)
@@ -50,7 +51,7 @@ class ValidrError(ValueError):
             return None
 
     def __str__(self):
-        position = self.position
+        cdef str position = self.position
         if self.args:
             if position:
                 return "%s in %s" % (self.args[0], position)
@@ -69,3 +70,36 @@ class Invalid(ValidrError):
 
 class SchemaError(ValidrError):
     """Schema error"""
+
+
+cdef class mark_index:
+    """Add current index to Invalid/SchemaError"""
+
+    cdef int index
+
+    def __init__(self, index):
+        """index = -1 means the position is uncertainty"""
+        self.index = index
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None and issubclass(exc_type, ValidrError):
+            exc_val.mark_index(self.index)
+
+
+cdef class mark_key:
+    """Add current key to Invalid/SchemaError"""
+
+    cdef str key
+
+    def __init__(self, key):
+        self.key = key
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None and issubclass(exc_type, ValidrError):
+            exc_val.mark_key(self.key)

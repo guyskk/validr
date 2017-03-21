@@ -5,19 +5,22 @@ python:
   - "3.4"
   - "3.5"
   - "3.6"
+  - "nightly"
 
 install:
-    - pip install pytest
-    - pip install pytest-cov
-    - pip install flake8
-    - pip install codecov
-    - pip install cython
-    - pip install .
+    - pip install -U pip
+    - pip install -U py
+    - pip install -r requires-dev.txt
+    - python setup.py sdist
+    - pip install --ignore-installed dist/validr-*.tar.gz
+    - pip uninstall -y cython
+    - pip install --ignore-installed dist/validr-*.tar.gz
 
 script:
     - export VALIDR_PATH=$(cd /tmp && python -c "print(__import__('validr').__path__[0])")
-    - py.test --cov=$VALIDR_PATH --cov-report=term-missing
+    - pytest --cov=$VALIDR_PATH --cov-report=term-missing -r w
     - flake8
+    - python benchmark/benchmark.py benchmark
 
 after_success:
     - codecov

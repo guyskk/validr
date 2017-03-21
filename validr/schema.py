@@ -1,15 +1,54 @@
 import json
 
-from ._schema import (
-    MarkIndex, MarkKey, dict_validator, list_validator, merge_validators
-)
-from .exceptions import Invalid, SchemaError
-from .validators import builtin_validators
+from ._exception import SchemaError, mark_index, mark_key
+from ._schema import dict_validator, list_validator, merged_validator
+from ._validator import builtin_validators
+
+
+# -------------------------deprecated------------------------- #
+
+
+class MarkKey(mark_key):
+    """for compatibility with version 0.13.0 and before"""
+
+    def __init__(self, *args, **kwargs):
+        import warnings
+        warnings.warn(DeprecationWarning(
+            "`MarkKey` is deprecated, it will be "
+            "removed in v1.0, please use `mark_key` instead."
+        ))
+        super().__init__(*args, **kwargs)
+
+
+class MarkIndex:
+    """Add current index to Invalid/SchemaError"""
+
+    def __init__(self, items):
+        import warnings
+        warnings.warn(DeprecationWarning(
+            "`MarkIndex` is deprecated, it will be "
+            "removed in v1.0, please use `mark_index` instead."
+        ))
+        self.items = items
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        from ._exception import Invalid
+        if exc_type is Invalid or exc_type is SchemaError:
+            if self.items is None:
+                exc_val.mark_index(None)
+            else:
+                exc_val.mark_index(len(self.items))
+        if exc_type is not None:
+            return False
+
+# -------------------------deprecated------------------------- #
 
 
 class ValidatorString:
-    """
-    ValidatorString
+    """ValidatorString
 
     eg::
 
@@ -108,7 +147,7 @@ class ValidatorString:
         })
 
 
-def schema_key(k):
+def _schema_key(k):
     cut = k.find("?")
     if cut < 0:
         cut = k.find("@")
@@ -121,8 +160,9 @@ def schema_key(k):
 class SchemaParser:
     """SchemaParser
 
-    :param validators: custom validators
-    :param shared: shared schema
+    Args:
+        validators (dict): custom validators
+        shared (dict): shared schema
     """
 
     def __init__(self, validators=None, shared=None):
@@ -133,7 +173,7 @@ class SchemaParser:
         self.shared = {}
         if shared is not None:
             for k, v in shared.items():
-                with MarkKey(k):
+                with mark_key(k):
                     self.shared[k] = self.parse(v)
 
     def parse(self, schema):
@@ -141,10 +181,10 @@ class SchemaParser:
         return self._parse(schema)
 
     def _parse_dict(self, schema):
-        inner = {}
+        inners = {}
         vs = None
         for k, v in schema.items():
-            with MarkKey(schema_key(k)):
+            with mark_key(_schema_key(k)):
                 if k[:5] == "$self":
                     if vs is not None:
                         raise SchemaError("multi $self not allowed")
@@ -154,26 +194,29 @@ class SchemaParser:
                     if isinstance(v, (dict, list)):
                         if any(char in k for char in"?@&()"):
                             raise SchemaError("invalid key %s" % repr(k))
-                        inner[k] = self._parse(v)
+                        inners[k] = self._parse(v)
                     else:
                         if "?" not in k and "@" not in k:
                             raise SchemaError("missing validator or refer")
                         inner_vs = ValidatorString(k)
-                        inner[inner_vs.key] = self._parse(v, inner_vs)
+                        inners[inner_vs.key] = self._parse(v, inner_vs)
+        inners = list(inners.items())
         if vs:
             if not vs.refers:
-                return dict_validator(inner, *vs.args, **vs.kwargs)
+                return dict_validator(inners, *vs.args, **vs.kwargs)
             else:
-                # mixins
-                _mixins = []
+                _validators = []
                 for refer in vs.refers:
                     if refer not in self.shared:
                         raise SchemaError("shared '%s' not found" % refer)
-                    _mixins.append(self.shared[refer])
-                _mixins.append(dict_validator(inner))
-                return merge_validators(_mixins, *vs.args, **vs.kwargs)
+                    validator = self.shared[refer]
+                    if not validator.__name__.startswith("dict_validator"):
+                        raise SchemaError("can't merge non-dict '@%s'" % refer)
+                    _validators.append(validator)
+                _validators.append(dict_validator(inners))
+                return merged_validator(_validators, *vs.args, **vs.kwargs)
         else:
-            return dict_validator(inner)
+            return dict_validator(inners)
 
     def _parse_list(self, schema):
         vs = None
@@ -184,7 +227,7 @@ class SchemaParser:
             schema = schema[1]
         else:
             raise SchemaError("invalid length of list schema")
-        with MarkIndex(None):
+        with mark_index(-1):
             inner = self._parse(schema)
             if vs:
                 return list_validator(inner, *vs.args, **vs.kwargs)
@@ -221,23 +264,14 @@ class SchemaParser:
                 validator = builtin_validators[vs.name]
             else:
                 raise SchemaError("validator '%s' not found" % vs.name)
-            try:
-                _validator = validator(*vs.args, **vs.kwargs)
-            except TypeError as ex:
-                raise SchemaError(str(ex))
-            default = vs.kwargs.get("default", None)
-            if default is not None:
-                try:
-                    _validator(default)
-                except Invalid:
-                    raise SchemaError("invalid default value")
-            return _validator
+            return validator(*vs.args, **vs.kwargs)
 
     def _parse(self, schema, vs=None):
         """Parse schema
 
-        :param schema: schema
-        :param vs: ValidatorString
+        Args:
+            schema: schema
+            vs: ValidatorString
         """
         if isinstance(schema, dict):
             return self._parse_dict(schema)

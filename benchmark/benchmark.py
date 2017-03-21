@@ -11,15 +11,14 @@ add case:
     3. put validate funcs in a dict named `CASES` in case module
 """
 import json
-import statistics
 from cProfile import runctx
 from glob import glob
 from os.path import basename, dirname, splitext
-from timeit import timeit
 
 import click
 
 from beeprint import pp
+from stable_timeit import stable_timeit as timeit
 
 DATA = {
     "user": {"userid": 5},
@@ -78,10 +77,14 @@ def test():
             except:
                 ok = False
             if ok:
-                print('{}:{} OK'.format(name, subname))
+                print_item(name, subname, 'OK')
             else:
                 print('{}:{}'.format(name, subname).center(60, '-'))
                 pp(value)
+
+
+def print_item(name, subname, value):
+    print('{}:{} {}'.format(name.rjust(12), subname.ljust(24), value))
 
 
 @cli.command()
@@ -93,20 +96,23 @@ def benchmark(validr):
     else:
         cases = CASES
     result = {}
-    print('time---the-result-of-timeit'.center(60, '-'))
+
+    print('timeits'.center(60, '-'))
     for name, suncases in cases.items():
-        result[name] = {}
         for subname, f in suncases.items():
-            params = {"f": f, "data": make_data()}
-            t = timeit("f(data)", number=100000, globals=params)
-            result[name][subname] = t
-            print('{}:{} {}'.format(name, subname, t))
-    print('speed---time(json)/time(case)*10000'.center(60, '-'))
-    base_time = statistics.mean(result['json'].values())  # 基准时间
-    for name, subcases in result.items():
-        for subname, time in subcases.items():
-            speed = base_time * 10000 / time
-            print('{}:{} {:.0f}'.format(name, subname, speed))
+            data = make_data()
+            t = timeit(lambda: f(data), number=100, repeat=500)
+            result[name, subname] = t
+            print_item(name, subname, t)
+
+    print('speeds'.center(60, '-'))
+    for (name, subname), v in result.items():
+        print_item(name, subname, round(1.0/v))
+
+    print('scores'.center(60, '-'))
+    base = result['json', 'loads-dumps']
+    for (name, subname), v in result.items():
+        print_item(name, subname, round(base/v*1000))
 
 
 @cli.command()
@@ -114,8 +120,8 @@ def profile():
     """profile validr"""
     for name, f in CASES['validr'].items():
         print(name.center(60, '-'))
-        params = {"f": f, "data": make_data()}
-        runctx("for i in range(10000):f(data)", globals=params, locals=None)
+        params = {'f': f, 'data': make_data()}
+        runctx('for i in range(1000000):f(data)', globals=params, locals=None)
 
 
 if __name__ == "__main__":

@@ -104,7 +104,7 @@ the 'optional' param means the value is optional.
     }
 
 
-### Mixin
+### Merge
 
 In mapping, you can combine multi schemas:
 

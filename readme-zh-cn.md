@@ -6,9 +6,9 @@
 
 简单，快速，可拓展的数据校验库。
 
-- 比[JSON Schema](http://json-schema.org)更简洁，可读性更好的Schema
-- 拥有标准库中 json.loads 20%~30% 的速度
-- 能够序列化任意类型对象
+- 简洁，易读的 Schema
+- 速度是 [jsonschema](https://github.com/Julian/jsonschema) 的 10 倍，[schematics](https://github.com/schematics/schematics) 的 40 倍
+- 能够校验&序列化任意类型对象
 - 实现自定义校验器非常容易
 - 准确的错误提示，包括错误原因和位置
 
@@ -20,8 +20,8 @@
 from sys import version_info
 from validr import SchemaParser
 
-sp = SchemaParser()
-validate = sp.parse({
+parser = SchemaParser()
+validate = parser.parse({
     "major?int&min=3": "Major version",
     "minor?int&min=3": "Minor version",
     "micro?int&min=0": "Micro version",
@@ -53,10 +53,10 @@ print(validate(version_info))
 3
 >>> f(-1)
 ...
-validr.exceptions.Invalid: value must >= 0
+validr._exception.Invalid: value must >= 0
 >>> f("abc")
 ...
-validr.exceptions.Invalid: invalid int
+validr._exception.Invalid: invalid int
 >>>
 ```
 
@@ -67,7 +67,7 @@ validr.exceptions.Invalid: invalid int
 >>> user = {"userid": 15}
 >>> f(user)
 ...
-validr.exceptions.Invalid: value must <= 9 in userid
+validr._exception.Invalid: value must <= 9 in userid
 >>> class User:pass
 ...
 >>> user = User()
@@ -77,11 +77,11 @@ validr.exceptions.Invalid: value must <= 9 in userid
 >>> user.userid = 15
 >>> f(user)
 ...
-validr.exceptions.Invalid: value must <= 9 in userid
+validr._exception.Invalid: value must <= 9 in userid
 >>> f = sp.parse({"friends":[{"userid?int(0,9)":"UserID"}]})
 >>> f({"friends":[user,user]})
 ...
-validr.exceptions.Invalid: value must <= 9 in friends[0].userid
+validr._exception.Invalid: value must <= 9 in friends[0].userid
 >>> user.userid=5
 >>> f({"friends":[user,user]})
 {'friends': [{'userid': 5}, {'userid': 5}]}
@@ -148,10 +148,10 @@ friends[0].userid
 ])
 >>> sp = SchemaParser(shared=shared)
 ...
-validr.exceptions.SchemaError: shared 'userid' not found in user.userid
+validr._exception.SchemaError: shared 'userid' not found in user.userid
 ```
 
-#### 混合(mixin)
+#### 混合(merge)
 
 ```python
 >>> shared = {
@@ -166,7 +166,7 @@ validr.exceptions.SchemaError: shared 'userid' not found in user.userid
       }
     }
 >>> sp = SchemaParser(shared=shared)
->>> f = sp.parse({"$self@size@border": "mixins"})
+>>> f = sp.parse({"$self@size@border": "merges"})
 >>> value = {
         "width": "400",
         "height": "400",
@@ -179,59 +179,72 @@ validr.exceptions.SchemaError: shared 'userid' not found in user.userid
 >>>
 ```
 
-注意：  
-只有字典结构的Schema才能混合，非字典结构的Schema混合会在校验数据时抛出SchemaError。  
-另外，不要混合有相同key的Schema。
+注意：不要混合有相同 key 的 Schema。
 
 
-#### 自定义校验函数
+#### 自定义校验器
 
-`handle_default_optional_desc` 装饰器能让自定义的validr支持 `default`, `optional`, `desc` 这几个参数。
+`validator()` 装饰器用于创建自定义的校验器，并使它自动支持 `default`, `optional`, `desc` 这几个参数。
 
 ```python
->>> from validr.validators import handle_default_optional_desc
->>> @handle_default_optional_desc()
-... def multiple_validator(n):
-...     def validr(value):
-...         if value%n==0:
-...             return value
-...         else:
-...             raise Invalid("不是 %d 的倍数"%n)
-...     return validr
-...
->>> validators={"multiple":multiple_validator}
->>> sp = SchemaParser(validators=validators)
+>>> from validr import validator
+>>> @validator(string=False)
+    def multiple_validator(value, n):
+        try:
+            if value%n == 0:
+                return value
+        except:
+            pass
+        raise Invalid("不是 %d 的倍数"%n)
+>>> sp = SchemaParser(validators={"multiple": multiple_validator})
 >>> f = sp.parse("multiple(3)")
 >>> f(6)
 6
 >>> f(5)
 ...
-validr.exceptions.Invalid: 不是 3 的倍数
+validr._exception.Invalid: 不是 3 的倍数
 >>> f = sp.parse("multiple(3)&default=3")
 >>> f(None)
 3
 >>>
 ```
 
-字符串类型的校验器请用 `@handle_default_optional_desc(string=True)` 装饰器，这样会将空字符串视为null，更符合default和optional的语义。
+字符串类型的校验器请用 `@validator(string=True)` ，这样会将空字符串视为None，更符合default和optional的语义。
 
 
-#### 使用正则表达式构建校验函数
+#### 使用正则表达式构建校验器
 
 ```python
->>> from validr.validators import build_re_validator
+>>> from validr import build_re_validator
 >>> regex_time = r'([01]?\d|2[0-3]):[0-5]?\d:[0-5]?\d'
 >>> time_validator = build_re_validator("time", regex_time)
 >>> sp = SchemaParser(validators={"time":time_validator})
 >>> f = sp.parse('time&default="00:00:00"')
 >>> f("12:00:00")
 '12:00:00'
->>> f("12:00:00123")
+>>> f("12:00:123")
 ...
-validr.exceptions.Invalid: invalid time
+validr._exception.Invalid: invalid time
 >>> f(None)
 '00:00:00'
 >>>
+```
+
+
+#### `mark_index` 和 `mark_key`:
+
+`mark_index` 和 `mark_key` 是用来向 ValidrError 或者它的子类对象
+（例如：Invalid 和 SchemaError）中添加出错位置信息。
+
+```python
+from validr import mark_index, mark_key, ValidrError
+try:
+    with mark_index(0):
+        with mark_key('key'):
+            with mark_index(-1):  # `-1` 表示位置不确定
+                raise ValidrError('message')
+except ValidrError as ex:
+    print(ex.position)  # [0].key[], 其中的 `[]` 对应于 mark_index(-1)
 ```
 
 
@@ -268,27 +281,18 @@ validr.exceptions.Invalid: invalid time
     pip install -r requires-dev.txt
     python benchmark/benchmark.py benchmark
 
-在我电脑上的测试结果(Intel(R) Core(TM) i5-3230M CPU @ 2.60GHz)
+travis-ci上的测试结果:
 
-    ----------------time---the-result-of-timeit-----------------
-    validr:default 3.9474168669985374
-    validr:use-refer-mixin 4.608337737998227
-    json:loads-dumps 1.6587990809930488
-    voluptuous:default 18.96944373799488
-    schema:default 40.53439778399479
-    schematics:default 34.1044494890084
-    jsonschema:draft3 9.507412713996018
-    jsonschema:draft4 9.953055930993287
-    ------------speed---time(json)/time(case)*10000-------------
-    validr:default 4202
-    validr:use-refer-mixin 3600
-    json:loads-dumps 10000
-    voluptuous:default 874
-    schema:default 409
-    schematics:default 486
-    jsonschema:draft3 1745
-    jsonschema:draft4 1667
-
+```
+        json:loads-dumps              1000
+  jsonschema:draft3                   180
+  jsonschema:draft4                   184
+      schema:default                  41
+  schematics:default                  51
+      validr:default                  2384
+      validr:use-refer-merge          2106
+  voluptuous:default                  100
+```
 
 ## License
 

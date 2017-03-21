@@ -1,7 +1,7 @@
 from validr import SchemaParser
 
 
-def use_refer_mixin():
+def use_refer_merge():
     shared = {
         "size": {
             "width?int": "width",
@@ -47,5 +47,5 @@ def default():
 
 CASES = {
     "default": default(),
-    "use-refer-mixin": use_refer_mixin(),
+    "use-refer-merge": use_refer_merge(),
 }

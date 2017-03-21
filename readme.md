@@ -2,7 +2,7 @@
 
 [![travis-ci](https://api.travis-ci.org/guyskk/validr.svg)](https://travis-ci.org/guyskk/validr) [![codecov](https://codecov.io/gh/guyskk/validr/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validr)
 
-[中文](readme-zh-cn.md) [English](readme.md)
+[中文](readme-zh-cn.md) | [English](readme.md)
 
 A simple,fast,extensible python library for data validation.
 

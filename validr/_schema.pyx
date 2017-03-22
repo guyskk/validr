@@ -30,7 +30,8 @@ cdef _value_is_none_and_optional(value, bint optional):
 
 
 @_update_wrapper
-def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False, optional=False):
+def list_validator(inner, int minlen=0, int maxlen=1024,
+                   bint unique=False, bint optional=False):
     def _validator(value):
         if _value_is_none_and_optional(value, optional):
             return None
@@ -55,7 +56,7 @@ def list_validator(inner, int minlen=0, int maxlen=1024, bint unique=False, opti
 
 
 @_update_wrapper
-def merged_validator(list validators, optional=False):
+def merged_validator(list validators, bint optional=False):
     def _validator(value):
         if _value_is_none_and_optional(value, optional):
             return None
@@ -67,7 +68,7 @@ def merged_validator(list validators, optional=False):
 
 
 @_update_wrapper
-def dict_validator(list inners, optional=False):
+def dict_validator(list inners, bint optional=False):
     def _validator(value):
         if _value_is_none_and_optional(value, optional):
             return None

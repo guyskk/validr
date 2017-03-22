@@ -20,7 +20,7 @@ import os
 
 from setuptools import Extension, setup
 
-DEBUG = bool(os.getenv('VALIDR_DEBUG'))
+DEBUG = os.getenv('VALIDR_DEBUG') == '1'
 print('VALIDR_DEBUG={}'.format(DEBUG))
 
 try:
@@ -28,9 +28,11 @@ try:
 except:
     from glob import glob
     from os.path import basename, splitext
+    print('USE_CYTHON=False')
     ext_modules = [Extension('validr.'+splitext(basename(x))[0], [x])
                    for x in glob('validr/*.c')]
 else:
+    print('USE_CYTHON=True')
     directives = {'language_level': 3}
     if DEBUG:
         directives.update({

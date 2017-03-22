@@ -7,7 +7,7 @@
 简单，快速，可拓展的数据校验库。
 
 - 简洁，易读的 Schema
-- 速度是 [jsonschema](https://github.com/Julian/jsonschema) 的 10 倍，[schematics](https://github.com/schematics/schematics) 的 40 倍
+- 比 [jsonschema](https://github.com/Julian/jsonschema) 快 10 倍，比 [schematics](https://github.com/schematics/schematics) 快 40 倍
 - 能够校验&序列化任意类型对象
 - 实现自定义校验器非常容易
 - 准确的错误提示，包括错误原因和位置
@@ -139,7 +139,7 @@ friends[0].userid
 {'userid': 5}
 ```
 
-注意：只能后面的引用前面的，并且要使用OrderedDict代替dict。
+注意：只能后面的引用前面的，并且要使用 OrderedDict 代替 dict。
 
 ```python
 >>> shared = OrderedDict([
@@ -209,7 +209,8 @@ validr._exception.Invalid: 不是 3 的倍数
 >>>
 ```
 
-字符串类型的校验器请用 `@validator(string=True)` ，这样会将空字符串视为None，更符合default和optional的语义。
+字符串类型的校验器请用 `@validator(string=True)` ，这样会将空字符串视为 None，
+更符合 default 和 optional 的语义。
 
 
 #### 使用正则表达式构建校验器
@@ -248,32 +249,19 @@ except ValidrError as ex:
 ```
 
 
-## 关于内置校验函数
+## 内置校验函数
 
 ### idcard
 
-内置的idcard校验函数只校验数字长度和xX，不校验地址码和日期。
+内置的 idcard 校验函数只校验数字长度和 xX，不校验地址码和日期。
 
 ### phone
 
-支持 `+86` 开头，支持校验手机号段，只支持11位手机号，不支持固定电话号码。
+支持 `+86` 开头，支持校验手机号段，只支持 11 位手机号，不支持固定电话号码。
 
 ### 其他
 
-见Schema语法。
-
-
-## 测试
-
-用tox测试:
-
-    pip install tox
-    tox
-
-用pytest测试:
-
-    pip install pytest
-    pytest
+见 Schema 语法。
 
 
 ## 性能
@@ -281,7 +269,7 @@ except ValidrError as ex:
     pip install -r requires-dev.txt
     python benchmark/benchmark.py benchmark
 
-travis-ci上的测试结果:
+travis-ci 上的测试结果:
 
 ```
         json:loads-dumps              1000
@@ -293,6 +281,29 @@ travis-ci上的测试结果:
       validr:use-refer-merge          2106
   voluptuous:default                  100
 ```
+
+
+## 开发
+
+Validr 从 v0.14.0 开始用 [Cython](http://cython.org/) 实现，它比纯 Python 实现快了 5 倍。
+
+**搭建开发环境**:
+
+建议使用 [virtualenv](https://virtualenv.pypa.io/en/stable/) 或者类似的工具来创建
+独立的 Python 开发环境。
+
+之后，安装所有的依赖:
+
+```
+pip install -r requires-dev.txt
+pre-commit install
+```
+
+**build, test and benchmark**:
+```
+./bb.sh
+```
+
 
 ## License
 

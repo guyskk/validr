@@ -53,7 +53,8 @@ setup(
     name='validr',
     version='0.13.0',
     keywords='validation validator validate schema jsonschema',
-    description='A simple,fast,extensible python library for data validation.',
+    description=('A simple, fast, extensible python library '
+                 'for data validation.'),
     long_description=__doc__,
     author='guyskk',
     author_email='guyskk@qq.com',

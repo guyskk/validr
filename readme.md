@@ -4,7 +4,7 @@
 
 [中文](readme-zh-cn.md) | [English](readme.md)
 
-A simple,fast,extensible python library for data validation.
+A simple, fast, extensible python library for data validation.
 
 - Simple and readable schema
 - 10X faster than [jsonschema](https://github.com/Julian/jsonschema),
@@ -248,19 +248,6 @@ except ValidrError as ex:
 ```
 
 
-## Test
-
-use tox:
-
-    pip install tox
-    tox
-
-use pytest
-
-    pip install pytest
-    pytest
-
-
 ## Performance
 
     pip install -r requires-dev.txt
@@ -278,6 +265,29 @@ benchmark result in travis-ci:
       validr:use-refer-merge          2106
   voluptuous:default                  100
 ```
+
+## Develop
+
+Validr is implemented by [Cython](http://cython.org/) since v0.14.0, it's 5X
+faster than original pure python implemented.
+
+**setup**:
+
+It's better to use [virtualenv](https://virtualenv.pypa.io/en/stable/) or
+similar tools to create isolated Python environment for develop.  
+
+After that, install all dependencys:
+
+```
+pip install -r requires-dev.txt
+pre-commit install
+```
+
+**build, test and benchmark**:
+```
+./bb.sh
+```
+
 
 ## License
 

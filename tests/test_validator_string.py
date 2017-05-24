@@ -1,6 +1,6 @@
+import pytest
 from validr import SchemaError
 from validr.schema import ValidatorString
-import pytest
 
 validator_string = {
     'int': {'name': 'int'},
@@ -28,6 +28,15 @@ validator_string = {
         'args': tuple([0, 10]),
         'kwargs': {'optional': True}
     },
+    'json(1,[2,3],{"k":"v"})': {'name': 'json', 'args': (
+        1, [2, 3], {'k': 'v'}
+    )},
+    'json&k1=[1,2]&k2="&="&k3={"k":"v"}': {'name': 'json', 'kwargs': {
+        'k1': [1, 2],
+        'k2': '&=',
+        'k3': {'k': 'v'},
+    }},
+    '$self&k=123': {'key': '$self', 'kwargs': {'k': 123}},
     'key@shared': {'key': 'key', 'refers': ['shared'], 'name': None},
     '$self@shared': {'key': '$self', 'refers': ['shared'], 'name': None},
     '@shared': {'refers': ['shared'], 'name': None},
@@ -53,6 +62,8 @@ invalid_validator_string = [
     'int&default=abc',
     "int&desc='a number'",
     '(0,10',
+    'json(1,[2,3],{"k":v})',
+    'json&k1=[1,2&k2="&="&k3={"k":"v"}',
     'key?int@user',
     'key?int?str',
     'key@user@',

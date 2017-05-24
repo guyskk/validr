@@ -4,7 +4,7 @@ from pyparsing import (
     Dict, FollowedBy, Forward, Group, Keyword, Optional, ParseBaseException,
     StringEnd, StringStart, Suppress, Word, ZeroOrMore, alphanums, alphas,
     dblQuotedString, delimitedList, originalTextFor, pyparsing_common,
-    removeQuotes, replaceWith
+    removeQuotes, replaceWith, Literal
 )
 
 from ._exception import SchemaError
@@ -51,7 +51,8 @@ def _define_vs():
     KWARGS = Group(ZeroOrMore(Suppress('&') + KW)).setResultsName('kwargs')
     # lead xxx is key: xxx@yyy, xxx?yyy, $self&abc
     # lead xxx except '$self' is validator name: xxx(1,2), xxx&abc, xxx
-    VS_KEY = Optional((KEY + FollowedBy(Word('@?'))) | Keyword('$self'))
+    SELF = Literal('$self').setResultsName('key')
+    VS_KEY = Optional((KEY + FollowedBy(Word('@?'))) | SELF)
     VS_DEF = REFERS + NAME + ARGS + KWARGS
     return StringStart() + VS_KEY + VS_DEF + StringEnd()
 
@@ -92,7 +93,8 @@ class ValidatorString:
             try:
                 args.append(json.loads(str(x)))
             except ValueError:
-                raise SchemaError('invalid JSON value in {}'.format(str(x)))
+                msg = 'invalid JSON value in {}'.format(str(x))
+                raise SchemaError(msg) from None
         self.args = tuple(args)
         kwargs = {}
         for x in result.kwargs:
@@ -101,7 +103,7 @@ class ValidatorString:
                     value = json.loads(str(x.value))
                 except ValueError:
                     msg = 'invalid JSON value in %s' % repr(str(x.value))
-                    raise SchemaError(msg)
+                    raise SchemaError(msg) from None
             else:
                 value = True
             kwargs[str(x.key)] = value

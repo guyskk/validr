@@ -4,9 +4,9 @@ from validr import Invalid, SchemaParser, validator
 def test_custom_validator():
 
     @validator(string=False)
-    def choice_validator(value):
+    def choice_validator(value, *choices):
         try:
-            if value in 'ABCD':
+            if value in choices:
                 return value
         except:
             pass
@@ -14,5 +14,5 @@ def test_custom_validator():
 
     sp = SchemaParser(validators={'choice': choice_validator})
     for value in 'ABCD':
-        assert sp.parse('choice')(value) == value
+        assert sp.parse('choice("A","B","C","D")')(value) == value
     assert sp.parse('choice&optional')(None) is None

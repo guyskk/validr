@@ -212,6 +212,24 @@ validr._exception.Invalid: not a multiple of 3
 string like validator should use `@validator(string=True)` decorator,
 it will treat the empty string as None, more suitable for default and optional semantic.
 
+Another example:
+
+```python
+>>> @validator(string=False)
+    def choice_validator(value, *choices):
+        try:
+            if value in choices:
+                return value
+        except:
+            pass
+        raise Invalid('invalid choice')
+>>> sp = SchemaParser(validators={'choice': choice_validator})
+>>> f = sp.parse('choice("A","B","C","D")')
+>>> f('A')
+'A'
+>>>
+```
+
 
 #### Create regex validator:
 

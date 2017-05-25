@@ -88,22 +88,11 @@ class ValidatorString:
         self.name = str(result.name) or None
         if self.refers and self.name:
             raise SchemaError("refer and validator can't both exist")
-        args = []
-        for x in result.args:
-            try:
-                args.append(json.loads(str(x)))
-            except ValueError:
-                msg = 'invalid JSON value in {}'.format(str(x))
-                raise SchemaError(msg) from None
-        self.args = tuple(args)
+        self.args = tuple([json.loads(str(x)) for x in result.args])
         kwargs = {}
         for x in result.kwargs:
             if x.value:
-                try:
-                    value = json.loads(str(x.value))
-                except ValueError:
-                    msg = 'invalid JSON value in %s' % repr(str(x.value))
-                    raise SchemaError(msg) from None
+                value = json.loads(str(x.value))
             else:
                 value = True
             kwargs[str(x.key)] = value

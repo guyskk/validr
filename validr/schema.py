@@ -1,8 +1,7 @@
-import json
-
 from ._exception import SchemaError, mark_index, mark_key
 from ._schema import dict_validator, list_validator, merged_validator
 from ._validator import builtin_validators
+from .validator_string import ValidatorString
 
 
 # -------------------------deprecated------------------------- #
@@ -45,106 +44,6 @@ class MarkIndex:
             return False
 
 # -------------------------deprecated------------------------- #
-
-
-class ValidatorString:
-    """ValidatorString
-
-    eg::
-
-        key?validator(args,args)&k&k=v
-        key@xx@yy(args,args)&k&k=v
-
-    Note: don't contain ',)' in args and '&=' in kwargs
-    """
-
-    def __init__(self, text):
-
-        if text is None:
-            raise SchemaError("can't parse None")
-
-        # first: name, key?name, @refer or key@refer@refer
-        # last: (args,args)&k&k=v or &k&k=v
-        cuts = [text.find('('), text.find('&'), len(text)]
-        cut = min([x for x in cuts if x >= 0])
-        first, last = text[:cut], text[cut:]
-        self.init_first_part(first)
-        self.init_last_part(last)
-
-    def init_first_part(self, first):
-        key = name = refers = None
-        if first:
-            if ('?' in first and '@' in first) or first[-1] in '?@':
-                raise SchemaError('invalid syntax %s' % repr(first))
-
-            if '@' in first:
-                # key@refer@refer / key@@refer
-                items = first.split('@')
-                if items[0]:
-                    key = items[0]
-                refers = items[1:]
-                if not all(refers):
-                    raise SchemaError('invalid syntax %s' % repr(first))
-            else:
-                # key, key?name / key?name?name
-                items = first.split('?')
-                if len(items) == 2:
-                    key, name = items
-                elif len(items) == 1:
-                    name = items[0]
-                else:
-                    raise SchemaError('invalid syntax %s' % repr(first))
-        self.key = key
-        self.name = name
-        self.refers = refers
-
-    def init_last_part(self, last):
-        text_args = text_kwargs = None
-        if last and last[0] == '(':
-            cut = last.find(')')
-            if cut < 0:
-                raise SchemaError("missing ')'")
-            text_args = last[1:cut].rstrip(' ,')
-            last = last[cut + 1:]
-        if last:
-            text_kwargs = last[1:]
-        self.args = self.parse_args(text_args)
-        self.kwargs = self.parse_kwargs(text_kwargs)
-
-    def parse_args(self, text):
-        if not text:
-            return tuple()
-        args = []
-        for x in text.split(','):
-            try:
-                args.append(json.loads(x))
-            except ValueError:
-                raise SchemaError('invalid JSON value in %s' % repr(text))
-        return tuple(args)
-
-    def parse_kwargs(self, text):
-        if not text:
-            return {}
-        kwargs = {}
-        for kv in text.split('&'):
-            cut = kv.find('=')
-            if cut >= 0:
-                try:
-                    kwargs[kv[:cut]] = json.loads(kv[cut + 1:])
-                except ValueError:
-                    raise SchemaError('invalid JSON value in %s' % repr(kv))
-            else:
-                kwargs[kv] = True
-        return kwargs
-
-    def __repr__(self):
-        return repr({
-            'key': self.key,
-            'name': self.name,
-            'refers': self.refers,
-            'args': self.args,
-            'kwargs': self.kwargs
-        })
 
 
 def _schema_key(k):

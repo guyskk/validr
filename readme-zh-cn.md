@@ -212,6 +212,24 @@ validr._exception.Invalid: 不是 3 的倍数
 字符串类型的校验器请用 `@validator(string=True)` ，这样会将空字符串视为 None，
 更符合 default 和 optional 的语义。
 
+另一个例子：
+
+```python
+>>> @validator(string=False)
+    def choice_validator(value, *choices):
+        try:
+            if value in choices:
+                return value
+        except:
+            pass
+        raise Invalid('invalid choice')
+>>> sp = SchemaParser(validators={'choice': choice_validator})
+>>> f = sp.parse('choice("A","B","C","D")')
+>>> f('A')
+'A'
+>>>
+```
+
 
 #### 使用正则表达式构建校验器
 

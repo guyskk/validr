@@ -61,6 +61,7 @@ setup(
     url='https://github.com/guyskk/validr',
     license='MIT',
     packages=['validr'],
+    install_requires=['pyparsing>=2.1.0'],
     zip_safe=False,
     ext_modules=ext_modules,
     classifiers=[

@@ -74,7 +74,7 @@ def test():
                 ok = (value['user'] == DATA['user'] and
                       value['tags'] == DATA['tags'] and
                       value['style'] == DATA['style'])
-            except:
+            except Exception:
                 ok = False
             if ok:
                 print_item(name, subname, 'OK')

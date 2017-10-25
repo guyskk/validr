@@ -20,16 +20,18 @@ install:
 script:
     - pre-commit run --all-files
     - VALIDR_USE_CYTHON=1 python setup.py sdist
+    # normal install
+    - pip install --ignore-installed --verbose dist/validr-*.tar.gz
+    - pytest tests
+
+    # install using cython to compile *.pyx
     - VALIDR_USE_CYTHON=1 pip install --ignore-installed --verbose dist/validr-*.tar.gz
-    - export VALIDR_PATH=$(cd /tmp && python -c "print(__import__('validr').__path__[0])")
-    - pytest --cov=$VALIDR_PATH --cov-report=term-missing -r w
-    - pip install --ignore-installed --verbose dist/validr-*.tar.gz  # test install without cython
-    - export VALIDR_PATH=$(cd /tmp && python -c "print(__import__('validr').__path__[0])")
-    - pytest --cov=$VALIDR_PATH --cov-report=term-missing -r w
-    - pip install --ignore-installed --verbose -e .
-    - pytest --cov=validr --cov-report=term-missing -r w
+    - pytest tests
+
+    # develop install
+    - pip install --ignore-installed -e .
+    - pytest --cov=validr --cov-report=term-missing tests
     - python benchmark/benchmark.py benchmark
-    - python benchmark/benchmark.py profile
 
 after_success:
     - codecov

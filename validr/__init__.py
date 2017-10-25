@@ -1,8 +1,10 @@
 """A simple,fast,extensible python library for data validation."""
 from ._exception import Invalid, SchemaError, ValidrError, mark_index, mark_key
-from ._validator import build_re_validator, builtin_validators, validator
-from .schema import SchemaParser
+from ._validator import (build_re_validator, build_enum_validator,
+                         builtin_validators, validator)
+from .schema import Schema, Compiler, T, Builder, Element, IsomorphSchema
 
 __all__ = ('ValidrError', 'Invalid', 'SchemaError', 'mark_index', 'mark_key',
-           'builtin_validators', 'build_re_validator', 'validator',
-           'SchemaParser',)
+           'build_re_validator', 'build_enum_validator',
+           'builtin_validators', 'validator',
+           'Schema', 'Compiler', 'T', 'Builder', 'Element', 'IsomorphSchema',)

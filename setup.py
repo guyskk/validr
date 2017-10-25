@@ -17,22 +17,17 @@ Overview:
     print(validate(version_info))
 """
 import os
-
+from os.path import basename, splitext
+from glob import glob
 from setuptools import Extension, setup
 
 DEBUG = os.getenv('VALIDR_DEBUG') == '1'
 print('VALIDR_DEBUG={}'.format(DEBUG))
+USE_CYTHON = os.getenv('VALIDR_USE_CYTHON') == '1'
+print('USE_CYTHON={}'.format(USE_CYTHON))
 
-try:
+if USE_CYTHON:
     from Cython.Build import cythonize
-except:
-    from glob import glob
-    from os.path import basename, splitext
-    print('USE_CYTHON=False')
-    ext_modules = [Extension('validr.'+splitext(basename(x))[0], [x])
-                   for x in glob('validr/*.c')]
-else:
-    print('USE_CYTHON=True')
     directives = {'language_level': 3}
     if DEBUG:
         directives.update({
@@ -40,6 +35,13 @@ else:
             'linetrace': True,
         })
     ext_modules = cythonize('validr/*.pyx', compiler_directives=directives)
+else:
+    sources = list(glob('validr/*.c'))
+    assert sources, 'Not found any *.c source files'
+    ext_modules = []
+    for filepath in sources:
+        module_name = 'validr.' + splitext(basename(filepath))[0]
+        ext_modules.append(Extension(module_name, [filepath]))
 
 if DEBUG:
     for m in ext_modules:
@@ -51,7 +53,7 @@ if DEBUG:
 
 setup(
     name='validr',
-    version='0.14.1',
+    version='1.0.0',
     keywords='validation validator validate schema jsonschema',
     description=('A simple, fast, extensible python library '
                  'for data validation.'),
@@ -61,7 +63,10 @@ setup(
     url='https://github.com/guyskk/validr',
     license='MIT',
     packages=['validr'],
-    install_requires=['pyparsing>=2.1.0'],
+    install_requires=[
+        'pyparsing>=2.1.0',
+        'email_validator>=1.0.3',
+    ],
     zip_safe=False,
     ext_modules=ext_modules,
     classifiers=[

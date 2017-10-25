@@ -1,5 +1,5 @@
 import pytest
-from validr import Invalid, SchemaParser
+from validr import Invalid, Compiler
 
 
 def expend(cases):
@@ -23,6 +23,10 @@ def expend(cases):
                 "schema": {
                     "valid": [value, ...]    # valid value, and expect=value
                     "invalid": [value, ...]  # invalid value
+                    "expect": [              # valid value and expect
+                        (value, expect),
+                        ...
+                    ]
                 }
             }
     Yields:
@@ -34,6 +38,8 @@ def expend(cases):
                 yield schema, value, value
             for value in items.get('invalid', []):
                 yield schema, value, Invalid
+            for value, expect in items.get('expect', []):
+                yield schema, value, expect
         else:
             for item in items:
                 if type(item) is tuple:
@@ -44,7 +50,7 @@ def expend(cases):
                         yield schema, value, Invalid
 
 
-sp = SchemaParser()
+compiler = Compiler()
 
 
 def case(cases):
@@ -52,7 +58,7 @@ def case(cases):
     def decorator(f):
         @pytest.mark.parametrize('schema,value,expect', expend(cases))
         def wrapped(schema, value, expect):
-            f = sp.parse(schema)
+            f = compiler.compile(schema)
             if expect is Invalid:
                 with pytest.raises(Invalid):
                     f(value)

@@ -1,10 +1,10 @@
 import sys
-
-from util import case
+from validr import T
+from . import case
 
 
 @case({
-    'float': [
+    T.float: [
         ('0', 0.0),
         (-100, -100.0),
         [
@@ -14,16 +14,16 @@ from util import case
             float('INF'),
         ]
     ],
-    'float&default=1.0': [
+    T.float.default(1.0): [
         (None, 1.0),
         (2.0, 2.0),
     ],
-    'float(0,1)': [
+    T.float.min(0).max(1): [
         (0.0, 0.0),
         (1.0, 1.0),
         [-0.01, 1.01]
     ],
-    'float(0,1)&exmin&exmax': [
+    T.float.min(0).exmin.max(1).exmax: [
         (0.01, 0.01),
         (0.99, 0.99),
         [0.0, 1.0]

@@ -15,17 +15,16 @@ install:
     - pip install -U pip
     - pip install -U py  # work around pytest requirement
     - pip install -r requires-dev.txt
+    - pip install -r requires-benchmark.txt
 
 script:
     - pre-commit run --all-files
-    - python setup.py sdist
-    - pip install --ignore-installed --verbose dist/validr-*.tar.gz
+    - VALIDR_USE_CYTHON=1 python setup.py sdist
+    - VALIDR_USE_CYTHON=1 pip install --ignore-installed --verbose dist/validr-*.tar.gz
     - export VALIDR_PATH=$(cd /tmp && python -c "print(__import__('validr').__path__[0])")
     - pytest --cov=$VALIDR_PATH --cov-report=term-missing -r w
-    - pip uninstall -y cython  # test install without cython
-    - pip install --ignore-installed --verbose dist/validr-*.tar.gz
+    - pip install --ignore-installed --verbose dist/validr-*.tar.gz  # test install without cython
     - export VALIDR_PATH=$(cd /tmp && python -c "print(__import__('validr').__path__[0])")
-    - pip install cython  # cython is need for coverage
     - pytest --cov=$VALIDR_PATH --cov-report=term-missing -r w
     - pip install --ignore-installed --verbose -e .
     - pytest --cov=validr --cov-report=term-missing -r w

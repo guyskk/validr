@@ -1,180 +1,288 @@
-from ._exception import SchemaError, mark_index, mark_key
-from ._schema import dict_validator, list_validator, merged_validator
+import json
+from pyparsing import (
+    Group, Keyword, Optional, StringEnd, StringStart, Suppress,
+    ZeroOrMore, quotedString, removeQuotes, replaceWith,
+    pyparsing_common, ParseBaseException,
+)
 from ._validator import builtin_validators
-from .validator_string import ValidatorString
+from ._exception import SchemaError, mark_index, mark_key
 
 
-# -------------------------deprecated------------------------- #
+def _make_keyword(kwd_str, kwd_value):
+    return Keyword(kwd_str).setParseAction(replaceWith(kwd_value))
 
 
-class MarkKey(mark_key):
-    """for compatibility with version 0.13.0 and before"""
-
-    def __init__(self, *args, **kwargs):
-        import warnings
-        warnings.warn(DeprecationWarning(
-            '`MarkKey` is deprecated, it will be '
-            'removed in v1.0, please use `mark_key` instead.'
-        ))
-        super().__init__(*args, **kwargs)
+def _define_value():
+    TRUE = _make_keyword('true', True)
+    FALSE = _make_keyword('false', False)
+    NULL = _make_keyword('null', None)
+    STRING = quotedString().setParseAction(removeQuotes)
+    NUMBER = pyparsing_common.number()
+    return TRUE | FALSE | NULL | STRING | NUMBER
 
 
-class MarkIndex:
-    """Add current index to Invalid/SchemaError"""
-
-    def __init__(self, items):
-        import warnings
-        warnings.warn(DeprecationWarning(
-            '`MarkIndex` is deprecated, it will be '
-            'removed in v1.0, please use `mark_index` instead.'
-        ))
-        self.items = items
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        from ._exception import Invalid
-        if exc_type is Invalid or exc_type is SchemaError:
-            if self.items is None:
-                exc_val.mark_index(None)
-            else:
-                exc_val.mark_index(len(self.items))
-        if exc_type is not None:
-            return False
-
-# -------------------------deprecated------------------------- #
+def _define_element():
+    VALIDATOR = pyparsing_common.identifier.setName('validator').setResultsName('validator')
+    ITEMS = _define_value().setName('items').setResultsName('items')
+    ITEMS_WRAPPER = Optional(Suppress('(') + ITEMS + Suppress(')'))
+    PARAMS_KEY = pyparsing_common.identifier.setName('key').setResultsName('key')
+    PARAMS_VALUE = _define_value().setName('value').setResultsName('value')
+    PARAMS_VALUE_WRAPPER = Optional(Suppress('(') + PARAMS_VALUE + Suppress(')'))
+    PARAMS_KEY_VALUE = Group(Suppress('.') + PARAMS_KEY + PARAMS_VALUE_WRAPPER)
+    PARAMS = Group(ZeroOrMore(PARAMS_KEY_VALUE)).setName('params').setResultsName('params')
+    return StringStart() + VALIDATOR + ITEMS_WRAPPER + PARAMS + StringEnd()
 
 
-def _schema_key(k):
-    cut = k.find('?')
-    if cut < 0:
-        cut = k.find('@')
-    if cut > 0:
-        return k[:cut]
+ELEMENT_GRAMMAR = _define_element()
+
+
+def _dump_value(value):
+    if value is None:
+        return 'null'
+    elif value is False:
+        return 'false'
+    elif value is True:
+        return 'true'
+    elif isinstance(value, str):
+        return repr(value)  # single quotes
     else:
-        return k
+        return str(value)  # number
 
 
-class SchemaParser:
-    """SchemaParser
+def _pair(k, v):
+    return '{}({})'.format(k, _dump_value(v))
 
-    Args:
-        validators (dict): custom validators
-        shared (dict): shared schema
-    """
 
-    def __init__(self, validators=None, shared=None):
-        if validators is None:
-            self.validators = {}
+class Schema:
+
+    def __init__(self):
+        self.validator = None
+        self.items = None
+        self.params = {}
+
+    def to_primitive(self):
+        if not self.validator:
+            return None
+        ret = []
+        if self.validator in {'dict', 'list'} or self.items is None:
+            ret.append(self.validator)
         else:
-            self.validators = validators
-        self.shared = {}
-        if shared is not None:
-            for k, v in shared.items():
+            ret.append(_pair(self.validator, self.items))
+        for k, v in self.params.items():
+            if v is True:
+                ret.append(k)
+            else:
+                ret.append(_pair(k, v))
+        ret = '.'.join(ret)
+        if self.validator == 'dict' and self.items is not None:
+            ret = {'$self': ret}
+            for k, v in self.items.items():
+                if isinstance(v, Schema):
+                    v = v.to_primitive()
+                ret[k] = v
+        elif self.validator == 'list' and self.items is not None:
+            ret = [ret]
+            if isinstance(self.items, Schema):
+                ret.append(self.items.to_primitive())
+            else:
+                ret.append(self.items)
+        return ret
+
+    def __eq__(self, other):
+        return (self.validator == other.validator and
+                self.items == other.items and
+                self.params == other.params)
+
+    def __hash__(self):
+        params = tuple(sorted(self.params.items()))
+        items = self.items
+        if isinstance(items, dict):
+            items = tuple(sorted(items.items()))
+        return hash((self.validator, items, params))
+
+    def __str__(self):
+        return json.dumps(self.to_primitive(), indent=4, ensure_ascii=False)
+
+    def __repr__(self, simplify=False):
+        if not self.validator:
+            return '' if simplify else 'T'
+        ret = [] if simplify else ['T']
+        if self.items is None:
+            ret.append(self.validator)
+        else:
+            if self.validator == 'dict':
+                keys = set(self.items) if self.items else '{}'
+                ret.append('{}({})'.format(self.validator, keys))
+            elif self.validator == 'list':
+                ret.append('{}({})'.format(self.validator, self.items.validator))
+            else:
+                ret.append(_pair(self.validator, self.items))
+        for k, v in self.params.items():
+            if simplify and k == 'desc':
+                continue
+            if v is True:
+                ret.append(k)
+            else:
+                ret.append(_pair(k, v))
+        return '.'.join(ret)
+
+
+class Compiler:
+
+    def __init__(self, validators=None, is_dump=False):
+        self.validators = builtin_validators.copy()
+        if validators:
+            self.validators.update(validators)
+        self.is_dump = is_dump
+
+    def compile(self, schema):
+        if not isinstance(schema, Schema):
+            raise SchemaError(f'expected Schema instance, {type(schema).__name__} found')
+        if not schema.validator:
+            raise SchemaError('incomplete schema')
+        validator = self.validators.get(schema.validator)
+        if not validator:
+            raise SchemaError('validator {!r} not found'.format(schema.validator))
+        return validator(self, schema)
+
+
+class Element(Schema):
+
+    def __init__(self, text):
+        if text is None:
+            raise SchemaError("can't parse None")
+        text = text.strip()
+        if not text:
+            raise SchemaError("can't parse empty string")
+        try:
+            result = ELEMENT_GRAMMAR.parseString(text, parseAll=True)
+        except ParseBaseException as ex:
+            msg = 'invalid syntax in col {} of {!r}'.format(ex.col, repr(ex.line))
+            raise SchemaError(msg) from None
+        self.validator = result['validator']
+        self.items = None
+        if 'items' in result:
+            self.items = result['items']
+        self.params = {}
+        for item in result['params']:
+            value = True
+            if 'value' in item:
+                value = item['value']
+            self.params[item['key']] = value
+
+
+_BUILDER_INIT = 'init'
+_EXP_ATTR = 'expect-attr'
+_EXP_ATTR_OR_ITEMS = 'expect-attr-or-items'
+_EXP_ATTR_OR_CALL = 'expect-attr-or-call'
+
+
+class Builder(Schema):
+
+    def __init__(self, state=_BUILDER_INIT, validator=None,
+                 items=None, params=None, last_attr=None):
+        self._state = state
+        self.validator = validator
+        self.items = items
+        if params is None:
+            self.params = {}
+        else:
+            self.params = params
+        self._last_attr = last_attr
+
+    def __getattr__(self, name):
+        if name.startswith('__') and name.endswith('__'):
+            raise AttributeError(f'{type(self).__name__!r} object has no attribute {name!r}')
+        if self._state == _BUILDER_INIT:
+            return Builder(_EXP_ATTR_OR_ITEMS, validator=name)
+        else:
+            if name in self.params:
+                raise SchemaError('duplicated param {!r}'.format(name))
+            params = self.params.copy()
+            params[name] = True
+            return Builder(_EXP_ATTR_OR_CALL, validator=self.validator,
+                           items=self.items, params=params, last_attr=name)
+
+    def __call__(self, *args, **kwargs):
+        if self._state not in [_EXP_ATTR_OR_ITEMS, _EXP_ATTR_OR_CALL]:
+            raise SchemaError('current state not callable')
+        if self._state == _EXP_ATTR_OR_ITEMS:
+            if args and kwargs:
+                raise SchemaError("can't call with both positional argument and keyword argument")
+            if len(args) > 1:
+                raise SchemaError("can't call with more than one positional argument")
+            if self.validator == 'dict':
+                items = args[0] if args else kwargs
+            else:
+                if kwargs:
+                    raise SchemaError("can't call with keyword argument")
+                items = args[0]
+            self._check_items(items)
+            params = self.params
+        else:
+            if kwargs:
+                raise SchemaError("can't call with keyword argument")
+            if not args:
+                raise SchemaError('require one positional argument')
+            if len(args) > 1:
+                raise SchemaError("can't call with more than one positional argument")
+            self._check_param_value(args[0])
+            items = self.items
+            params = self.params.copy()
+            params[self._last_attr] = args[0]
+        return Builder(_EXP_ATTR, validator=self.validator,
+                       items=items, params=params, last_attr=None)
+
+    def _check_items(self, items):
+        if self.validator == 'dict':
+            if not isinstance(items, dict):
+                raise SchemaError('items must be dict')
+            for k, v in items.items():
+                if not isinstance(v, Schema):
+                    raise SchemaError('items[{}] must be Schema'.format(k))
+        elif self.validator == 'list':
+            if not isinstance(items, Schema):
+                raise SchemaError('items must be Schema')
+        else:
+            if not isinstance(items, (bool, int, float, str)):
+                raise SchemaError('items must be bool, int, float or str')
+
+    def _check_param_value(self, value):
+        if not isinstance(value, (bool, int, float, str)):
+            raise SchemaError('param value must be bool, int, float or str')
+
+
+T = Builder()
+
+
+class IsomorphSchema(Schema):
+
+    def __init__(self, t):
+        if isinstance(t, str):
+            e = Element(t)
+            self.validator = e.validator
+            self.items = e.items
+            self.params = e.params
+        elif isinstance(t, dict):
+            e = Element(t.pop('$self', 'dict'))
+            self.validator = e.validator
+            self.params = e.params
+            self.items = {}
+            for k, v in t.items():
                 with mark_key(k):
-                    self.shared[k] = self.parse(v)
-
-    def parse(self, schema):
-        """Parse schema"""
-        return self._parse(schema)
-
-    def _parse_dict(self, schema):
-        inners = {}
-        vs = None
-        for k, v in schema.items():
-            with mark_key(_schema_key(k)):
-                if k[:5] == '$self':
-                    if vs is not None:
-                        raise SchemaError('multi $self not allowed')
-                    vs = ValidatorString(k)
-                    vs.kwargs['desc'] = v
-                else:
-                    if isinstance(v, (dict, list)):
-                        if any(char in k for char in'?@&()'):
-                            raise SchemaError('invalid key %s' % repr(k))
-                        inners[k] = self._parse(v)
-                    else:
-                        if '?' not in k and '@' not in k:
-                            raise SchemaError('missing validator or refer')
-                        inner_vs = ValidatorString(k)
-                        inners[inner_vs.key] = self._parse(v, inner_vs)
-        inners = list(inners.items())
-        if vs:
-            if not vs.refers:
-                return dict_validator(inners, *vs.args, **vs.kwargs)
+                    self.items[k] = IsomorphSchema(v)
+        elif isinstance(t, list):
+            if len(t) == 1:
+                e = Element('list')
+                items = t[0]
+            elif len(t) == 2:
+                e = Element(t[0])
+                items = t[1]
             else:
-                _validators = []
-                for refer in vs.refers:
-                    if refer not in self.shared:
-                        raise SchemaError("shared '%s' not found" % refer)
-                    validator = self.shared[refer]
-                    if not validator.__name__.startswith('dict_validator'):
-                        raise SchemaError("can't merge non-dict '@%s'" % refer)
-                    _validators.append(validator)
-                _validators.append(dict_validator(inners))
-                return merged_validator(_validators, *vs.args, **vs.kwargs)
+                raise SchemaError('invalid list schema')
+            self.validator = e.validator
+            self.params = e.params
+            with mark_index():
+                self.items = IsomorphSchema(items)
         else:
-            return dict_validator(inners)
-
-    def _parse_list(self, schema):
-        vs = None
-        if len(schema) == 1:
-            schema = schema[0]
-        elif len(schema) == 2:
-            vs = ValidatorString(schema[0])
-            schema = schema[1]
-        else:
-            raise SchemaError('invalid length of list schema')
-        with mark_index(-1):
-            inner = self._parse(schema)
-            if vs:
-                return list_validator(inner, *vs.args, **vs.kwargs)
-            else:
-                return list_validator(inner)
-
-    def _parse_scalar(self, schema, vs):
-        if vs:
-            vs.kwargs['desc'] = schema
-        else:
-            vs = ValidatorString(schema)
-        if vs.refers:
-            # refer
-            if len(vs.refers) >= 2:
-                raise SchemaError('multi refers not allowed')
-            refer = vs.refers[0]
-            if refer not in self.shared:
-                raise SchemaError("shared '%s' not found" % refer)
-            _validator = self.shared[refer]
-            # refer optional
-            if not vs.kwargs.get('optional'):
-                return _validator
-            else:
-                def optional_refer_validator(value):
-                    if value is None:
-                        return None
-                    else:
-                        return _validator(value)
-                return optional_refer_validator
-        else:
-            if vs.name in self.validators:
-                validator = self.validators[vs.name]
-            elif vs.name in builtin_validators:
-                validator = builtin_validators[vs.name]
-            else:
-                raise SchemaError("validator '%s' not found" % vs.name)
-            return validator(*vs.args, **vs.kwargs)
-
-    def _parse(self, schema, vs=None):
-        """Parse schema
-
-        Args:
-            schema: schema
-            vs: ValidatorString
-        """
-        if isinstance(schema, dict):
-            return self._parse_dict(schema)
-        elif isinstance(schema, list):
-            return self._parse_list(schema)
-        else:
-            return self._parse_scalar(schema, vs)
+            raise SchemaError('unknown schema')

@@ -1,12 +1,12 @@
 class ValidrError(ValueError):
-    """Mark invalid position"""
+    """Base exception of validr"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # marks' item: (is_key, index_or_key)
+        # marks item: (is_key, index_or_key)
         self.marks = []
 
-    def mark_index(self, int index):
+    def mark_index(self, int index=-1):
         self.marks.append((False, index))
         return self
 
@@ -77,7 +77,7 @@ cdef class mark_index:
 
     cdef int index
 
-    def __init__(self, index):
+    def __init__(self, index=-1):
         """index = -1 means the position is uncertainty"""
         self.index = index
 

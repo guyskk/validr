@@ -1,8 +1,9 @@
-from util import case
+from validr import T
+from . import case
 
 
 @case({
-    'email': {
+    T.email: {
         'valid': [
             '12345678@qq.com',
             'python@gmail.com',
@@ -18,17 +19,20 @@ from util import case
             '123@163.'
             '123@163.com'
             '123@163com',
-            ' 123@163.com',
             '123 @163.com',
             '123@ 163.com',
-            '123@163.com ',
             'qq.com',
             ' @163.com',
             '中文@qq.com',
             None,
+        ],
+        'expect': [
+            (' 123@163.com', '123@163.com'),
+            ('123@163.com ', '123@163.com'),
+            (' 123@163.com  ', '123@163.com'),
         ]
     },
-    'email&optional': [
+    T.email.optional: [
         ('', ''),
         (None, '')
     ],

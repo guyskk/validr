@@ -1,10 +1,10 @@
 from datetime import date
-
-from util import case
+from validr import T
+from . import case
 
 
 @case({
-    'date': [
+    T.date: [
         (date(2016, 7, 9), '2016-07-09'),
         ('2016-07-09', '2016-07-09'),
         ('2016-7-9', '2016-07-09'),
@@ -13,11 +13,11 @@ from util import case
             '', None
         ]
     ],
-    'date&optional': [
+    T.date.optional: [
         (None, ''),
         ('', '')
     ],
-    'date&format="%Y/%m/%d"': [
+    T.date.format('%Y/%m/%d'): [
         (date(2016, 7, 9), '2016/07/09'),
         ('2016/07/09', '2016/07/09'),
         ('2016/7/9', '2016/07/09'),

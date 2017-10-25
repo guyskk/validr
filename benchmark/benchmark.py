@@ -107,12 +107,12 @@ def benchmark(validr):
 
     print('speeds'.center(60, '-'))
     for (name, subname), v in result.items():
-        print_item(name, subname, round(1.0/v))
+        print_item(name, subname, round(1.0 / v))
 
     print('scores'.center(60, '-'))
     base = result['json', 'loads-dumps']
     for (name, subname), v in result.items():
-        print_item(name, subname, round(base/v*1000))
+        print_item(name, subname, round(base / v * 1000))
 
 
 @cli.command()

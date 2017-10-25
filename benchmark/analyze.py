@@ -11,13 +11,13 @@ def quantile_filter(series):
 
 def fft_filter(series):
     """keep the stable part"""
-    return np.abs(np.fft.fft(series))[0]/len(series)
+    return np.abs(np.fft.fft(series))[0] / len(series)
 
 
 def analyze(result):
     df = pd.DataFrame(result)
     df = df.apply(quantile_filter).apply(fft_filter)
-    return 1.0/df
+    return 1.0 / df
 
 
 def scores(speeds):

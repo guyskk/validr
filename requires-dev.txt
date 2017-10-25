@@ -1,15 +1,7 @@
 pre-commit>=0.13.3
 tox>=2.6.0
-pyparsing>=2.1.0
 flake8>=3.2.1
 pytest>=3.0.6
 pytest-cov>=2.4.0
-pytest-warnings>=0.2.0
 codecov>=2.0.5
 cython>=0.25.2
-beeprint>=2.4.6
-click>=6.7
-schema>=0.6.5
-jsonschema>=2.5.1
-schematics>=2.0.0a1
-voluptuous>=0.9.3

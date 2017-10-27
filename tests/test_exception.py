@@ -1,5 +1,5 @@
 from validr import Invalid, mark_index, mark_key
-from . import expect_position
+from helpers import expect_position
 
 
 def test_exception_message():

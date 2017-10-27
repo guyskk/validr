@@ -1,6 +1,6 @@
 from validr import Compiler, T
+from helpers import expect_position
 from . import case
-from .. import expect_position
 
 
 class User:

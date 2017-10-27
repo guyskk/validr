@@ -1,6 +1,6 @@
 import pytest
 from validr import SchemaError, IsomorphSchema, T
-from . import schema_error_position
+from helpers import schema_error_position
 
 
 def test_list():

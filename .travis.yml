@@ -22,13 +22,14 @@ script:
     - VALIDR_USE_CYTHON=1 python setup.py sdist
     # normal install
     - pip install --ignore-installed --verbose dist/validr-*.tar.gz
-    - pytest tests
+    - cd /tmp && pytest tests
 
     # install using cython to compile *.pyx
     - VALIDR_USE_CYTHON=1 pip install --ignore-installed --verbose dist/validr-*.tar.gz
-    - pytest tests
+    - cd /tmp && pytest tests
 
     # develop install
+    - cd $TRAVIS_BUILD_DIR
     - pip install --ignore-installed -e .
     - pytest --cov=validr --cov-report=term-missing tests
     - python benchmark/benchmark.py benchmark

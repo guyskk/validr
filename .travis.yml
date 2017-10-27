@@ -21,12 +21,14 @@ script:
     - pre-commit run --all-files
     - VALIDR_USE_CYTHON=1 python setup.py sdist
     # normal install
+    - cd $TRAVIS_BUILD_DIR
     - pip install --ignore-installed --verbose dist/validr-*.tar.gz
-    - cd /tmp && pytest tests
+    - cd /tmp && pytest $TRAVIS_BUILD_DIR/tests
 
     # install using cython to compile *.pyx
+    - cd $TRAVIS_BUILD_DIR
     - VALIDR_USE_CYTHON=1 pip install --ignore-installed --verbose dist/validr-*.tar.gz
-    - cd /tmp && pytest tests
+    - cd /tmp && pytest $TRAVIS_BUILD_DIR/tests
 
     # develop install
     - cd $TRAVIS_BUILD_DIR

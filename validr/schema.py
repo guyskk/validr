@@ -137,7 +137,8 @@ class Compiler:
 
     def compile(self, schema):
         if not isinstance(schema, Schema):
-            raise SchemaError(f'expected Schema instance, {type(schema).__name__} found')
+            raise SchemaError('expected Schema instance, {} found'.format(
+                type(schema).__name__))
         if not schema.validator:
             raise SchemaError('incomplete schema')
         validator = self.validators.get(schema.validator)
@@ -192,7 +193,8 @@ class Builder(Schema):
 
     def __getattr__(self, name):
         if name.startswith('__') and name.endswith('__'):
-            raise AttributeError(f'{type(self).__name__!r} object has no attribute {name!r}')
+            raise AttributeError('{!r} object has no attribute {!r}'.format(
+                type(self).__name__, name))
         if self._state == _BUILDER_INIT:
             return Builder(_EXP_ATTR_OR_ITEMS, validator=name)
         else:

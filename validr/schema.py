@@ -242,6 +242,8 @@ class Builder(Schema):
             else:
                 if kwargs:
                     raise SchemaError("can't call with keyword argument")
+                if not args:
+                    raise SchemaError('require one positional argument')
                 items = args[0]
             self._check_items(items)
             params = self.params

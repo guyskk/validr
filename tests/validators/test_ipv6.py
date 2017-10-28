@@ -9,6 +9,7 @@ from . import case
             '::1',
         ],
         'invalid': [
+            None, 123,
             '2001::25de::cade',
             '127.0.0.1'
         ]

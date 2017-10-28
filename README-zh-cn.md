@@ -234,6 +234,9 @@ T.dict(
     网址
     url(scheme='http https', default=null, optional=false)
 
+    UUID
+    uuid(version=None, default=null, optional=false)
+
     手机号，支持 `+86` 开头，只支持 11 位手机号，不支持固定电话号码
     phone(default=null, optional=false)
 
@@ -481,26 +484,29 @@ f = compiler.compile(T.enum("A B C D"))
 #### 构建枚举校验器
 
 ```python
-from validr import Compiler, T, build_enum_validator
-from string import digits
-digit_validator = build_enum_validator('digit', digits)
-compiler = Compiler(validators={"digit": digit_validator})
-f = compiler.compile(T.digit.default('0'))
->>> f('2')
-'2'
->>> f('x')
+from validr import T, Compiler, build_enum_validator
+
+abcd_validator = build_enum_validator('abcd', ['A', 'B', 'C', 'D'])
+compiler = Compiler(validators={"abcd": abcd_validator})
+f = compiler.compile(T.abcd.default("C"))
+
+>>> f('A')
+'A'
+>>> f('X')
 ...
-validr._exception.Invalid: invalid digit, expect one of ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+validr._exception.Invalid: invalid abcd, expect one of ['A', 'B', 'C', 'D']
 ```
 
 #### 使用正则表达式构建校验器
 
 ```python
-from validr import build_re_validator
+from validr import T, Compiler, build_re_validator
+
 regex_time = r'([01]?\d|2[0-3]):[0-5]?\d:[0-5]?\d'
 time_validator = build_re_validator("time", regex_time)
 compiler = Compiler(validators={"time": time_validator})
 f = compiler.compile(T.time.default("00:00:00"))
+
 >>> f("12:00:00")
 '12:00:00'
 >>> f("12:00:123")
@@ -542,6 +548,7 @@ Validr 从 v0.14.0 开始用 [Cython](http://cython.org/) 实现，它比纯 Pyt
 
 ```
 pip install -r requires-dev.txt
+pip install -r requires-benchmark.txt
 pre-commit install
 ```
 

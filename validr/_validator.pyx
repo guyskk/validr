@@ -1,6 +1,7 @@
 import re
 import sys
 import copy
+import uuid
 import datetime
 import ipaddress
 from functools import partial
@@ -57,7 +58,7 @@ def validator(bint string=False):
                     msg = 'invalid default value {!r}'.format(default)
                     raise SchemaError(msg) from None
 
-            # optimize, speedup 5%
+            # optimize, speedup 15%
             if string:
                 def m_validate(value):
                     if value is None or value == '':
@@ -320,7 +321,7 @@ def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ'):
 def ipv4_validator(compiler):
     def validate(value):
         try:
-            return ipaddress.IPv4Address(value).compressed
+            return ipaddress.IPv4Address(value.strip()).compressed
         except ipaddress.AddressValueError as ex:
             raise Invalid(str(ex)) from None
         except:
@@ -332,11 +333,11 @@ def ipv4_validator(compiler):
 def ipv6_validator(compiler):
     def validate(value):
         try:
-            return ipaddress.IPv6Address(value).compressed
+            return ipaddress.IPv6Address(value.strip()).compressed
         except ipaddress.AddressValueError as ex:
             raise Invalid(str(ex)) from None
         except:
-            raise Invalid('invalid ipv4 address') from None
+            raise Invalid('invalid ipv6 address') from None
     return validate
 
 @validator(string=True)
@@ -383,6 +384,26 @@ def url_validator(compiler, scheme='http https', maxlen=256):
     return validate
 
 
+@validator(string=True)
+def uuid_validator(compiler, version=None):
+    if version is None:
+        msg = 'invalid uuid'
+    else:
+        if not 1 <= version <= 5:
+            raise SchemaError('illegal version number')
+        msg = f'invalid uuid{version}'
+    def validate(value):
+        if not isinstance(value, uuid.UUID):
+            try:
+                value = uuid.UUID(value.strip())
+            except:
+                raise Invalid(msg) from None
+        if version is not None and value.version != version:
+            raise Invalid(msg)
+        return str(value)
+    return validate
+
+
 def build_re_validator(str name, r):
     """Build validator by regex string
 
@@ -410,7 +431,6 @@ def build_re_validator(str name, r):
     re_validator.__qualname__ = name + '_validator'
     return validator(string=True)(re_validator)
 
-# TODO uuid
 
 builtin_validators = {
     'list': list_validator,
@@ -426,6 +446,7 @@ builtin_validators = {
     'ipv6': ipv6_validator,
     'email': email_validator,
     'url': url_validator,
+    'uuid': uuid_validator,
 }
 
 regexs = {

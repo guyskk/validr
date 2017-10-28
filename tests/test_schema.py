@@ -13,7 +13,7 @@ EXPECT = {
 
 def test_str_and_to_primitive():
     schema = T.dict(
-        key=T.list(T.int.min(0).max(9)).unique,
+        key=T.list(T.int.min(0).max(9)).unique.optional(False),
         tag=T.str.desc('a tag'),
     ).optional.desc('a dict')
     assert schema.to_primitive() == EXPECT
@@ -27,6 +27,6 @@ def test_repr():
     assert repr(schema) == "T.dict({key}).optional.desc('a dict')"
     schema = T.list(T.int.min(0)).unique
     assert repr(schema) == 'T.list(int).unique'
-    schema = T.str.minlen(10).optional
-    assert repr(schema) == 'T.str.minlen(10).optional'
+    schema = T.str.minlen(10).optional(False)
+    assert repr(schema) == 'T.str.minlen(10)'
     assert repr(Schema()) == 'T'

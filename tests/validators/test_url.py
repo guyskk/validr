@@ -13,6 +13,7 @@ from . import case
         ],
         'invalid': [
             None,
+            123,
             '',
             'mail@qq.com',
             'google',

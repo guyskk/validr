@@ -138,7 +138,7 @@ def profile():
     """profile validr"""
     f = CASES['validr']['default']
     params = {'f': f, 'data': make_data()}
-    runctx('for i in range(10**6): f(data)', globals=params, locals=None)
+    runctx('for i in range(10**5): f(data)', globals=params, locals=None)
 
 
 if __name__ == '__main__':

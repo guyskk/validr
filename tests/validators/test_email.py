@@ -25,6 +25,7 @@ from . import case
             ' @163.com',
             '中文@qq.com',
             None,
+            123,
         ],
         'expect': [
             (' 123@163.com', '123@163.com'),

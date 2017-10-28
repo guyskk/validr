@@ -235,6 +235,9 @@ schema in JSON:
     # URL
     url(default=null, optional=false)
 
+    # UUID
+    uuid(version=None, default=null, optional=false)
+
     # Phone number, allow `+86` prefix, only support 11 digits phone number
     phone(default=null, optional=false)
 
@@ -481,10 +484,26 @@ f = compiler.compile(T.enum("A B C D"))
 
 Note：`items` can only be scalar type, so it's no ambiguity when convert schema to JSON.
 
+#### Create enum validator:
+
+```python
+from validr import T, Compiler, build_enum_validator
+
+abcd_validator = build_enum_validator('abcd', ['A', 'B', 'C', 'D'])
+compiler = Compiler(validators={"abcd": abcd_validator})
+f = compiler.compile(T.abcd.default("C"))
+
+>>> f('A')
+'A'
+>>> f('X')
+...
+validr._exception.Invalid: invalid abcd, expect one of ['A', 'B', 'C', 'D']
+```
+
 #### Create regex validator:
 
 ```python
-from validr import build_re_validator
+from validr import T, Compiler, build_re_validator
 
 regex_time = r'([01]?\d|2[0-3]):[0-5]?\d:[0-5]?\d'
 time_validator = build_re_validator("time", regex_time)
@@ -529,10 +548,11 @@ faster than original pure python implemented.
 It's better to use [virtualenv](https://virtualenv.pypa.io/en/stable/) or
 similar tools to create isolated Python environment for develop.  
 
-After that, install all dependencys:
+After that, install dependencys:
 
 ```
 pip install -r requires-dev.txt
+pip install -r requires-benchmark.txt
 pre-commit install
 ```
 

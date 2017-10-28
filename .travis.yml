@@ -16,17 +16,17 @@ install:
 
 script:
     - pre-commit run --all-files
+    # develop install
+    - cd $TRAVIS_BUILD_DIR
+    - VALIDR_USE_CYTHON=1 VALIDR_DEBUG=1 pip install --ignore-installed -e .
+    - pytest --cov=validr --cov-report=term-missing tests
+
     - VALIDR_USE_CYTHON=1 python setup.py sdist
     # normal install
     - cd $TRAVIS_BUILD_DIR
     - pip install --ignore-installed dist/validr-*.tar.gz
     - cd /tmp && pytest $TRAVIS_BUILD_DIR/tests
-
-    # develop install
-    - cd $TRAVIS_BUILD_DIR
-    - VALIDR_USE_CYTHON=1 VALIDR_DEBUG=1 pip install --ignore-installed --verbose -e .
-    - pytest --cov=validr --cov-report=term-missing tests
-    - python benchmark/benchmark.py benchmark
+    - cd /tmp && python $TRAVIS_BUILD_DIR/benchmark/benchmark.py benchmark
 
 after_success:
     - codecov

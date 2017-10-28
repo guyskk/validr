@@ -23,6 +23,16 @@ class User:
             {},
             {'extra': 1}
         ]
+    },
+    T.dict: {
+        'valid': [
+            {},
+            {'key': 'value'},
+        ],
+        'invalid': [
+            None,
+            123,
+        ]
     }
 })
 def test_dict():

@@ -24,7 +24,7 @@ from setuptools import Extension, setup
 DEBUG = os.getenv('VALIDR_DEBUG') == '1'
 print('VALIDR_DEBUG={}'.format(DEBUG))
 USE_CYTHON = os.getenv('VALIDR_USE_CYTHON') == '1'
-print('USE_CYTHON={}'.format(USE_CYTHON))
+print('VALIDR_USE_CYTHON={}'.format(USE_CYTHON))
 
 if USE_CYTHON:
     from Cython.Build import cythonize

@@ -83,12 +83,14 @@ def validator(bint string=False):
             m_repr = schema.__repr__(simplify=True)
             m_validate.__module__ = f.__module__
             m_validate.__name__ = '{}<{}>'.format(f.__name__, m_repr)
-            m_validate.__qualname__ = '{}<{}>'.format(f.__qualname__, m_repr)
+            if hasattr(f, '__qualname__'):
+                m_validate.__qualname__ = '{}<{}>'.format(f.__qualname__, m_repr)
             m_validate.__doc__ = f.__doc__ if f.__doc__ else desc
             return m_validate
         m_validator.__module__ = f.__module__
         m_validator.__name__ = f.__name__
-        m_validator.__qualname__ = f.__qualname__
+        if hasattr(f, '__qualname__'):
+            m_validator.__qualname__ = f.__qualname__
         m_validator.__doc__ = f.__doc__
         return m_validator
     return decorator

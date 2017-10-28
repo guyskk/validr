@@ -1,4 +1,5 @@
 import json
+from collections import OrderedDict
 from pyparsing import (
     Group, Keyword, Optional, StringEnd, StringStart, Suppress,
     ZeroOrMore, quotedString, removeQuotes, replaceWith,
@@ -53,12 +54,30 @@ def _pair(k, v):
     return '{}({})'.format(k, _dump_value(v))
 
 
+def _sort_schema_params(params):
+    def key(item):
+        k, v = item
+        if k == 'desc':
+            return 3
+        if k == 'optional':
+            return 2
+        if k == 'default':
+            return 1
+        if isinstance(v, bool):
+            return -1
+        if isinstance(v, str):
+            return -2
+        else:
+            return -3
+    return list(sorted(params, key=key))
+
+
 class Schema:
 
     def __init__(self):
         self.validator = None
         self.items = None
-        self.params = {}
+        self.params = OrderedDict()
 
     def to_primitive(self):
         if not self.validator:
@@ -68,7 +87,9 @@ class Schema:
             ret.append(self.validator)
         else:
             ret.append(_pair(self.validator, self.items))
-        for k, v in self.params.items():
+        for k, v in _sort_schema_params(self.params.items()):
+            if v is False:
+                continue
             if v is True:
                 ret.append(k)
             else:
@@ -101,7 +122,8 @@ class Schema:
         return hash((self.validator, items, params))
 
     def __str__(self):
-        return json.dumps(self.to_primitive(), indent=4, ensure_ascii=False)
+        return json.dumps(self.to_primitive(), indent=4,
+                          ensure_ascii=False, sort_keys=True)
 
     def __repr__(self, simplify=False):
         if not self.validator:
@@ -111,14 +133,16 @@ class Schema:
             ret.append(self.validator)
         else:
             if self.validator == 'dict':
-                keys = set(self.items) if self.items else '{}'
-                ret.append('{}({})'.format(self.validator, keys))
+                keys = ', '.join(sorted(self.items)) if self.items else ''
+                ret.append('{}({})'.format(self.validator, '{' + keys + '}'))
             elif self.validator == 'list':
                 ret.append('{}({})'.format(self.validator, self.items.validator))
             else:
                 ret.append(_pair(self.validator, self.items))
-        for k, v in self.params.items():
+        for k, v in _sort_schema_params(self.params.items()):
             if simplify and k == 'desc':
+                continue
+            if v is False:
                 continue
             if v is True:
                 ret.append(k)
@@ -186,7 +210,7 @@ class Builder(Schema):
         self.validator = validator
         self.items = items
         if params is None:
-            self.params = {}
+            self.params = OrderedDict()
         else:
             self.params = params
         self._last_attr = last_attr

@@ -24,7 +24,7 @@ def test_repr():
     schema = T.dict(
         key=T.list(T.int).unique,
     ).optional.desc('a dict')
-    assert repr(schema) == "T.dict({'key'}).optional.desc('a dict')"
+    assert repr(schema) == "T.dict({key}).optional.desc('a dict')"
     schema = T.list(T.int.min(0)).unique
     assert repr(schema) == 'T.list(int).unique'
     schema = T.str.minlen(10).optional

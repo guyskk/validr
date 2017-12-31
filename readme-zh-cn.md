@@ -4,6 +4,8 @@
 
 [English](readme.md) | [中文](readme-zh-cn.md)
 
+Note: 如果你对这个项目感兴趣，请看一下 [New schema syntax discussion](https://github.com/guyskk/validr/issues/15)，我打算废弃旧语法。
+
 简单，快速，可拓展的数据校验库。
 
 - 简洁，易读的 Schema

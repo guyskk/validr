@@ -4,6 +4,8 @@
 
 [中文](readme-zh-cn.md) | [English](readme.md)
 
+Note: If you are interested in this project, please see [New schema syntax discussion](https://github.com/guyskk/validr/issues/15), I'm deprecating the old syntax.
+
 A simple, fast, extensible python library for data validation.
 
 - Simple and readable schema

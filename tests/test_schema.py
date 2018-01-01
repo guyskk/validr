@@ -1,5 +1,5 @@
 import json
-from validr import T, Schema
+from validr import T, Schema, Compiler
 
 EXPECT = {
     '$self': "dict.optional.desc('a dict')",
@@ -30,3 +30,10 @@ def test_repr():
     schema = T.str.minlen(10).optional(False)
     assert repr(schema) == 'T.str.minlen(10)'
     assert repr(Schema()) == 'T'
+
+
+def test_compiled_items():
+    compiler = Compiler()
+    value = compiler.compile(T.int.min(0))
+    assert repr(T.dict(key=value)) == 'T.dict({key})'
+    assert repr(T.list(value)) == 'T.list(int)'

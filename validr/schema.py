@@ -245,7 +245,7 @@ class Builder(Schema):
                 if not args:
                     raise SchemaError('require one positional argument')
                 items = args[0]
-            self._check_items(items)
+            items = self._check_items(items)
             params = self.params
         else:
             if kwargs:
@@ -254,10 +254,10 @@ class Builder(Schema):
                 raise SchemaError('require one positional argument')
             if len(args) > 1:
                 raise SchemaError("can't call with more than one positional argument")
-            self._check_param_value(args[0])
+            param_value = self._check_param_value(args[0])
             items = self.items
             params = self.params.copy()
-            params[self._last_attr] = args[0]
+            params[self._last_attr] = param_value
         return Builder(_EXP_ATTR, validator=self.validator,
                        items=items, params=params, last_attr=None)
 
@@ -265,19 +265,29 @@ class Builder(Schema):
         if self.validator == 'dict':
             if not isinstance(items, dict):
                 raise SchemaError('items must be dict')
+            ret = {}
             for k, v in items.items():
+                if callable(v) and hasattr(v, '__schema__'):
+                    v = v.__schema__
                 if not isinstance(v, Schema):
                     raise SchemaError('items[{}] must be Schema'.format(k))
+                ret[k] = v
         elif self.validator == 'list':
+            if callable(items) and hasattr(items, '__schema__'):
+                items = items.__schema__
             if not isinstance(items, Schema):
                 raise SchemaError('items must be Schema')
+            ret = items
         else:
             if not isinstance(items, (bool, int, float, str)):
                 raise SchemaError('items must be bool, int, float or str')
+            ret = items
+        return ret
 
     def _check_param_value(self, value):
         if not isinstance(value, (bool, int, float, str)):
             raise SchemaError('param value must be bool, int, float or str')
+        return value
 
 
 T = Builder()

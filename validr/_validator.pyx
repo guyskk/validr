@@ -82,6 +82,7 @@ def validator(bint string=False):
 
             # make friendly validate func representation
             m_repr = schema.__repr__(simplify=True)
+            m_validate.__schema__ = schema
             m_validate.__module__ = f.__module__
             m_validate.__name__ = '{}<{}>'.format(f.__name__, m_repr)
             if hasattr(f, '__qualname__'):

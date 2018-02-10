@@ -45,7 +45,3 @@ def test_dict():
 )
 def test_schema_error_position():
     pass
-
-# (IsomorphSchema({'key': int}), 'key'),
-# (IsomorphSchema({'key': '...'}), 'key'),
-# (IsomorphSchema(['list', 'int', 'str']), ''),

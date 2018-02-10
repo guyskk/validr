@@ -1,4 +1,4 @@
-"""A simple,fast,extensible python library for data validation."""
+"""A simple, fast, extensible python library for data validation."""
 from ._exception import Invalid, SchemaError, ValidrError, mark_index, mark_key
 from ._validator import (build_re_validator, build_enum_validator,
                          builtin_validators, validator)

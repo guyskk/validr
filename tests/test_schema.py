@@ -11,13 +11,18 @@ EXPECT = {
 }
 
 
-def test_str_and_to_primitive():
+def test_str_copy_and_to_primitive():
     schema = T.dict(
         key=T.list(T.int.min(0).max(9)).unique.optional(False),
         tag=T.str.desc('a tag'),
     ).optional.desc('a dict')
     assert schema.to_primitive() == EXPECT
     assert json.loads(str(schema)) == EXPECT
+    copy = schema.copy()
+    assert copy.to_primitive() == EXPECT
+    # verify copy is deep copy
+    schema.items['key'].items = T.int
+    assert copy.to_primitive() == EXPECT
 
 
 def test_repr():
@@ -37,3 +42,11 @@ def test_compiled_items():
     value = compiler.compile(T.int.min(0))
     assert repr(T.dict(key=value)) == 'T.dict({key})'
     assert repr(T.list(value)) == 'T.list(int)'
+
+
+def test_load_schema():
+    compiler = Compiler()
+    schema = T.list(T.int.min(0))
+    assert T(schema) == schema
+    assert T(compiler.compile(schema)) == schema
+    assert T(['int.min(0)']) == schema

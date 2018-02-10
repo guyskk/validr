@@ -1,3 +1,24 @@
+"""
+Schema and Compiler
+
+schema is instance of Schema or object which has __schema__ attribute,
+and the __schema__ is instance of Schema.
+
+compiler can compile schema:
+
+    compiler.compile(schema) -> validate function.
+
+validate function also has __schema__ attribute, so it's also a schema.
+
+the Builder is a subclass of Schema, we use it's instance T to build schema.
+in addition, T can be called directly, which convert schema-like things to
+instance of Schema:
+
+    T(JSON) -> IsomorphSchema
+    T(func) -> Schema of validate func
+    T(Schema) -> Copy of Schema
+    T(Model) -> Schema of Model
+"""
 import json
 from collections import OrderedDict
 from copy import copy
@@ -183,9 +204,6 @@ class Compiler:
         self.is_dump = is_dump
 
     def compile(self, schema):
-        """
-        compiler.compile(Schema) -> validate func
-        """
         if hasattr(schema, '__schema__'):
             schema = schema.__schema__
         if not isinstance(schema, Schema):
@@ -230,12 +248,6 @@ _EXP_ATTR_OR_CALL = 'expect-attr-or-call'
 
 
 class Builder(Schema):
-    """
-    T(JSON) -> IsomorphSchema
-    T(func) -> Schema of validate func
-    T(Schema) -> Copy of Schema
-    T(Model) -> Schema of Model
-    """
 
     def __init__(self, state=_BUILDER_INIT, validator=None,
                  items=None, params=None, last_attr=None):

@@ -1,10 +1,13 @@
 import json
 from collections import OrderedDict
+from copy import copy
+
 from pyparsing import (
     Group, Keyword, Optional, StringEnd, StringStart, Suppress,
     ZeroOrMore, quotedString, removeQuotes, replaceWith,
     pyparsing_common, ParseBaseException,
 )
+
 from ._validator import builtin_validators
 from ._exception import SchemaError, mark_index, mark_key
 
@@ -45,7 +48,7 @@ def _dump_value(value):
     elif value is True:
         return 'true'
     elif isinstance(value, str):
-        return repr(value)  # single quotes
+        return repr(value)  # single quotes by default
     else:
         return str(value)  # number
 
@@ -78,36 +81,6 @@ class Schema:
         self.validator = None
         self.items = None
         self.params = OrderedDict()
-
-    def to_primitive(self):
-        if not self.validator:
-            return None
-        ret = []
-        if self.validator in {'dict', 'list'} or self.items is None:
-            ret.append(self.validator)
-        else:
-            ret.append(_pair(self.validator, self.items))
-        for k, v in _sort_schema_params(self.params.items()):
-            if v is False:
-                continue
-            if v is True:
-                ret.append(k)
-            else:
-                ret.append(_pair(k, v))
-        ret = '.'.join(ret)
-        if self.validator == 'dict' and self.items is not None:
-            ret = {'$self': ret}
-            for k, v in self.items.items():
-                if isinstance(v, Schema):
-                    v = v.to_primitive()
-                ret[k] = v
-        elif self.validator == 'list' and self.items is not None:
-            ret = [ret]
-            if isinstance(self.items, Schema):
-                ret.append(self.items.to_primitive())
-            else:
-                ret.append(self.items)
-        return ret
 
     def __eq__(self, other):
         return (self.validator == other.validator and
@@ -150,6 +123,56 @@ class Schema:
                 ret.append(_pair(k, v))
         return '.'.join(ret)
 
+    def to_primitive(self):
+        if not self.validator:
+            return None
+        ret = []
+        if self.validator in {'dict', 'list'} or self.items is None:
+            ret.append(self.validator)
+        else:
+            ret.append(_pair(self.validator, self.items))
+        for k, v in _sort_schema_params(self.params.items()):
+            if v is False:
+                continue
+            if v is True:
+                ret.append(k)
+            else:
+                ret.append(_pair(k, v))
+        ret = '.'.join(ret)
+        if self.validator == 'dict' and self.items is not None:
+            ret = {'$self': ret}
+            for k, v in self.items.items():
+                if isinstance(v, Schema):
+                    v = v.to_primitive()
+                ret[k] = v
+        elif self.validator == 'list' and self.items is not None:
+            ret = [ret]
+            if isinstance(self.items, Schema):
+                ret.append(self.items.to_primitive())
+            else:
+                ret.append(self.items)
+        return ret
+
+    def copy(self):
+        ret = Schema()
+        ret.validator = self.validator
+        ret.params = OrderedDict((k, copy(v)) for k, v in self.params.items())
+        if self.validator == 'dict' and self.items is not None:
+            items = {}
+            for k, v in self.items.items():
+                if isinstance(v, Schema):
+                    v = v.copy()
+                items[k] = v
+        elif self.validator == 'list' and self.items is not None:
+            if isinstance(self.items, Schema):
+                items = self.items.copy()
+            else:
+                items = self.items
+        else:
+            items = None
+        ret.items = items
+        return ret
+
 
 class Compiler:
 
@@ -160,9 +183,13 @@ class Compiler:
         self.is_dump = is_dump
 
     def compile(self, schema):
+        """
+        compiler.compile(Schema) -> validate func
+        """
+        if hasattr(schema, '__schema__'):
+            schema = schema.__schema__
         if not isinstance(schema, Schema):
-            raise SchemaError('expected Schema instance, {} found'.format(
-                type(schema).__name__))
+            raise SchemaError(f'{type(schema)} object is not schema')
         if not schema.validator:
             raise SchemaError('incomplete schema')
         validator = self.validators.get(schema.validator)
@@ -203,6 +230,12 @@ _EXP_ATTR_OR_CALL = 'expect-attr-or-call'
 
 
 class Builder(Schema):
+    """
+    T(JSON) -> IsomorphSchema
+    T(func) -> Schema of validate func
+    T(Schema) -> Copy of Schema
+    T(Model) -> Schema of Model
+    """
 
     def __init__(self, state=_BUILDER_INIT, validator=None,
                  items=None, params=None, last_attr=None):
@@ -230,6 +263,8 @@ class Builder(Schema):
                            items=self.items, params=params, last_attr=name)
 
     def __call__(self, *args, **kwargs):
+        if self._state == _BUILDER_INIT:
+            return self._load_schema(*args, **kwargs)
         if self._state not in [_EXP_ATTR_OR_ITEMS, _EXP_ATTR_OR_CALL]:
             raise SchemaError('current state not callable')
         if self._state == _EXP_ATTR_OR_ITEMS:
@@ -261,22 +296,31 @@ class Builder(Schema):
         return Builder(_EXP_ATTR, validator=self.validator,
                        items=items, params=params, last_attr=None)
 
+    def _load_schema(self, obj):
+        if hasattr(obj, '__schema__'):
+            obj = obj.__schema__
+        if isinstance(obj, Schema):
+            return obj.copy()
+        if isinstance(obj, (str, list, dict)):
+            return IsomorphSchema(obj)
+        raise SchemaError(f'{type(obj)} object is not schema')
+
     def _check_items(self, items):
         if self.validator == 'dict':
             if not isinstance(items, dict):
                 raise SchemaError('items must be dict')
             ret = {}
             for k, v in items.items():
-                if callable(v) and hasattr(v, '__schema__'):
+                if hasattr(v, '__schema__'):
                     v = v.__schema__
                 if not isinstance(v, Schema):
-                    raise SchemaError('items[{}] must be Schema'.format(k))
+                    raise SchemaError('items[{}] is not schema'.format(k))
                 ret[k] = v
         elif self.validator == 'list':
-            if callable(items) and hasattr(items, '__schema__'):
+            if hasattr(items, '__schema__'):
                 items = items.__schema__
             if not isinstance(items, Schema):
-                raise SchemaError('items must be Schema')
+                raise SchemaError('items is not schema')
             ret = items
         else:
             if not isinstance(items, (bool, int, float, str)):
@@ -295,27 +339,27 @@ T = Builder()
 
 class IsomorphSchema(Schema):
 
-    def __init__(self, t):
-        if isinstance(t, str):
-            e = Element(t)
+    def __init__(self, obj):
+        if isinstance(obj, str):
+            e = Element(obj)
             self.validator = e.validator
             self.items = e.items
             self.params = e.params
-        elif isinstance(t, dict):
-            e = Element(t.pop('$self', 'dict'))
+        elif isinstance(obj, dict):
+            e = Element(obj.pop('$self', 'dict'))
             self.validator = e.validator
             self.params = e.params
             self.items = {}
-            for k, v in t.items():
+            for k, v in obj.items():
                 with mark_key(k):
                     self.items[k] = IsomorphSchema(v)
-        elif isinstance(t, list):
-            if len(t) == 1:
+        elif isinstance(obj, list):
+            if len(obj) == 1:
                 e = Element('list')
-                items = t[0]
-            elif len(t) == 2:
-                e = Element(t[0])
-                items = t[1]
+                items = obj[0]
+            elif len(obj) == 2:
+                e = Element(obj[0])
+                items = obj[1]
             else:
                 raise SchemaError('invalid list schema')
             self.validator = e.validator
@@ -323,4 +367,4 @@ class IsomorphSchema(Schema):
             with mark_index():
                 self.items = IsomorphSchema(items)
         else:
-            raise SchemaError('unknown schema')
+            raise SchemaError(f'{type(obj)} object is not schema')

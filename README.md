@@ -18,19 +18,18 @@ Note: Only support python 3.3+
 ## Overview
 
 ```python
-from collections import namedtuple
-from validr import T, Compiler
+from validr import T, modelclass, asdict
 
-Person = namedtuple('Person', 'name website')
-schema = T.dict(
-    name=T.str.strip.desc('leading and trailing whitespaces will be striped'),
-    website=T.url.optional.desc('website is optional'),
-)
+@modelclass
+class Model:
+    """Base Model"""
 
-validate = Compiler().compile(schema)
-guyskk = Person('  guyskk  ', 'https://github.com/guyskk')
+class Person(Model):
+    name=T.str.maxlen(16).desc('at most 16 chars')
+    website=T.url.optional.desc('website is optional')
 
-print(validate(guyskk))
+guyskk = Person(name='guyskk', website='https://github.com/guyskk')
+print(asdict(guyskk))
 ```
 
 ## Install
@@ -250,41 +249,48 @@ custom validators should follow this guideline.
 
 ## Usage
 
-### Schema
+### Schema and Model
 
 Schema has 2 syntaxs：Python and JSON.
 
 ```python
-from validr import T, IsomorphSchema
+from validr import T, modelclass
 
 schema1 = T.dict(
     id=T.int.desc('The unique identifier for a product'),
     name=T.str.desc('Name of the product'),
     price=T.float.exmin(0),
     tags=T.list(
-        T.str.minlen(1).unique
-    )
+        T.str.minlen(1)
+    ).unique
 )
 
-schema2 = IsomorphSchema({
+schema2 = T({
     "$self": "dict",
     "id": "int.desc('The unique identifier for a product')",
     "name": "str.desc('Name of the product')",
     "price": "float.exmin(0)",
     "tags": [
-        "list",
-        "str.minlen(1).unique"
+        "list.unique",
+        "str.minlen(1)"
     ]
 })
 
+@modelclass
+class Model:
+    id=T.int.desc('The unique identifier for a product')
+    name=T.str.desc('Name of the product')
+    price=T.float.exmin(0)
+    tags=T.list(
+        T.str.minlen(1)
+    ).unique
+
 # they are equalment
-assert schema1 == schema2
+assert schema1 == schema2 == Model
 # the same content after convert to JSON string
-assert str(schema1) == str(schema2)
-# the same content after convert to python primitive
-assert schema1.to_primitive() == schema2.to_primitive()
+assert str(schema1) == str(schema2) == str(Model.__schema__)
 # is hashable，can be dict's key
-assert hash(schema1) == hash(schema2)
+assert hash(schema1) == hash(schema2) == hash(Model.__schema__)
 ```
 
 ### Compiler
@@ -296,10 +302,14 @@ there are 2 reasons:
 2. the schema can be extented on compile time, eg: custom validators.
 
 ```python
-from validr import Compiler
+from validr import Compiler, modelclass
 
 compiler = Compiler()
 validate = compiler.compile(schema)
+
+@modelclass(compiler=compiler)
+class Model:
+    pass
 ```
 
 ### Validate

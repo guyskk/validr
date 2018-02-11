@@ -77,3 +77,11 @@ def test_slice():
         id=T.int.min(100).default(100),
         name=T.str
     )
+
+
+def test_init():
+    user = User(id=123, name='test')
+    u2 = User(user, id=456)
+    assert u2.id == 456
+    with pytest.raises(Invalid):
+        User(id=123, name='test', unknown=0)

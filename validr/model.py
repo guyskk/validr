@@ -125,11 +125,20 @@ def _create_model_class(model_cls, compiler=None):
     class Model(model_cls, metaclass=ModelMeta):
 
         if '__init__' not in model_cls.__dict__:
-            def __init__(self, **params):
-                for k in self.__fields__:
-                    setattr(self, k, params.pop(k, None))
-                if params:
-                    unknown = ', '.join(params)
+            def __init__(self, *obj, **params):
+                if obj:
+                    if len(obj) > 1:
+                        raise TypeError(f'__init__() takes 2 positional arguments but {len(obj) + 1} were given')
+                    obj = obj[0]
+                    for k in self.__fields__ - set(params):
+                        setattr(self, k, getattr(obj, k, None))
+                else:
+                    for k in self.__fields__ - set(params):
+                        setattr(self, k, None)
+                for k in self.__fields__ & set(params):
+                    setattr(self, k, params[k])
+                unknown = ', '.join(set(params) - self.__fields__)
+                if unknown:
                     raise Invalid(f'unknown params {unknown}')
 
         if '__repr__' not in model_cls.__dict__:

@@ -69,3 +69,11 @@ def test_asdict():
     user = User(id=123, name='test')
     assert asdict(user) == {'id': 123, 'name': 'test'}
     assert asdict(user, keys=['name']) == {'name': 'test'}
+
+
+def test_slice():
+    assert User['id'] == T.dict(id=T.int.min(100).default(100))
+    assert User['id', 'name'] == T.dict(
+        id=T.int.min(100).default(100),
+        name=T.str
+    )

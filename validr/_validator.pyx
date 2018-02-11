@@ -81,7 +81,7 @@ def validator(bint string=False):
                     return validate(value)
 
             # make friendly validate func representation
-            m_repr = schema.__repr__(simplify=True)
+            m_repr = schema.repr(prefix=False, desc=False)
             m_validate.__schema__ = schema
             m_validate.__module__ = f.__module__
             m_validate.__name__ = '{}<{}>'.format(f.__name__, m_repr)

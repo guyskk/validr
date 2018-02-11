@@ -21,7 +21,12 @@ define models:
 
     class User:
         id = T.int
+        age = T.int.default(18)
         name = T.str
+
+schema slice:
+
+    Lite = User['id', 'name']
 
 use the model:
 
@@ -96,13 +101,26 @@ def _create_model_class(model_cls, compiler=None):
                 for k, v in base.__dict__.items():
                     if isinstance(v, Field):
                         schemas[k] = v.schema
-            cls.__schema__ = T.dict(schemas)
+            cls.__schema__ = T.dict(schemas).__schema__
             cls.__fields__ = frozenset(schemas)
 
         def __repr__(cls):
             # use __schema__ can keep fields order
             fields = ', '.join(cls.__schema__.items)
-            return f'{cls.__qualname__}<{fields}>'
+            return f'{cls.__name__}<{fields}>'
+
+        def __getitem__(self, keys):
+            if not isinstance(keys, (list, tuple)):
+                keys = (keys,)
+            s = self.__schema__
+            schema = Schema(validator=s.validator, params=s.params.copy())
+            schema.items = {}
+            items = s.items or {}
+            for k in keys:
+                if k not in items:
+                    raise ValueError(f'key {k!r} is not exists')
+                schema.items[k] = items[k]
+            return T(schema)
 
     class Model(model_cls, metaclass=ModelMeta):
 
@@ -122,7 +140,7 @@ def _create_model_class(model_cls, compiler=None):
                     v = getattr(self, k)
                     params.append(f'{k}={v!r}')
                 params = ', '.join(params)
-                return f'{type(self).__qualname__}({params})'
+                return f'{type(self).__name__}({params})'
 
         if '__eq__' not in model_cls.__dict__:
             def __eq__(self, other):

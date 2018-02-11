@@ -1,5 +1,5 @@
 import pytest
-from validr import SchemaError, Element, T
+from validr import SchemaError, Schema, T
 
 elements = {
     'int': T.int,
@@ -26,12 +26,12 @@ invalid_elements = [
 
 @pytest.mark.parametrize('string, expect', elements.items())
 def test_elements(string, expect):
-    e = Element(string)
+    e = Schema.parse_element(string)
     assert repr(e)
-    assert e == expect
+    assert e == expect.__schema__
 
 
 @pytest.mark.parametrize('string', invalid_elements)
 def test_invalid_elements(string):
     with pytest.raises(SchemaError):
-        Element(string)
+        Schema.parse_element(string)

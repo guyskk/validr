@@ -45,8 +45,10 @@ from ._exception import Invalid, mark_key
 def modelclass(cls=None, *, compiler=None):
     if cls is not None:
         return _create_model_class(cls, compiler=compiler)
+
     def decorator(cls):
         return _create_model_class(cls, compiler=compiler)
+
     return decorator
 
 

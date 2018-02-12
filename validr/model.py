@@ -38,6 +38,8 @@ use the model:
     # get the schema
     T(user)  # or T(User)
 """
+from terminaltables import AsciiTable
+
 from .schema import Compiler, T, Schema
 from ._exception import Invalid, mark_key
 
@@ -128,20 +130,32 @@ def _create_model_class(model_cls, compiler=None):
 
         if '__init__' not in model_cls.__dict__:
             def __init__(self, *obj, **params):
+                errors = []
                 if obj:
                     if len(obj) > 1:
                         raise TypeError(f'__init__() takes 2 positional arguments but {len(obj) + 1} were given')
                     obj = obj[0]
                     for k in self.__fields__ - set(params):
-                        setattr(self, k, getattr(obj, k, None))
+                        try:
+                            setattr(self, k, getattr(obj, k, None))
+                        except Invalid as ex:
+                            errors.append((ex.position, ex.message))
                 else:
                     for k in self.__fields__ - set(params):
-                        setattr(self, k, None)
+                        try:
+                            setattr(self, k, None)
+                        except Invalid as ex:
+                            errors.append((ex.position, ex.message))
                 for k in self.__fields__ & set(params):
-                    setattr(self, k, params[k])
-                unknown = ', '.join(set(params) - self.__fields__)
-                if unknown:
-                    raise Invalid(f'unknown params {unknown}')
+                    try:
+                        setattr(self, k, params[k])
+                    except Invalid as ex:
+                        errors.append((ex.position, ex.message))
+                for k in set(params) - self.__fields__:
+                    errors.append((k, 'undesired key'))
+                if errors:
+                    table = [('Key', 'Error')] + errors
+                    raise Invalid('\n' + AsciiTable(table).table)
 
         if '__repr__' not in model_cls.__dict__:
             def __repr__(self):

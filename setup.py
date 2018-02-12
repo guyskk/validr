@@ -66,6 +66,7 @@ setup(
     install_requires=[
         'pyparsing>=2.1.0',
         'email_validator>=1.0.3',
+        'terminaltables>=3.1.0',
     ],
     zip_safe=False,
     ext_modules=ext_modules,

@@ -72,6 +72,7 @@ def _create_model_class(model_cls, compiler=None):
         def __init__(self, name, schema):
             self.name = name
             self.schema = schema
+            self.on_change = schema.on_change_callback
             with mark_key(self.name):
                 self.validate = compiler.compile(schema)
 
@@ -86,7 +87,13 @@ def _create_model_class(model_cls, compiler=None):
         def __set__(self, obj, value):
             with mark_key(self.name):
                 value = self.validate(value)
-            obj.__dict__[self.name] = value
+            if self.on_change is None:
+                obj.__dict__[self.name] = value
+            else:
+                origin = obj.__dict__.get(self.name, None)
+                if value != origin:
+                    self.on_change(obj, value)
+                obj.__dict__[self.name] = value
 
     # common fields
     for name, schema in _extract_schemas(vars(model_cls)).items():
@@ -133,7 +140,9 @@ def _create_model_class(model_cls, compiler=None):
                 errors = []
                 if obj:
                     if len(obj) > 1:
-                        raise TypeError(f'__init__() takes 2 positional arguments but {len(obj) + 1} were given')
+                        msg = (f'__init__() takes 2 positional arguments '
+                               f'but {len(obj) + 1} were given')
+                        raise TypeError(msg)
                     obj = obj[0]
                     for k in self.__fields__ - set(params):
                         try:

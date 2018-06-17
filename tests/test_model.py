@@ -12,11 +12,6 @@ class MyModel:
 class MyModelX:
 
     id = T.int.min(0)
-    id_x2 = T.int.optional
-
-    @id.on_change
-    def id_on_change(self, value):
-        self.id_x2 = value * 2
 
     def __eq__(self, other):
         return id(self) == id(other)
@@ -48,18 +43,9 @@ def test_custom_method():
     assert x1 != x2
 
 
-def test_on_change():
-    m = MyModelX(id=1)
-    assert m.id_x2 == 2
-    m.id_x2 = 3
-    assert m.id_x2 == 3
-    m.id = 2
-    assert m.id_x2 == 4
-
-
 def test_repr():
     assert repr(MyModel) == 'MyModel<id>'
-    assert repr(MyModelX) == 'MyModelX<id, id_x2>'
+    assert repr(MyModelX) == 'MyModelX<id>'
     assert repr(User) == 'User<id, name>'
 
 

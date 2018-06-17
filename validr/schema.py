@@ -109,7 +109,6 @@ class Schema:
         self.validator = validator
         self.items = items
         self.params = params or {}
-        self.on_change_callback = None
 
     def __eq__(self, other):
         if hasattr(other, '__schema__'):
@@ -176,7 +175,6 @@ class Schema:
         else:
             items = None
         schema.items = items
-        schema.on_change_callback = self.on_change_callback
         return schema
 
     def __copy__(self):
@@ -299,13 +297,10 @@ _EXP_ATTR_OR_CALL = 'expect-attr-or-call'
 class Builder:
 
     def __init__(self, state=_BUILDER_INIT, *, validator=None,
-                 items=None, params=None, last_attr=None,
-                 on_change_callback=None):
+                 items=None, params=None, last_attr=None):
         self._state = state
         self._schema = Schema(validator=validator, items=items, params=params)
         self._last_attr = last_attr
-        if on_change_callback is not None:
-            self._schema.on_change_callback = on_change_callback
 
     @property
     def __schema__(self):
@@ -324,11 +319,6 @@ class Builder:
 
     def __hash__(self):
         return self._schema.__hash__()
-
-    def on_change(self, fn):
-        """Add an on value change callback: f(model, value) -> None"""
-        self._schema.on_change_callback = fn
-        return fn
 
     def __getitem__(self, keys):
         if not self._schema.validator:
@@ -352,15 +342,13 @@ class Builder:
             raise AttributeError('{!r} object has no attribute {!r}'.format(
                 type(self).__name__, name))
         if self._state == _BUILDER_INIT:
-            return Builder(_EXP_ATTR_OR_ITEMS, validator=name,
-                           on_change_callback=self._schema.on_change_callback)
+            return Builder(_EXP_ATTR_OR_ITEMS, validator=name)
         else:
             params = self._schema.params.copy()
             params[name] = True
             return Builder(
                 _EXP_ATTR_OR_CALL, validator=self._schema.validator,
-                items=self._schema.items, params=params, last_attr=name,
-                on_change_callback=self._schema.on_change_callback)
+                items=self._schema.items, params=params, last_attr=name)
 
     def __call__(self, *args, **kwargs):
         if self._state == _BUILDER_INIT:
@@ -394,8 +382,7 @@ class Builder:
             params = self._schema.params.copy()
             params[self._last_attr] = param_value
         return Builder(_EXP_ATTR, validator=self._schema.validator,
-                       items=items, params=params, last_attr=None,
-                       on_change_callback=self._schema.on_change_callback)
+                       items=items, params=params, last_attr=None)
 
     def _load_schema(self, obj):
         if hasattr(obj, '__schema__'):

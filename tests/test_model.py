@@ -1,5 +1,8 @@
 import pytest
-from validr import T, modelclass, fields, asdict, Compiler, Invalid
+from validr import (
+    T, modelclass, fields, asdict, Compiler,
+    Invalid, ImmutableInstanceError,
+)
 
 
 @modelclass
@@ -17,6 +20,11 @@ class MyModelX:
         return id(self) == id(other)
 
 
+@modelclass(immutable=True)
+class ImmutableModel:
+    id = T.int.min(0)
+
+
 class User(MyModel):
 
     id = T.int.min(100).default(100)
@@ -32,6 +40,13 @@ def test_model():
     with pytest.raises(Invalid):
         user.id = -1
     assert repr(user) == "User(id=100, name='test')"
+
+
+def test_immutable():
+    m = ImmutableModel(id=1)
+    assert m.id == 1
+    with pytest.raises(ImmutableInstanceError):
+        m.id = 2
 
 
 def test_custom_method():

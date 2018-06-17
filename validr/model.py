@@ -44,12 +44,16 @@ from .schema import Compiler, T, Schema
 from ._exception import Invalid, mark_key
 
 
-def modelclass(cls=None, *, compiler=None):
+class ImmutableInstanceError(AttributeError):
+    """Raised when an attempt is modify a immutable class"""
+
+
+def modelclass(cls=None, *, compiler=None, immutable=False):
     if cls is not None:
-        return _create_model_class(cls, compiler=compiler)
+        return _create_model_class(cls, compiler, immutable)
 
     def decorator(cls):
-        return _create_model_class(cls, compiler=compiler)
+        return _create_model_class(cls, compiler, immutable)
 
     return decorator
 
@@ -64,7 +68,7 @@ def _extract_schemas(namespace):
     return schemas
 
 
-def _create_model_class(model_cls, compiler=None):
+def _create_model_class(model_cls, compiler, immutable):
 
     compiler = compiler or Compiler()
 
@@ -130,6 +134,7 @@ def _create_model_class(model_cls, compiler=None):
 
         if '__init__' not in model_cls.__dict__:
             def __init__(self, *obj, **params):
+                self.__dict__['__immutable__'] = False
                 errors = []
                 if obj:
                     if len(obj) > 1:
@@ -156,6 +161,27 @@ def _create_model_class(model_cls, compiler=None):
                 if errors:
                     table = [('Key', 'Error')] + errors
                     raise Invalid('\n' + AsciiTable(table).table)
+                if hasattr(self, '__post_init__'):
+                    self.__post_init__()
+                self.__dict__['__immutable__'] = immutable
+        else:
+            def __init__(self, *args, **kwargs):
+                self.__dict__['__immutable__'] = False
+                super().__init__(*args, **kwargs)
+                self.__dict__['__immutable__'] = immutable
+
+        if immutable:
+            def __setattr__(self, name, value):
+                if self.__immutable__:
+                    msg = f'{model_cls.__name__} object is immutable!'
+                    raise ImmutableInstanceError(msg)
+                return object.__setattr__(self, name, value)
+
+            def __delattr__(self, name):
+                if self.__immutable__:
+                    msg = f'{model_cls.__name__} object is immutable!'
+                    raise ImmutableInstanceError(msg)
+                return object.__delattr__(self, name)
 
         if '__repr__' not in model_cls.__dict__:
             def __repr__(self):

@@ -58,19 +58,23 @@ def modelclass(cls=None, *, compiler=None, immutable=False):
     return decorator
 
 
-def _extract_schemas(namespace):
-    schemas = {}
-    for k, v in namespace.items():
-        if hasattr(v, '__schema__'):
-            v = v.__schema__
-        if isinstance(v, Schema):
-            schemas[k] = v
-    return schemas
-
-
 def _create_model_class(model_cls, compiler, immutable):
 
     compiler = compiler or Compiler()
+
+    def _extract_schemas(cls):
+        schemas = {}
+        for k, v in vars(cls).items():
+            if k == '__schema__':
+                continue
+            if isinstance(v, Field):
+                schemas[k] = v.schema
+            else:
+                if hasattr(v, '__schema__'):
+                    v = v.__schema__
+                if isinstance(v, Schema):
+                    schemas[k] = v
+        return schemas
 
     class Field:
         def __init__(self, name, schema):
@@ -92,28 +96,21 @@ def _create_model_class(model_cls, compiler, immutable):
                 value = self.validate(value)
             obj.__dict__[self.name] = value
 
-    # common fields
-    for name, schema in _extract_schemas(vars(model_cls)).items():
-        setattr(model_cls, name, Field(name, schema))
-
     class ModelMeta(type):
-        def __new__(cls, cls_name, bases, namespace):
-            for name, schema in _extract_schemas(namespace).items():
-                namespace[name] = Field(name, schema)
-            return super().__new__(cls, cls_name, bases, namespace)
 
         def __init__(cls, *args, **kwargs):
             super().__init__(*args, **kwargs)
             schemas = {}
-            for base in reversed(cls.__mro__):
-                for k, v in base.__dict__.items():
-                    if isinstance(v, Field):
-                        schemas[k] = v.schema
+            for cls_or_base in reversed(cls.__mro__):
+                for name, schema in _extract_schemas(cls_or_base).items():
+                    schemas[name] = schema
+            for name, schema in schemas.items():
+                setattr(cls, name, Field(name, schema))
             cls.__schema__ = T.dict(schemas).__schema__
             cls.__fields__ = frozenset(schemas)
 
         def __repr__(cls):
-            # use __schema__ can keep fields order
+            # use __schema__ can keep fields order in python>=3.6
             fields = ', '.join(cls.__schema__.items)
             return f'{cls.__name__}<{fields}>'
 

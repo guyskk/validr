@@ -10,25 +10,34 @@ class MyModel:
 
     id = T.int.min(0)
 
-
-@modelclass(compiler=Compiler())
-class MyModelX:
-
-    id = T.int.min(0)
-
-    def __eq__(self, other):
-        return id(self) == id(other)
-
-
-@modelclass(immutable=True)
-class ImmutableModel:
-    id = T.int.min(0)
+    def __post_init__(self):
+        self.id_x2 = self.id * 2
 
 
 class User(MyModel):
 
     id = T.int.min(100).default(100)
     name = T.str
+
+    def __post_init__(self):
+        self.id_x3 = self.id * 3
+
+
+class CustomModel(MyModel):
+
+    def __eq__(self, other):
+        return id(self) == id(other)
+
+    def get_id(self):
+        return self.id
+
+
+@modelclass(compiler=Compiler(), immutable=True)
+class ImmutableModel:
+    id = T.int.min(0)
+
+    def __init__(self, id=None):
+        self.id = id
 
 
 def test_model():
@@ -42,25 +51,35 @@ def test_model():
     assert repr(user) == "User(id=100, name='test')"
 
 
+def test_post_init():
+    user = User(id=100, name='test')
+    assert user.id == 100
+    assert user.id_x2 == 200
+    assert user.id_x3 == 300
+
+
 def test_immutable():
     m = ImmutableModel(id=1)
     assert m.id == 1
     with pytest.raises(ImmutableInstanceError):
         m.id = 2
+    with pytest.raises(ImmutableInstanceError):
+        del m.id
 
 
 def test_custom_method():
     m1 = MyModel(id=1)
     m2 = MyModel(id=1)
     assert m1 == m2
-    x1 = MyModelX(id=1)
-    x2 = MyModelX(id=1)
+    x1 = CustomModel(id=1)
+    x2 = CustomModel(id=1)
+    assert x1.get_id() == x2.get_id()
     assert x1 != x2
 
 
 def test_repr():
     assert repr(MyModel) == 'MyModel<id>'
-    assert repr(MyModelX) == 'MyModelX<id>'
+    assert repr(CustomModel) == 'CustomModel<id>'
     assert repr(User) == 'User<id, name>'
 
 
@@ -95,6 +114,10 @@ def test_slice():
 
 
 def test_init():
+    with pytest.raises(TypeError):
+        User({'name': 'text'})
+    with pytest.raises(TypeError):
+        User(1, 2)
     user = User(id=123, name='test')
     u2 = User(user, id=456)
     assert u2.id == 456

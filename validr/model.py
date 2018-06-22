@@ -11,9 +11,13 @@ define a base model:
         # define common fields and methods here
         # __init__, __repr__ and __eq__ will auto created if not exists
 
+        # do something after init
+        def __post_init__(self):
+            pass
+
 or
 
-    @modelclass(compiler=xxx)
+    @modelclass(compiler=xxx, immutable=False)
     class Model:
         pass
 
@@ -76,6 +80,12 @@ def _create_model_class(model_cls, compiler, immutable):
                     schemas[k] = v
         return schemas
 
+    def _extract_post_init(cls):
+        f = vars(cls).get('__post_init__', None)
+        if f is None or not callable(f):
+            return None
+        return f
+
     class Field:
         def __init__(self, name, schema):
             self.name = name
@@ -101,13 +111,22 @@ def _create_model_class(model_cls, compiler, immutable):
         def __init__(cls, *args, **kwargs):
             super().__init__(*args, **kwargs)
             schemas = {}
+            post_inits = []
             for cls_or_base in reversed(cls.__mro__):
+                post_init = _extract_post_init(cls_or_base)
+                if post_init is not None:
+                    post_inits.append(post_init)
                 for name, schema in _extract_schemas(cls_or_base).items():
                     schemas[name] = schema
             for name, schema in schemas.items():
                 setattr(cls, name, Field(name, schema))
+            cls.__post_inits = post_inits
             cls.__schema__ = T.dict(schemas).__schema__
             cls.__fields__ = frozenset(schemas)
+
+        def post_init(cls, instance):
+            for post_init in cls.__post_inits:
+                post_init(instance)
 
         def __repr__(cls):
             # use __schema__ can keep fields order in python>=3.6
@@ -135,8 +154,14 @@ def _create_model_class(model_cls, compiler, immutable):
                 errors = []
                 if obj:
                     if len(obj) > 1:
-                        raise TypeError(f'__init__() takes 2 positional arguments but {len(obj) + 1} were given')
+                        msg = (f'__init__() takes 2 positional arguments '
+                               f'but {len(obj) + 1} were given')
+                        raise TypeError(msg)
                     obj = obj[0]
+                    if isinstance(obj, dict):
+                        msg = ('__init__() not support dict object as '
+                               'positional argument, the behavior is ambiguous')
+                        raise TypeError(msg)
                     for k in self.__fields__ - set(params):
                         try:
                             setattr(self, k, getattr(obj, k, None))
@@ -158,13 +183,13 @@ def _create_model_class(model_cls, compiler, immutable):
                 if errors:
                     table = [('Key', 'Error')] + errors
                     raise Invalid('\n' + AsciiTable(table).table)
-                if hasattr(self, '__post_init__'):
-                    self.__post_init__()
+                type(self).post_init(self)
                 self.__dict__['__immutable__'] = immutable
         else:
             def __init__(self, *args, **kwargs):
                 self.__dict__['__immutable__'] = False
                 super().__init__(*args, **kwargs)
+                type(self).post_init(self)
                 self.__dict__['__immutable__'] = immutable
 
         if immutable:

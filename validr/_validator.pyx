@@ -23,7 +23,7 @@ def validator(bint string=False):
             def validate(value):
                 try:
                     return value  # validate/convert the value
-                except:
+                except Exception:
                     raise Invalid('invalid xxx')
             return validate
 
@@ -172,7 +172,7 @@ def int_validator(compiler, min=-sys.maxsize, max=sys.maxsize):
     def validate(value):
         try:
             v = int(value)
-        except:
+        except Exception:
             raise Invalid('invalid int') from None
         if v < min:
             raise Invalid('value must >= %d' % min)
@@ -215,7 +215,7 @@ def float_validator(compiler, min=-sys.float_info.max, max=sys.float_info.max,
     def validate(value):
         try:
             v = float(value)
-        except:
+        except Exception:
             raise Invalid('invalid float') from None
         if exmin:
             if v <= min:
@@ -276,7 +276,7 @@ def date_validator(compiler, format='%Y-%m-%d'):
             if not isinstance(value, (datetime.datetime, datetime.date)):
                 value = datetime.datetime.strptime(value, format)
             return value.strftime(format)
-        except:
+        except Exception:
             raise Invalid('invalid date') from None
     return validate
 
@@ -293,7 +293,7 @@ def time_validator(compiler, format='%H:%M:%S'):
             if not isinstance(value, (datetime.datetime, datetime.time)):
                 value = datetime.datetime.strptime(value, format)
             return value.strftime(format)
-        except:
+        except Exception:
             raise Invalid('invalid time') from None
     return validate
 
@@ -313,7 +313,7 @@ def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ'):
             elif not isinstance(value, datetime.datetime):
                 value = datetime.datetime.strptime(value, format)
             return value.strftime(format)
-        except:
+        except Exception:
             raise Invalid('invalid datetime') from None
     return validate
 
@@ -325,7 +325,7 @@ def ipv4_validator(compiler):
             return ipaddress.IPv4Address(value.strip()).compressed
         except ipaddress.AddressValueError as ex:
             raise Invalid(str(ex)) from None
-        except:
+        except Exception:
             raise Invalid('invalid ipv4 address') from None
     return validate
 
@@ -337,7 +337,7 @@ def ipv6_validator(compiler):
             return ipaddress.IPv6Address(value.strip()).compressed
         except ipaddress.AddressValueError as ex:
             raise Invalid(str(ex)) from None
-        except:
+        except Exception:
             raise Invalid('invalid ipv6 address') from None
     return validate
 
@@ -354,7 +354,7 @@ def email_validator(compiler):
             value = _validate(value.strip())
         except EmailNotValidError as ex:
             raise Invalid(str(ex)) from None
-        except:
+        except Exception:
             raise Invalid('invalid email address') from None
         return value['email']
     return validate
@@ -371,13 +371,13 @@ def url_validator(compiler, scheme='http https', maxlen=256):
     def validate(value):
         try:
             value = value.strip()
-        except:
+        except Exception:
             raise Invalid('invalid url') from None
         if len(value) > maxlen:
             raise Invalid(f'url length must <= {maxlen}')
         try:
             parsed = urlparse(value)
-        except:
+        except Exception:
             raise Invalid('invalid url') from None
         if not parsed.scheme or parsed.scheme not in allow_scheme:
             raise Invalid(f'invalid url scheme, expect {allow_scheme}')
@@ -397,7 +397,7 @@ def uuid_validator(compiler, version=None):
         if not isinstance(value, uuid.UUID):
             try:
                 value = uuid.UUID(value.strip())
-            except:
+            except Exception:
                 raise Invalid(msg) from None
         if version is not None and value.version != version:
             raise Invalid(msg)

@@ -70,6 +70,7 @@ setup(
             'terminaltables>=3.1.0',
             'invoke>=1.0.0',
             'twine>=1.11.0',
+            'bumpversion>=0.5.3',
         ],
         'benchmark': [
             'beeprint>=2.4.6',

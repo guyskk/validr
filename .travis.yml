@@ -19,7 +19,7 @@ script:
     - pre-commit run --all-files
     # develop install
     - cd $TRAVIS_BUILD_DIR
-    - VALIDR_USE_CYTHON=1 VALIDR_DEBUG=1 pip install --ignore-installed -e .
+    - inv build --debug
     - pytest --cov=validr --cov-report=term-missing tests
     # normal install
     - inv build

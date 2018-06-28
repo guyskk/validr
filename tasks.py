@@ -17,6 +17,6 @@ def build(ctx, debug=False):
     if debug:
         os.environ['VALIDR_DEBUG'] = '1'
     os.environ['VALIDR_USE_CYTHON'] = '1'
-    ctx.run('rm -r dist/*')
+    ctx.run('rm -rf dist/*')
     ctx.run('python setup.py build')
     ctx.run('python setup.py sdist')

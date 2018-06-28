@@ -61,7 +61,6 @@ setup(
             'pytest>=3.0.6',
             'pytest-cov>=2.4.0',
             'codecov>=2.0.5',
-            'cython>=0.25.2',
             'terminaltables>=3.1.0',
             'invoke>=1.0.0',
         ],

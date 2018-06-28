@@ -1,6 +1,7 @@
 import os
 from os.path import dirname, basename, splitext
 from glob import glob
+from multiprocessing import cpu_count
 from setuptools import Extension, setup
 
 with open(os.path.join(dirname(__file__), 'README.md')) as f:
@@ -19,9 +20,13 @@ if USE_CYTHON:
             'profile': True,
             'linetrace': True,
         })
-    ext_modules = cythonize('validr/*.pyx', compiler_directives=directives)
+    ext_modules = cythonize(
+        'src/validr/*.pyx',
+        nthreads=cpu_count(),
+        compiler_directives=directives
+    )
 else:
-    sources = list(glob('validr/*.c'))
+    sources = list(glob('src/validr/*.c'))
     assert sources, 'Not found any *.c source files'
     ext_modules = []
     for filepath in sources:
@@ -48,6 +53,7 @@ setup(
     url='https://github.com/guyskk/validr',
     license='MIT',
     packages=['validr'],
+    package_dir={'': 'src'},
     install_requires=[
         'pyparsing>=2.1.0',
         'email_validator>=1.0.3',
@@ -63,6 +69,7 @@ setup(
             'codecov>=2.0.5',
             'terminaltables>=3.1.0',
             'invoke>=1.0.0',
+            'twine>=1.11.0',
         ],
         'benchmark': [
             'beeprint>=2.4.6',

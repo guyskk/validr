@@ -4,7 +4,7 @@ from validr import (
     Invalid, ImmutableInstanceError,
 )
 
-from helpers import skipif_dict_not_ordered
+from .helper import skipif_dict_not_ordered
 
 
 @modelclass

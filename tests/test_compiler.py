@@ -1,6 +1,7 @@
 import pytest
 from validr import Invalid, Compiler, T
-from helpers import schema_error_position
+
+from .helper import schema_error_position
 
 _ = Compiler().compile
 

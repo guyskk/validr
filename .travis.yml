@@ -17,16 +17,11 @@ install:
 
 script:
     - pre-commit run --all-files
-    # develop install
-    - cd $TRAVIS_BUILD_DIR
-    - inv build --debug
-    - pytest --cov=validr --cov-report=term-missing tests
-    # normal install
+    - pytest --cov validr
     - inv build
-    - cd $TRAVIS_BUILD_DIR
-    - pip install --ignore-installed dist/validr-*.tar.gz
-    - cd /tmp && pytest $TRAVIS_BUILD_DIR/tests
-    - cd /tmp && python $TRAVIS_BUILD_DIR/benchmark/benchmark.py benchmark
+    - pip install --ignore-installed dist/*
+    - pytest
+    - python benchmark/benchmark.py benchmark
 
 after_success:
     - codecov

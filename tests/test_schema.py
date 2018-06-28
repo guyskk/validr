@@ -1,7 +1,7 @@
 import json
 from validr import T, Schema, Compiler
 
-from helpers import skipif_dict_not_ordered
+from .helper import skipif_dict_not_ordered
 
 EXPECT = {
     '$self': "dict.optional.desc('a dict')",

@@ -6,17 +6,25 @@ from invoke import task
 def test(ctx):
     os.environ['VALIDR_DEBUG'] = '1'
     os.environ['VALIDR_USE_CYTHON'] = '1'
-    ctx.run('python setup.py build --verbose')
-    ctx.run('pytest --cov=validr --cov-report=term-missing -r w')
+    ctx.run('python setup.py build')
+    ctx.run('pytest --cov=validr --cov-report=term-missing')
     ctx.run('python benchmark/benchmark.py benchmark --validr')
-    ctx.run('python benchmark/benchmark.py profile')
 
 
 @task
-def build(ctx, debug=False):
-    if debug:
-        os.environ['VALIDR_DEBUG'] = '1'
-    os.environ['VALIDR_USE_CYTHON'] = '1'
+def clean(ctx):
+    ctx.run('rm -rf build/*')
     ctx.run('rm -rf dist/*')
+    ctx.run('find . | grep -E "(__pycache__|\.pyc|\.pyo$)" | xargs rm -rf')
+
+
+@task(pre=[clean])
+def build(ctx):
+    os.environ['VALIDR_USE_CYTHON'] = '1'
     ctx.run('python setup.py build')
     ctx.run('python setup.py sdist')
+
+
+@task(pre=[build])
+def publish(ctx):
+    ctx.run('twine upload dist/*')

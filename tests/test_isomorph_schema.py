@@ -1,6 +1,7 @@
 import pytest
 from validr import SchemaError, Schema, T
-from helpers import schema_error_position
+
+from .helper import schema_error_position
 
 isomorph_schema = Schema.parse_isomorph_schema
 

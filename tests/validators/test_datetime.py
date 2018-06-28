@@ -1,10 +1,10 @@
 from datetime import datetime
-
-from util import case
+from validr import T
+from . import case
 
 
 @case({
-    'datetime': [
+    T.datetime: [
         (datetime(2016, 7, 9), '2016-07-09T00:00:00.000000Z'),
         (datetime(2016, 7, 9, 14, 47, 30, 123), '2016-07-09T14:47:30.000123Z'),
         ('2016-07-09T00:00:00.000000Z', '2016-07-09T00:00:00.000000Z'),
@@ -17,11 +17,11 @@ from util import case
             '2016-07-09T00:00:60.123000Z',
         ]
     ],
-    'datetime&optional': [
+    T.datetime.optional: [
         (None, ''),
         ('', '')
     ],
-    'datetime&format="%Y-%m-%d %H:%M:%S.%f"': [
+    T.datetime.format('%Y-%m-%d %H:%M:%S.%f'): [
         (datetime(2016, 7, 9), '2016-07-09 00:00:00.000000'),
         ('2016-07-09 00:00:00.123', '2016-07-09 00:00:00.123000'),
         [

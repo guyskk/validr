@@ -1,4 +1,5 @@
-from util import case
+from validr import T
+from . import case
 
 # 身份证号测试用例，只校验数字位数和xX
 # http://id.8684.cn/
@@ -34,7 +35,7 @@ valid_idcard.extend([
 
 
 @case({
-    'idcard': {
+    T.idcard: {
         'valid': valid_idcard,
         'invalid': [
             '43138976061660X',

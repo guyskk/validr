@@ -11,14 +11,13 @@ add case:
     3. put validate funcs in a dict named `CASES` in case module
 """
 import json
-from cProfile import runctx
+from profile import runctx
 from glob import glob
 from os.path import basename, dirname, splitext
+from timeit import Timer as BaseTimer
 
 import click
-
 from beeprint import pp
-from stable_timeit import stable_timeit as timeit
 
 DATA = {
     'user': {'userid': 5},
@@ -52,6 +51,29 @@ def glob_cases():
 
 CASES = glob_cases()
 
+# support Timer.autorange which add in python 3.6
+if hasattr(BaseTimer, 'autorange'):
+    Timer = BaseTimer
+else:
+    class Timer(BaseTimer):
+        def autorange(self, callback=None):
+            """Return the number of loops and time taken so that total time >= 0.2.
+            Calls the timeit method with *number* set to successive powers of
+            ten (10, 100, 1000, ...) up to a maximum of one billion, until
+            the time taken is at least 0.2 second, or the maximum is reached.
+            Returns ``(number, time_taken)``.
+            If *callback* is given and is not None, it will be called after
+            each trial with two arguments: ``callback(number, time_taken)``.
+            """
+            for i in range(1, 10):
+                number = 10**i
+                time_taken = self.timeit(number)
+                if callback:
+                    callback(number, time_taken)
+                if time_taken >= 0.2:
+                    break
+            return (number, time_taken)
+
 
 @click.group()
 def cli():
@@ -64,27 +86,27 @@ def show():
     pp({name: list(cases) for name, cases in CASES.items()})
 
 
+def print_item(name, subname, value):
+    print('{:>12}:{:<16} {}'.format(name, subname, value))
+
+
 @cli.command()
 def test():
     """test all cases"""
     for name, subcases in CASES.items():
         for subname, f in subcases.items():
-            value = f(make_data())
             try:
-                ok = (value['user'] == DATA['user'] and
-                      value['tags'] == DATA['tags'] and
-                      value['style'] == DATA['style'])
-            except:
-                ok = False
-            if ok:
-                print_item(name, subname, 'OK')
-            else:
-                print('{}:{}'.format(name, subname).center(60, '-'))
-                pp(value)
-
-
-def print_item(name, subname, value):
-    print('{}:{} {}'.format(name.rjust(12), subname.ljust(24), value))
+                value = f(make_data())
+                assert value['user'] == DATA['user']
+                assert value['tags'] == DATA['tags']
+                assert value['style'] == DATA['style']
+                msg = 'OK'
+            except AssertionError:
+                msg = 'Failed\n{line}\n{value}{line}'.format(
+                    line='-' * 60, value=pp(value, output=False))
+            except Exception as ex:
+                msg = 'Failed: ' + str(ex)
+            print_item(name, subname, msg)
 
 
 @cli.command()
@@ -92,7 +114,7 @@ def print_item(name, subname, value):
 def benchmark(validr):
     """do benchmark"""
     if validr:
-        cases = {'json': CASES['json'], 'validr': CASES['validr']}
+        cases = {k: CASES[k] for k in ['json', 'validr']}
     else:
         cases = CASES
     result = {}
@@ -101,27 +123,22 @@ def benchmark(validr):
     for name, suncases in cases.items():
         for subname, f in suncases.items():
             data = make_data()
-            t = timeit(lambda: f(data), number=100, repeat=500)
-            result[name, subname] = t
-            print_item(name, subname, t)
-
-    print('speeds'.center(60, '-'))
-    for (name, subname), v in result.items():
-        print_item(name, subname, round(1.0/v))
+            n, t = Timer(lambda: f(data)).autorange()
+            result[name, subname] = t / n
+            print_item(name, subname, '{:>8} loops cost {:.3f}s'.format(n, t))
 
     print('scores'.center(60, '-'))
     base = result['json', 'loads-dumps']
     for (name, subname), v in result.items():
-        print_item(name, subname, round(base/v*1000))
+        print_item(name, subname, '{:>8}'.format(round(base / v * 1000)))
 
 
 @cli.command()
 def profile():
     """profile validr"""
-    for name, f in CASES['validr'].items():
-        print(name.center(60, '-'))
-        params = {'f': f, 'data': make_data()}
-        runctx('for i in range(100000):f(data)', globals=params, locals=None)
+    f = CASES['validr']['default']
+    params = {'f': f, 'data': make_data()}
+    runctx('for i in range(10**5): f(data)', globals=params, locals=None)
 
 
 if __name__ == '__main__':

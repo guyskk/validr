@@ -1,4 +1,5 @@
-from util import case
+from validr import T
+from . import case
 
 # 手机号码测试用例
 # http://blog.csdn.net/mr_lady/article/details/50245223
@@ -26,7 +27,7 @@ invalid_phone.extend([
 
 
 @case({
-    'phone': {
+    T.phone: {
         'valid': valid_phone,
         'invalid': invalid_phone
     }

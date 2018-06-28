@@ -1,16 +1,16 @@
 import sys
-
-from util import case
+from validr import T
+from . import case
 
 
 @case({
-    'int(0,9)': [
+    T.int.min(0).max(9): [
         (0, 0),
         (9, 9),
         ('5', 5),
         [-1, 10, 'abc']
     ],
-    'int': [
+    T.int: [
         (sys.maxsize, sys.maxsize),
         (-sys.maxsize, -sys.maxsize),
         (0, 0),

@@ -1,18 +1,29 @@
-from validr import Invalid, SchemaParser, validator
+from validr import Invalid, Compiler, validator, T
+from validr import build_enum_validator
 
 
 def test_custom_validator():
 
-    @validator(string=False)
-    def choice_validator(value, *choices):
-        try:
+    @validator(string=True)
+    def choice_validator(compiler, items):
+        choices = items.split()
+
+        def validate(value):
             if value in choices:
                 return value
-        except:
-            pass
-        raise Invalid('invalid choice')
+            raise Invalid('invalid choice')
 
-    sp = SchemaParser(validators={'choice': choice_validator})
-    for value in 'ABCD':
-        assert sp.parse('choice("A","B","C","D")')(value) == value
-    assert sp.parse('choice&optional')(None) is None
+        return validate
+
+    compiler = Compiler(validators={'choice': choice_validator})
+    schema = T.list(T.choice('A B C D').default('A'))
+    validate = compiler.compile(schema)
+    assert validate(['A', 'B', 'C', 'D', None]) == ['A', 'B', 'C', 'D', 'A']
+
+
+def test_build_enum_validator():
+    abcd_validator = build_enum_validator('abcd', ['A', 'B', 'C', 'D'])
+    compiler = Compiler(validators={'abcd': abcd_validator})
+    schema = T.list(T.abcd.default('A'))
+    validate = compiler.compile(schema)
+    assert validate(['A', 'B', 'C', 'D', None]) == ['A', 'B', 'C', 'D', 'A']

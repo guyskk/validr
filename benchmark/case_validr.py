@@ -1,51 +1,26 @@
-from validr import SchemaParser
-
-
-def use_refer_merge():
-    shared = {
-        'size': {
-            'width?int': 'width',
-            'height?int': 'height'
-        },
-        'border': {
-            'border_width?int': 'border_width',
-            'border_style?str': 'border_style',
-            'border_color?str': 'border_color'
-        },
-        'user': {'userid?int(0,9)': 'UserID'},
-    }
-    sp = SchemaParser(shared=shared)
-    schema = {
-        'user@user': 'User',
-        'tags': ['int&min=0'],
-        'style': {
-            '$self@size@border': 'style',
-            'color?str': 'Color'
-        },
-        'optional?str&optional': 'unknown value'
-    }
-    return sp.parse(schema)
+from validr import T, Compiler
 
 
 def default():
-    sp = SchemaParser()
-    schema = {
-        'user': {'userid?int(0,9)': 'UserID'},
-        'tags': ['int&min=0'],
-        'style': {
-            'width?int': 'width',
-            'height?int': 'height',
-            'border_width?int': 'border_width',
-            'border_style?str': 'border_style',
-            'border_color?str': 'border_color',
-            'color?str': 'Color'
-        },
-        'optional?str&optional': 'unknown value'
-    }
-    return sp.parse(schema)
+    compiler = Compiler()
+    schema = T.dict(
+        user=T.dict(
+            userid=T.int.min(0).max(9).desc('UserID'),
+        ),
+        tags=T.list(T.int.min(0)),
+        style=T.dict(
+            width=T.int.desc('width'),
+            height=T.int.desc('height'),
+            border_width=T.int.desc('border_width'),
+            border_style=T.str.desc('border_style'),
+            border_color=T.str.desc('border_color'),
+            color=T.str.desc('color')
+        ),
+        optional=T.str.optional.desc('unknown value')
+    )
+    return compiler.compile(schema)
 
 
 CASES = {
     'default': default(),
-    'use-refer-merge': use_refer_merge(),
 }

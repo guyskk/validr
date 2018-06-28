@@ -9,6 +9,8 @@
       files: \.(py|pyx)$
     - id: check-case-conflict
     - id: check-added-large-files
+      args:
+        - '--maxkb=2000'
     - id: check-merge-conflict
     - id: check-symlinks
     - id: check-json
@@ -23,3 +25,5 @@
       args:
         - '--remove'
     - id: flake8
+      args:
+        - '--max-line-length=119'

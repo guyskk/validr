@@ -94,7 +94,7 @@ def _create_model_class(model_cls, compiler, immutable):
                 self.validate = compiler.compile(schema)
 
         def __repr__(self):
-            return f'Field(name={self.name!r}, schema={self.schema!r})'
+            return 'Field(name={!r}, schema={!r})'.format(self.name, self.schema)
 
         def __get__(self, obj, obj_type):
             if obj is None:
@@ -131,7 +131,7 @@ def _create_model_class(model_cls, compiler, immutable):
         def __repr__(cls):
             # use __schema__ can keep fields order in python>=3.6
             fields = ', '.join(cls.__schema__.items)
-            return f'{cls.__name__}<{fields}>'
+            return '{}<{}>'.format(cls.__name__, fields)
 
         def __getitem__(self, keys):
             if not isinstance(keys, (list, tuple)):
@@ -142,7 +142,7 @@ def _create_model_class(model_cls, compiler, immutable):
             items = s.items or {}
             for k in keys:
                 if k not in items:
-                    raise ValueError(f'key {k!r} is not exists')
+                    raise ValueError('key {!r} is not exists'.format(k))
                 schema.items[k] = items[k]
             return T(schema)
 
@@ -154,8 +154,8 @@ def _create_model_class(model_cls, compiler, immutable):
                 errors = []
                 if obj:
                     if len(obj) > 1:
-                        msg = (f'__init__() takes 2 positional arguments '
-                               f'but {len(obj) + 1} were given')
+                        msg = ('__init__() takes 2 positional arguments '
+                               'but {} were given'.format(len(obj) + 1))
                         raise TypeError(msg)
                     obj = obj[0]
                     if isinstance(obj, dict):
@@ -195,13 +195,13 @@ def _create_model_class(model_cls, compiler, immutable):
         if immutable:
             def __setattr__(self, name, value):
                 if self.__immutable__:
-                    msg = f'{model_cls.__name__} object is immutable!'
+                    msg = '{} object is immutable!'.format(model_cls.__name__)
                     raise ImmutableInstanceError(msg)
                 return object.__setattr__(self, name, value)
 
             def __delattr__(self, name):
                 if self.__immutable__:
-                    msg = f'{model_cls.__name__} object is immutable!'
+                    msg = '{} object is immutable!'.format(model_cls.__name__)
                     raise ImmutableInstanceError(msg)
                 return object.__delattr__(self, name)
 
@@ -211,9 +211,9 @@ def _create_model_class(model_cls, compiler, immutable):
                 # use __schema__ can keep fields order
                 for k in self.__schema__.items:
                     v = getattr(self, k)
-                    params.append(f'{k}={v!r}')
+                    params.append('{}={!r}'.format(k, v))
                 params = ', '.join(params)
-                return f'{type(self).__name__}({params})'
+                return '{}({})'.format(type(self).__name__, params)
 
         if '__eq__' not in model_cls.__dict__:
             def __eq__(self, other):

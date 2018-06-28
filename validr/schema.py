@@ -157,7 +157,7 @@ class Schema:
 
     def __repr__(self):
         r = self.repr(prefix=False)
-        return f'{type(self).__name__}<{r}>'
+        return '{}<{}>'.format(type(self).__name__, r)
 
     def copy(self):
         schema = type(self)(validator=self.validator, params=self.params.copy())
@@ -264,7 +264,7 @@ class Schema:
                 items = cls.parse_isomorph_schema(items)
             return cls(validator=validator, items=items, params=params)
         else:
-            raise SchemaError(f'{type(obj)} object is not schema')
+            raise SchemaError('{} object is not schema'.format(type(obj)))
 
 
 class Compiler:
@@ -279,7 +279,7 @@ class Compiler:
         if hasattr(schema, '__schema__'):
             schema = schema.__schema__
         if not isinstance(schema, Schema):
-            raise SchemaError(f'{type(schema)} object is not schema')
+            raise SchemaError('{} object is not schema'.format(type(schema)))
         if not schema.validator:
             raise SchemaError('incomplete schema')
         validator = self.validators.get(schema.validator)
@@ -333,7 +333,7 @@ class Builder:
         items = self._schema.items or {}
         for k in keys:
             if k not in items:
-                raise ValueError(f'key {k!r} is not exists')
+                raise ValueError('key {!r} is not exists'.format(k))
             schema.items[k] = items[k]
         return T(schema)
 
@@ -392,7 +392,7 @@ class Builder:
         elif isinstance(obj, (str, list, dict)):
             obj = Schema.parse_isomorph_schema(obj)
         else:
-            raise SchemaError(f'{type(obj)} object is not schema')
+            raise SchemaError('{} object is not schema'.format(type(obj)))
         if not obj.validator:
             state = _BUILDER_INIT
         elif not obj.items and not obj.params:

@@ -1,1 +1,3 @@
 include validr/*.pyx
+include README*
+include LICENSE

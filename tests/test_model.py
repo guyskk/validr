@@ -4,6 +4,8 @@ from validr import (
     Invalid, ImmutableInstanceError,
 )
 
+from helpers import skipif_dict_not_ordered
+
 
 @modelclass
 class MyModel:
@@ -48,7 +50,6 @@ def test_model():
     assert user.name == 'test'
     with pytest.raises(Invalid):
         user.id = -1
-    assert repr(user) == "User(id=100, name='test')"
 
 
 def test_post_init():
@@ -77,10 +78,13 @@ def test_custom_method():
     assert x1 != x2
 
 
+@skipif_dict_not_ordered()
 def test_repr():
     assert repr(MyModel) == 'MyModel<id>'
     assert repr(CustomModel) == 'CustomModel<id>'
     assert repr(User) == 'User<id, name>'
+    user = User(id=100, name='test')
+    assert repr(user) == "User(id=100, name='test')"
 
 
 def test_schema():

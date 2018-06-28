@@ -13,7 +13,7 @@ A simple, fast, extensible python library for data validation.
 - Easy to create custom validators
 - Accurate and friendly error messages
 
-Note: Only support python 3.3+
+Note: Only support python 3.4+
 
 ## Overview
 
@@ -561,16 +561,15 @@ similar tools to create isolated Python environment for develop.
 After that, install dependencys:
 
 ```
-pip install -r requires-dev.txt
-pip install -r requires-benchmark.txt
-pre-commit install
+./bootstrap.sh
 ```
 
 **build, test and benchmark**:
-```
-./bb.sh
-```
 
+```
+inv build
+inv test
+```
 
 ## License
 

@@ -1,6 +1,8 @@
 import json
 from validr import T, Schema, Compiler
 
+from helpers import skipif_dict_not_ordered
+
 EXPECT = {
     '$self': "dict.optional.desc('a dict')",
     'key': [
@@ -11,6 +13,7 @@ EXPECT = {
 }
 
 
+@skipif_dict_not_ordered()
 def test_str_copy_and_to_primitive():
     schema = T.dict(
         key=T.list(T.int.min(0).max(9)).unique.optional(False),

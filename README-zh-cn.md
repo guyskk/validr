@@ -12,24 +12,23 @@
 - 易于拓展自定义校验器
 - 准确友好的错误提示
 
-注意：仅支持 python 3.3+
+注意：仅支持 python 3.4+
 
 ## 概览
 
 ```python
-from collections import namedtuple
-from validr import T, Compiler
+from validr import T, modelclass, asdict
 
-Person = namedtuple('Person', 'name website')
-schema = T.dict(
-    name=T.str.strip.desc('leading and trailing whitespaces will be striped'),
-    website=T.url.optional.desc('website is optional'),
-)
+@modelclass
+class Model:
+    """Base Model"""
 
-validate = Compiler().compile(schema)
-guyskk = Person('  guyskk  ', 'https://github.com/guyskk')
+class Person(Model):
+    name=T.str.maxlen(16).desc('at most 16 chars')
+    website=T.url.optional.desc('website is optional')
 
-print(validate(guyskk))
+guyskk = Person(name='guyskk', website='https://github.com/guyskk')
+print(asdict(guyskk))
 ```
 
 ## 安装
@@ -547,14 +546,14 @@ Validr 从 v0.14.0 开始用 [Cython](http://cython.org/) 实现，它比纯 Pyt
 之后，安装所有的依赖:
 
 ```
-pip install -r requires-dev.txt
-pip install -r requires-benchmark.txt
-pre-commit install
+./bootstrap.sh
 ```
 
-**build, test and benchmark**:
+**构建以及测试**:
+
 ```
-./bb.sh
+inv build
+inv test
 ```
 
 ## License

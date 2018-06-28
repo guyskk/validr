@@ -1,6 +1,14 @@
+import sys
 import functools
 import pytest
 from validr import ValidrError, Invalid, SchemaError, Compiler
+
+
+def skipif_dict_not_ordered():
+    return pytest.mark.skipif(
+        sys.version_info < (3, 6),
+        reason='require python3.6 or higher')
+
 
 compiler = Compiler()
 

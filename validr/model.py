@@ -15,7 +15,7 @@ define a base model:
         def __post_init__(self):
             pass
 
-or
+or provide params:
 
     @modelclass(compiler=xxx, immutable=False)
     class Model:
@@ -23,7 +23,7 @@ or
 
 define models:
 
-    class User:
+    class User(Model):
         id = T.int
         age = T.int.default(18)
         name = T.str

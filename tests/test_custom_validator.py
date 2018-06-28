@@ -5,7 +5,7 @@ from validr import build_enum_validator
 def test_custom_validator():
 
     @validator(string=True)
-    def choice_validator(parser, items):
+    def choice_validator(compiler, items):
         choices = items.split()
 
         def validate(value):

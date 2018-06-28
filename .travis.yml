@@ -10,6 +10,7 @@ python:
 matrix:
     allow_failures:
         - python: "pypy3"
+        - python: "nightly"
 
 install:
     - ./bootstrap.sh

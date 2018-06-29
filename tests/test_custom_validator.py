@@ -1,5 +1,5 @@
 from validr import Invalid, Compiler, validator, T
-from validr import build_enum_validator
+from validr import create_enum_validator
 
 
 def test_custom_validator():
@@ -21,8 +21,8 @@ def test_custom_validator():
     assert validate(['A', 'B', 'C', 'D', None]) == ['A', 'B', 'C', 'D', 'A']
 
 
-def test_build_enum_validator():
-    abcd_validator = build_enum_validator('abcd', ['A', 'B', 'C', 'D'])
+def test_create_enum_validator():
+    abcd_validator = create_enum_validator('abcd', ['A', 'B', 'C', 'D'])
     compiler = Compiler(validators={'abcd': abcd_validator})
     schema = T.list(T.abcd.default('A'))
     validate = compiler.compile(schema)

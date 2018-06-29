@@ -28,3 +28,8 @@ def build(ctx):
 @task(pre=[build])
 def publish(ctx):
     ctx.run('twine upload dist/*')
+
+
+@task
+def benchmark(ctx):
+    ctx.run('python benchmark/benchmark.py benchmark')

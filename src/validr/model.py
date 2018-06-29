@@ -1,46 +1,6 @@
 """
-Model
-
-model class is a convenient way to use schema, it's inspired by data class but
-works differently, it's much simpler and easy to use.
-
-define a base model:
-
-    @modelclass
-    class Model:
-        # define common fields and methods here
-        # __init__, __repr__ and __eq__ will auto created if not exists
-
-        # do something after init
-        def __post_init__(self):
-            pass
-
-or provide params:
-
-    @modelclass(compiler=xxx, immutable=False)
-    class Model:
-        pass
-
-define models:
-
-    class User(Model):
-        id = T.int
-        age = T.int.default(18)
-        name = T.str
-
-schema slice:
-
-    Lite = User['id', 'name']
-
-use the model:
-
-    user = User(id=1, name='test')
-    # convert model to dict
-    asdict(user)
-    # get fields
-    fields(user)  # or fields(User)
-    # get the schema
-    T(user)  # or T(User)
+Model class is a convenient way to use schema, it's inspired by data class but
+works differently.
 """
 from terminaltables import AsciiTable
 

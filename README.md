@@ -118,8 +118,21 @@ dict(
 
 Since int, str, dict, list...etc is already defined in Python, we add `T.` prefix to validator name, eg:
 
-```
+```python
 T.int.min(0).max(100)
+T.dict(
+    key1=T.int.min(0).max(100),
+    key2=T.str.maxlen(10),
+)
+```
+
+You can also define dict schema by class:
+
+```python
+@modelclass
+class MyModel:
+    key1 = T.int.min(0).max(100)
+    key2 = T.str.maxlen(10)
 ```
 
 ### Write schema in JSON
@@ -130,7 +143,8 @@ From a structural point of view, JSON data can be divided into 3 types:
 - sequence: also known as array or list.
 - mapping: a collection of name/value pairs, also known as object or dictionary.
 
-Schema is also JSON, it describe JSON data by the 3 structures too. As a result, the schema was called **Isomorph-JSON-Schema**.
+Schema is also JSON, it describe JSON data by the 3 structures too.  
+As a result, the schema was called **Isomorph-JSON-Schema**.
 
 mapping use $self to describe self, other keys describe it's inner elements:
 
@@ -151,8 +165,7 @@ scalar use a string to describe self:
 
     "schema"
 
-Note: the JSON syntax is for using schema between languages.
-
+Note: the JSON syntax is for exchange schema between languages.
 
 ## Example
 
@@ -180,7 +193,20 @@ T.dict(
 )
 ```
 
-schema in JSON:
+the same schema by Python class:
+
+```python
+@modelclass
+class Product:
+    id = T.int.desc('The unique identifier for a product')
+    name = T.str.desc('Name of the product')
+    price = T.float.exmin(0)
+    tags = T.list(
+        T.str.minlen(1)
+    ).unique
+```
+
+the same schema in JSON:
 
 ```json
 {
@@ -194,7 +220,6 @@ schema in JSON:
     ]
 }
 ```
-
 
 ### Built-in validators
 
@@ -232,7 +257,7 @@ schema in JSON:
     ipv6(default=null, optional=false)
 
     # URL
-    url(default=null, optional=false)
+    url(scheme='http https', maxlen=256, default=null, optional=false)
 
     # UUID
     uuid(version=None, default=null, optional=false)
@@ -250,8 +275,6 @@ custom validators should follow this guideline.
 ## Usage
 
 ### Schema and Model
-
-Schema has 2 syntaxs：Python and JSON.
 
 ```python
 from validr import T, modelclass
@@ -277,7 +300,7 @@ schema2 = T({
 })
 
 @modelclass
-class Model:
+class Product:
     id=T.int.desc('The unique identifier for a product')
     name=T.str.desc('Name of the product')
     price=T.float.exmin(0)
@@ -286,11 +309,11 @@ class Model:
     ).unique
 
 # they are equalment
-assert schema1 == schema2 == Model
+assert schema1 == schema2 == Product
 # the same content after convert to JSON string
-assert str(schema1) == str(schema2) == str(Model.__schema__)
+assert str(schema1) == str(schema2) == str(Product.__schema__)
 # is hashable，can be dict's key
-assert hash(schema1) == hash(schema2) == hash(Model.__schema__)
+assert hash(schema1) == hash(schema2) == hash(Product.__schema__)
 ```
 
 ### Compiler
@@ -305,11 +328,63 @@ there are 2 reasons:
 from validr import Compiler, modelclass
 
 compiler = Compiler()
+
 validate = compiler.compile(schema)
 
 @modelclass(compiler=compiler)
 class Model:
     pass
+```
+
+### Model class
+
+Model class is a convenient way to use schema, it's inspired by data class but
+works differently, it's much simpler and easy to use.
+
+define a base model, you can provide compiler and/or make the model immutable:
+
+```python
+from validr import T, modelclass, asdict, fields
+
+@modelclass # or @modelclass(compiler=compiler, immutable=False)
+class Model:
+    # define common fields and methods here
+    # __init__, __repr__ and __eq__ will auto created if not exists
+
+    # do something after init
+    def __post_init__(self):
+        pass
+```
+
+define models by inheritance:
+
+```python
+class User(Model):
+    id = T.int
+    age = T.int.default(18)
+    name = T.str
+```
+
+schema slice:
+
+```python
+Lite = User['id', 'name']
+assert Lite == T.dict(
+    id=T.int,
+    name=T.str,
+)
+```
+
+use the model:
+
+```python
+user = User(id=1, name='test')
+# convert model to dict
+asdict(user)
+# get fields
+fields(user)  # or fields(User)
+# get the schema
+T(user)  # or T(User)
 ```
 
 ### Validate
@@ -497,9 +572,9 @@ Note：`items` can only be scalar type, so it's no ambiguity when convert schema
 #### Create enum validator:
 
 ```python
-from validr import T, Compiler, build_enum_validator
+from validr import T, Compiler, create_enum_validator
 
-abcd_validator = build_enum_validator('abcd', ['A', 'B', 'C', 'D'])
+abcd_validator = create_enum_validator('abcd', ['A', 'B', 'C', 'D'])
 compiler = Compiler(validators={"abcd": abcd_validator})
 f = compiler.compile(T.abcd.default("C"))
 
@@ -513,10 +588,10 @@ validr._exception.Invalid: invalid abcd, expect one of ['A', 'B', 'C', 'D']
 #### Create regex validator:
 
 ```python
-from validr import T, Compiler, build_re_validator
+from validr import T, Compiler, create_re_validator
 
 regex_time = r'([01]?\d|2[0-3]):[0-5]?\d:[0-5]?\d'
-time_validator = build_re_validator("time", regex_time)
+time_validator = create_re_validator("time", regex_time)
 compiler = Compiler(validators={"time": time_validator})
 f = compiler.compile(T.time.default("00:00:00"))
 
@@ -532,20 +607,25 @@ validr._exception.Invalid: invalid time
 
 ## Performance
 
-    pip install -r requires-dev.txt
-    python benchmark/benchmark.py benchmark
-
 benchmark result in travis-ci:
 
 ```
-        json:loads-dumps              1000
-  jsonschema:draft3                   180
-  jsonschema:draft4                   184
-      schema:default                  41
-  schematics:default                  51
-      validr:default                  2384
-      validr:use-refer-merge          2106
-  voluptuous:default                  100
+--------------------------timeits---------------------------
+        json:loads-dumps         10000 loops cost 0.214s
+  jsonschema:draft3              10000 loops cost 1.249s
+  jsonschema:draft4              10000 loops cost 1.242s
+      schema:default              1000 loops cost 0.507s
+  schematics:default              1000 loops cost 1.340s
+      validr:default            100000 loops cost 0.951s
+  voluptuous:default             10000 loops cost 0.531s
+---------------------------scores---------------------------
+        json:loads-dumps          1000
+  jsonschema:draft3                171
+  jsonschema:draft4                172
+      schema:default                42
+  schematics:default                16
+      validr:default              2247
+  voluptuous:default               403
 ```
 
 ## Develop
@@ -569,6 +649,7 @@ After that, install dependencys:
 ```
 inv build
 inv test
+inv benchmark
 ```
 
 ## License

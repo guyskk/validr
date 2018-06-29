@@ -405,8 +405,8 @@ def uuid_validator(compiler, version=None):
     return validate
 
 
-def build_re_validator(str name, r):
-    """Build validator by regex string
+def create_re_validator(str name, r):
+    """Create validator by regex string
 
     It will make sure that the entire string matches, so needn't
     add `^`,`$` to regex string.
@@ -455,11 +455,11 @@ regexs = {
     'idcard': r'(\d{17}[\d|x|X])|(\d{15})',
 }
 for name, r in regexs.items():
-    builtin_validators[name] = build_re_validator(name, r)
+    builtin_validators[name] = create_re_validator(name, r)
 
 
-def build_enum_validator(str name, items, string=True):
-    """Build validator by enum items
+def create_enum_validator(str name, items, string=True):
+    """Create validator by enum items
 
     Args:
         name (str): validator name, used in error message

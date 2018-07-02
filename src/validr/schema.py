@@ -173,7 +173,7 @@ class Schema:
             else:
                 items = self.items
         else:
-            items = None
+            items = self.items
         schema.items = items
         return schema
 

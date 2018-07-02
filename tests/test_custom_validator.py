@@ -6,7 +6,7 @@ def test_custom_validator():
 
     @validator(string=True)
     def choice_validator(compiler, items):
-        choices = items.split()
+        choices = set(items.split())
 
         def validate(value):
             if value in choices:
@@ -17,6 +17,7 @@ def test_custom_validator():
 
     compiler = Compiler(validators={'choice': choice_validator})
     schema = T.list(T.choice('A B C D').default('A'))
+    assert T(schema) == schema  # test copy custom validator
     validate = compiler.compile(schema)
     assert validate(['A', 'B', 'C', 'D', None]) == ['A', 'B', 'C', 'D', 'A']
 

@@ -136,9 +136,10 @@ def benchmark(validr):
 @cli.command()
 def profile():
     """profile validr"""
-    f = CASES['validr']['default']
-    params = {'f': f, 'data': make_data()}
-    runctx('for i in range(10**5): f(data)', globals=params, locals=None)
+    for name, f in CASES['validr'].items():
+        print(name.center(60, '-'))
+        params = {'f': f, 'data': make_data()}
+        runctx('for i in range(10**5): f(data)', globals=params, locals=None)
 
 
 if __name__ == '__main__':

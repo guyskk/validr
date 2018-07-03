@@ -109,8 +109,15 @@ def test_asdict():
 
 
 def test_slice():
-    assert User["id"] == T.dict(id=T.int.min(100).default(100))
-    assert User["id", "name"] == T.dict(id=T.int.min(100).default(100), name=T.str)
+    expect = T.int.min(100).default(100)
+    assert User["id"] == expect
+    assert User["id",] == T.dict(id=expect)
+    assert T(User.id) == expect
+    assert User["id", "name"] == T.dict(id=expect, name=T.str)
+    with pytest.raises(KeyError):
+        User["unknown"]
+    with pytest.raises(KeyError):
+        User["id", "unknown"]
 
 
 def test_init():

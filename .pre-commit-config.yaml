@@ -25,3 +25,4 @@
     - id: flake8
       args:
         - '--max-line-length=119'
+        - '--ignore=E203,E231'

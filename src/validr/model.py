@@ -32,13 +32,10 @@ def _create_model_class(model_cls, compiler, immutable):
         for k, v in vars(cls).items():
             if k == "__schema__":
                 continue
-            if isinstance(v, Field):
-                schemas[k] = v.schema
-            else:
-                if hasattr(v, "__schema__"):
-                    v = v.__schema__
-                if isinstance(v, Schema):
-                    schemas[k] = v
+            if hasattr(v, "__schema__"):
+                v = v.__schema__
+            if isinstance(v, Schema):
+                schemas[k] = v
         return schemas
 
     def _extract_post_init(cls):
@@ -50,12 +47,12 @@ def _create_model_class(model_cls, compiler, immutable):
     class Field:
         def __init__(self, name, schema):
             self.name = name
-            self.schema = schema
+            self.__schema__ = schema
             with mark_key(self.name):
                 self.validate = compiler.compile(schema)
 
         def __repr__(self):
-            return "Field(name={!r}, schema={!r})".format(self.name, self.schema)
+            return "Field(name={!r}, schema={!r})".format(self.name, self.__schema__)
 
         def __get__(self, obj, obj_type):
             if obj is None:
@@ -94,15 +91,17 @@ def _create_model_class(model_cls, compiler, immutable):
             return "{}<{}>".format(cls.__name__, fields)
 
         def __getitem__(self, keys):
-            if not isinstance(keys, (list, tuple)):
-                keys = (keys,)
             s = self.__schema__
+            items = s.items or {}
+            if not isinstance(keys, (list, tuple)):
+                if keys not in items:
+                    raise KeyError("key {!r} is not exists".format(keys))
+                return items[keys]
             schema = Schema(validator=s.validator, params=s.params.copy())
             schema.items = {}
-            items = s.items or {}
             for k in keys:
                 if k not in items:
-                    raise ValueError("key {!r} is not exists".format(k))
+                    raise KeyError("key {!r} is not exists".format(k))
                 schema.items[k] = items[k]
             return T(schema)
 
@@ -112,6 +111,7 @@ def _create_model_class(model_cls, compiler, immutable):
 
             def __init__(self, *obj, **params):
                 self.__dict__["__immutable__"] = False
+                params_set = set(params)
                 errors = []
                 if obj:
                     if len(obj) > 1:
@@ -125,23 +125,23 @@ def _create_model_class(model_cls, compiler, immutable):
                         getter = _get_dict_value
                     else:
                         getter = _get_object_value
-                    for k in self.__fields__ - set(params):
+                    for k in self.__fields__ - params_set:
                         try:
                             setattr(self, k, getter(obj, k))
                         except Invalid as ex:
                             errors.append((ex.position, ex.message))
                 else:
-                    for k in self.__fields__ - set(params):
+                    for k in self.__fields__ - params_set:
                         try:
                             setattr(self, k, None)
                         except Invalid as ex:
                             errors.append((ex.position, ex.message))
-                for k in self.__fields__ & set(params):
+                for k in self.__fields__ & params_set:
                     try:
                         setattr(self, k, params[k])
                     except Invalid as ex:
                         errors.append((ex.position, ex.message))
-                for k in set(params) - self.__fields__:
+                for k in params_set - self.__fields__:
                     errors.append((k, "undesired key"))
                 if errors:
                     table = [("Key", "Error")] + errors

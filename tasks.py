@@ -3,12 +3,14 @@ from invoke import task
 
 
 @task
-def test(ctx):
+def test(ctx, profile=False):
     os.environ['VALIDR_DEBUG'] = '1'
     os.environ['VALIDR_USE_CYTHON'] = '1'
     ctx.run('pip install --no-deps -e .')
     ctx.run('pytest --cov=validr --cov-report=term-missing')
     ctx.run('python benchmark/benchmark.py benchmark --validr')
+    if profile:
+        ctx.run('python benchmark/benchmark.py profile')
 
 
 @task

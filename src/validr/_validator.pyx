@@ -8,7 +8,22 @@ from functools import partial
 from fnmatch import fnmatch
 from urllib.parse import urlparse, urlunparse
 from email_validator import validate_email, EmailNotValidError
+
 from ._exception import Invalid, SchemaError, mark_key, mark_index
+
+
+cpdef _is_dict(obj):
+    # use isinstance(obj, Mapping) is slow,
+    # hasattr check can speed up about 30%
+    return hasattr(obj, '__getitem__') and hasattr(obj, 'get')
+
+
+cpdef _get_dict_value(obj, str key):
+    return obj.get(key, None)
+
+
+cpdef _get_object_value(obj, str key):
+    return getattr(obj, key, None)
 
 
 def validator(bint string=False):
@@ -137,29 +152,21 @@ def dict_validator(compiler, items=None, bint optional=False):
                 inners.append((k, compiler.compile(v)))
     def validate(value):
         if inners is None:
-            if not isinstance(value, dict):
+            if not _is_dict(value):
                 raise Invalid('must be dict')
             return copy.deepcopy(value)
-        # use dict instead of Mapping can speed up about 30%
-        # so use dict until someone meet problems and need Mapping
-        if isinstance(value, dict):
-            get_item = _get_dict_value
+        if _is_dict(value):
+            getter = _get_dict_value
         else:
-            get_item = _get_object_value
+            getter = _get_object_value
         result = {}
         cdef str k
         for k, inner in inners:
             with mark_key(k):
-                result[k] = inner(get_item(value, k))
+                result[k] = inner(getter(value, k))
         return result
     return validate
 
-
-cdef _get_dict_value(obj, str key):
-    return obj.get(key, None)
-
-cdef _get_object_value(obj, str key):
-    return getattr(obj, key, None)
 
 @validator(string=False)
 def int_validator(compiler, min=-sys.maxsize, max=sys.maxsize):

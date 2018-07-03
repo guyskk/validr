@@ -6,6 +6,7 @@ from terminaltables import AsciiTable
 
 from .schema import Compiler, T, Schema
 from ._exception import Invalid, mark_key
+from ._validator import _is_dict, _get_dict_value, _get_object_value
 
 
 class ImmutableInstanceError(AttributeError):
@@ -29,19 +30,19 @@ def _create_model_class(model_cls, compiler, immutable):
     def _extract_schemas(cls):
         schemas = {}
         for k, v in vars(cls).items():
-            if k == '__schema__':
+            if k == "__schema__":
                 continue
             if isinstance(v, Field):
                 schemas[k] = v.schema
             else:
-                if hasattr(v, '__schema__'):
+                if hasattr(v, "__schema__"):
                     v = v.__schema__
                 if isinstance(v, Schema):
                     schemas[k] = v
         return schemas
 
     def _extract_post_init(cls):
-        f = vars(cls).get('__post_init__', None)
+        f = vars(cls).get("__post_init__", None)
         if f is None or not callable(f):
             return None
         return f
@@ -54,7 +55,7 @@ def _create_model_class(model_cls, compiler, immutable):
                 self.validate = compiler.compile(schema)
 
         def __repr__(self):
-            return 'Field(name={!r}, schema={!r})'.format(self.name, self.schema)
+            return "Field(name={!r}, schema={!r})".format(self.name, self.schema)
 
         def __get__(self, obj, obj_type):
             if obj is None:
@@ -67,7 +68,6 @@ def _create_model_class(model_cls, compiler, immutable):
             obj.__dict__[self.name] = value
 
     class ModelMeta(type):
-
         def __init__(cls, *args, **kwargs):
             super().__init__(*args, **kwargs)
             schemas = {}
@@ -90,8 +90,8 @@ def _create_model_class(model_cls, compiler, immutable):
 
         def __repr__(cls):
             # use __schema__ can keep fields order in python>=3.6
-            fields = ', '.join(cls.__schema__.items)
-            return '{}<{}>'.format(cls.__name__, fields)
+            fields = ", ".join(cls.__schema__.items)
+            return "{}<{}>".format(cls.__name__, fields)
 
         def __getitem__(self, keys):
             if not isinstance(keys, (list, tuple)):
@@ -102,29 +102,32 @@ def _create_model_class(model_cls, compiler, immutable):
             items = s.items or {}
             for k in keys:
                 if k not in items:
-                    raise ValueError('key {!r} is not exists'.format(k))
+                    raise ValueError("key {!r} is not exists".format(k))
                 schema.items[k] = items[k]
             return T(schema)
 
     class Model(model_cls, metaclass=ModelMeta):
 
-        if '__init__' not in model_cls.__dict__:
+        if "__init__" not in model_cls.__dict__:
+
             def __init__(self, *obj, **params):
-                self.__dict__['__immutable__'] = False
+                self.__dict__["__immutable__"] = False
                 errors = []
                 if obj:
                     if len(obj) > 1:
-                        msg = ('__init__() takes 2 positional arguments '
-                               'but {} were given'.format(len(obj) + 1))
+                        msg = (
+                            "__init__() takes 2 positional arguments "
+                            "but {} were given".format(len(obj) + 1)
+                        )
                         raise TypeError(msg)
                     obj = obj[0]
-                    if isinstance(obj, dict):
-                        msg = ('__init__() not support dict object as '
-                               'positional argument, the behavior is ambiguous')
-                        raise TypeError(msg)
+                    if _is_dict(obj):
+                        getter = _get_dict_value
+                    else:
+                        getter = _get_object_value
                     for k in self.__fields__ - set(params):
                         try:
-                            setattr(self, k, getattr(obj, k, None))
+                            setattr(self, k, getter(obj, k))
                         except Invalid as ex:
                             errors.append((ex.position, ex.message))
                 else:
@@ -139,45 +142,50 @@ def _create_model_class(model_cls, compiler, immutable):
                     except Invalid as ex:
                         errors.append((ex.position, ex.message))
                 for k in set(params) - self.__fields__:
-                    errors.append((k, 'undesired key'))
+                    errors.append((k, "undesired key"))
                 if errors:
-                    table = [('Key', 'Error')] + errors
-                    raise Invalid('\n' + AsciiTable(table).table)
+                    table = [("Key", "Error")] + errors
+                    raise Invalid("\n" + AsciiTable(table).table)
                 type(self).post_init(self)
-                self.__dict__['__immutable__'] = immutable
+                self.__dict__["__immutable__"] = immutable
+
         else:
+
             def __init__(self, *args, **kwargs):
-                self.__dict__['__immutable__'] = False
+                self.__dict__["__immutable__"] = False
                 super().__init__(*args, **kwargs)
                 type(self).post_init(self)
-                self.__dict__['__immutable__'] = immutable
+                self.__dict__["__immutable__"] = immutable
 
         if immutable:
+
             def __setattr__(self, name, value):
                 if self.__immutable__:
-                    msg = '{} object is immutable!'.format(model_cls.__name__)
+                    msg = "{} object is immutable!".format(model_cls.__name__)
                     raise ImmutableInstanceError(msg)
                 return object.__setattr__(self, name, value)
 
             def __delattr__(self, name):
                 if self.__immutable__:
-                    msg = '{} object is immutable!'.format(model_cls.__name__)
+                    msg = "{} object is immutable!".format(model_cls.__name__)
                     raise ImmutableInstanceError(msg)
                 return object.__delattr__(self, name)
 
-        if '__repr__' not in model_cls.__dict__:
+        if "__repr__" not in model_cls.__dict__:
+
             def __repr__(self):
                 params = []
                 # use __schema__ can keep fields order
                 for k in self.__schema__.items:
                     v = getattr(self, k)
-                    params.append('{}={!r}'.format(k, v))
-                params = ', '.join(params)
-                return '{}({})'.format(type(self).__name__, params)
+                    params.append("{}={!r}".format(k, v))
+                params = ", ".join(params)
+                return "{}({})".format(type(self).__name__, params)
 
-        if '__eq__' not in model_cls.__dict__:
+        if "__eq__" not in model_cls.__dict__:
+
             def __eq__(self, other):
-                fields = getattr(other, '__fields__')
+                fields = getattr(other, "__fields__")
                 if not fields:
                     return False
                 if self.__fields__ != fields:

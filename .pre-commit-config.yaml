@@ -18,8 +18,6 @@
     - id: debug-statements
     - id: check-docstring-first
       files: \.(py|pyx)$
-    - id: double-quote-string-fixer
-      files: \.(py|pyx)$
     - id: fix-encoding-pragma
       files: \.(py|pyx)$
       args:

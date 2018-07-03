@@ -43,7 +43,7 @@ if DEBUG:
 
 setup(
     name='validr',
-    version='1.0.1',
+    version='1.0.2',
     keywords='validation validator validate schema jsonschema',
     description=('A simple, fast, extensible python library '
                  'for data validation.'),

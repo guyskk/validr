@@ -93,7 +93,7 @@ def _create_model_class(model_cls, compiler, immutable):
         def __getitem__(self, keys):
             s = self.__schema__
             items = s.items or {}
-            if not isinstance(keys, (list, tuple)):
+            if not isinstance(keys, (list, tuple, set, frozenset)):
                 if keys not in items:
                     raise KeyError("key {!r} is not exists".format(keys))
                 return items[keys]

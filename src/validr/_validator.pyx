@@ -104,6 +104,8 @@ def validator(bint string=False):
                 m_validate.__qualname__ = '{}<{}>'.format(f.__qualname__, m_repr)
             m_validate.__doc__ = f.__doc__ if f.__doc__ else desc
             return m_validate
+        m_validator.is_string = string
+        m_validator.validator = f
         m_validator.__module__ = f.__module__
         m_validator.__name__ = f.__name__
         if hasattr(f, '__qualname__'):

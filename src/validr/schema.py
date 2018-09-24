@@ -269,10 +269,11 @@ class Schema:
 
 class Compiler:
 
-    def __init__(self, validators=None, is_dump=False):
+    def __init__(self, validators=None, helpers=None, is_dump=False):
         self.validators = builtin_validators.copy()
         if validators:
             self.validators.update(validators)
+        self.helpers = helpers
         self.is_dump = is_dump
 
     def compile(self, schema):

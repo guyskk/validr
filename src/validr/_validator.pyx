@@ -117,7 +117,8 @@ def validator(bint string=False):
 
 @validator(string=False)
 def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
-                   bint unique=False, bint optional=False):
+                   bint unique=False, bint optional=False,
+                   str unique_key_helper=''):
     if items is None:
         inner = None
     else:
@@ -129,14 +130,21 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
         except TypeError:
             raise Invalid('not list')
         result = []
+        keys = set()
         cdef int i = -1
         for i, x in value:
             if i >= maxlen:
                 raise Invalid('list length must <= %d' % maxlen)
             with mark_index(i):
                 v = inner(x) if inner is not None else copy.deepcopy(x)
-                if unique and v in result:
-                    raise Invalid('not unique')
+                if unique:
+                    if unique_key_helper:
+                        key = compiler.helpers.get(unique_key_helper)(v)
+                        if key in keys:
+                            raise Invalid('not unique')
+                        keys.add(key)
+                    elif v in result:
+                        raise Invalid('not unique')
             result.append(v)
         if i + 1 < minlen:
             raise Invalid('list length must >= %d' % minlen)

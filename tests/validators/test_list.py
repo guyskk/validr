@@ -1,5 +1,7 @@
-from validr import T
-from . import case
+import pytest
+
+from validr import T, SchemaError
+from . import case, compiler
 
 
 @case({
@@ -33,6 +35,20 @@ from . import case
             [{'key': 1}, {'key': 1}],
         ]
     },
+    T.list(T.list(T.int)).unique: {
+        'valid': [
+            [
+                [1, 1],
+                [2, 2],
+            ],
+        ],
+        'invalid': [
+            [
+                [1, 2],
+                [1, 2],
+            ],
+        ]
+    },
     T.list(T.int).minlen(1).maxlen(3): {
         'valid': [
             [1],
@@ -46,3 +62,16 @@ from . import case
 })
 def test_list():
     pass
+
+
+@pytest.mark.parametrize('schema', [
+    T.list.unique,
+    T.list(T.dict).unique,
+    T.list(T.list).unique,
+    T.list(T.dict(key=T.dict(key=T.int))).unique,
+    T.list(T.list(T.dict(key=T.int))).unique,
+])
+def test_unable_check_unique(schema):
+    with pytest.raises(SchemaError) as exinfo:
+        compiler.compile(schema)
+    assert 'Unable to check unique' in exinfo.value.message

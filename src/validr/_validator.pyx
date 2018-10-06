@@ -115,6 +115,53 @@ def validator(bint string=False):
     return decorator
 
 
+_UNIQUE_CHECK_ERROR_MESSAGE = """
+Unable to check unique! only list of types below are available:
+    1. scalar type, eg: bool, int, float, str
+    2. list of scalar type
+    3. dict of scalar type value
+There are no general and fast unique check for non-hashable types,
+you should do unique check by yourself in this case.
+""".strip()
+
+
+def _is_scalar(validator):
+    return validator != 'dict' and validator != 'list'
+
+
+def _key_func_of_schema(schema):
+    if schema is None:
+        raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
+
+    if schema.validator == 'dict':
+        if schema.items is None:
+            raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
+        keys = []
+        for k, v in schema.items.items():
+            if not _is_scalar(v.validator):
+                raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
+            keys.append(k)
+
+        def key_of(v):
+            return tuple(v[k] for k in keys)
+
+    elif schema.validator == 'list':
+        if schema.items is None:
+            raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
+        if not _is_scalar(schema.items.validator):
+            raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
+
+        def key_of(v):
+            return tuple(v)
+
+    else:
+
+        def key_of(v):
+            return v
+
+    return key_of
+
+
 @validator(string=False)
 def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
                    bint unique=False, bint optional=False):
@@ -123,20 +170,28 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
     else:
         with mark_index():
             inner = compiler.compile(items)
+    if unique:
+        key_of = _key_func_of_schema(items)
+
     def validate(value):
         try:
             value = enumerate(value)
         except TypeError:
             raise Invalid('not list')
         result = []
+        if unique:
+            keys = set()
         cdef int i = -1
         for i, x in value:
             if i >= maxlen:
                 raise Invalid('list length must <= %d' % maxlen)
             with mark_index(i):
                 v = inner(x) if inner is not None else copy.deepcopy(x)
-                if unique and v in result:
-                    raise Invalid('not unique')
+                if unique:
+                    k = key_of(v)
+                    if k in keys:
+                        raise Invalid('not unique')
+                    keys.add(k)
             result.append(v)
         if i + 1 < minlen:
             raise Invalid('list length must >= %d' % minlen)

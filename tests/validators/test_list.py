@@ -35,6 +35,14 @@ from . import case, compiler
             [{'key': 1}, {'key': 1}],
         ]
     },
+    T.list(T.dict(key=T.dict(key=T.int))).unique: {
+        'valid': [
+            [{'key': {'key': 1}}, {'key': {'key': 2}}],
+        ],
+        'invalid': [
+            [{'key': {'key': 1}}, {'key': {'key': 1}}]
+        ]
+    },
     T.list(T.list(T.int)).unique: {
         'valid': [
             [
@@ -46,6 +54,20 @@ from . import case, compiler
             [
                 [1, 2],
                 [1, 2],
+            ],
+        ]
+    },
+    T.list(T.list(T.dict(key=T.int))).unique: {
+        'valid': [
+            [
+                [{'key': 1}, {'key': 1}],
+                [{'key': 2}, {'key': 2}],
+            ],
+        ],
+        'invalid': [
+            [
+                [{'key': 1}, {'key': 2}],
+                [{'key': 1}, {'key': 2}],
             ],
         ]
     },
@@ -68,10 +90,8 @@ def test_list():
     T.list.unique,
     T.list(T.dict).unique,
     T.list(T.list).unique,
-    T.list(T.dict(key=T.dict(key=T.int))).unique,
-    T.list(T.list(T.dict(key=T.int))).unique,
 ])
 def test_unable_check_unique(schema):
     with pytest.raises(SchemaError) as exinfo:
         compiler.compile(schema)
-    assert 'Unable to check unique' in exinfo.value.message
+    assert 'unable to check unique' in exinfo.value.message

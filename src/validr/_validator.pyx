@@ -115,18 +115,11 @@ def validator(bint string=False):
     return decorator
 
 
-_UNIQUE_CHECK_ERROR_MESSAGE = """
-Unable to check unique! only list of types below are available:
-    1. scalar type, eg: bool, int, float, str
-    2. list of scalar type
-    3. dict of scalar type value
-There are no general and fast unique check for non-hashable types,
-you should do unique check by yourself in this case.
-""".strip()
+cdef str _UNIQUE_CHECK_ERROR_MESSAGE = "unable to check unique for non-hashable types"
 
 
-def _is_scalar(validator):
-    return validator != 'dict' and validator != 'list'
+cdef _key_of_scalar(v):
+    return v
 
 
 def _key_func_of_schema(schema):
@@ -138,26 +131,22 @@ def _key_func_of_schema(schema):
             raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
         keys = []
         for k, v in schema.items.items():
-            if not _is_scalar(v.validator):
-                raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
-            keys.append(k)
+            keys.append((k, _key_func_of_schema(v)))
 
-        def key_of(v):
-            return tuple(v[k] for k in keys)
+        def key_of(dict v):
+            cdef str k
+            return tuple(key_of_value(v[k]) for k, key_of_value in keys)
 
     elif schema.validator == 'list':
         if schema.items is None:
             raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
-        if not _is_scalar(schema.items.validator):
-            raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
+        key_of_value = _key_func_of_schema(schema.items)
 
-        def key_of(v):
-            return tuple(v)
+        def key_of(list v):
+            return tuple(key_of_value(x) for x in v)
 
     else:
-
-        def key_of(v):
-            return v
+        key_of = _key_of_scalar
 
     return key_of
 
@@ -197,6 +186,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
             raise Invalid('list length must >= %d' % minlen)
         return result
     return validate
+
 
 @validator(string=False)
 def dict_validator(compiler, items=None, bint optional=False):

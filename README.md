@@ -48,25 +48,27 @@ https://github.com/guyskk/validr/wiki
 
 ## Performance
 
-benchmark result in travis-ci:
+benchmark result in Travis-CI:
 
 ```
 --------------------------timeits---------------------------
-        json:loads-dumps         10000 loops cost 0.214s
-  jsonschema:draft3              10000 loops cost 1.249s
-  jsonschema:draft4              10000 loops cost 1.242s
-      schema:default              1000 loops cost 0.507s
-  schematics:default              1000 loops cost 1.340s
-      validr:default            100000 loops cost 0.951s
-  voluptuous:default             10000 loops cost 0.531s
+  voluptuous:default             10000 loops cost 0.368s
+      schema:default              1000 loops cost 0.318s
+        json:loads-dumps        100000 loops cost 1.380s
+      validr:default            100000 loops cost 0.719s
+      validr:model              100000 loops cost 1.676s
+  jsonschema:draft3              10000 loops cost 0.822s
+  jsonschema:draft4              10000 loops cost 0.785s
+  schematics:default              1000 loops cost 0.792s
 ---------------------------scores---------------------------
+  voluptuous:default               375
+      schema:default                43
         json:loads-dumps          1000
-  jsonschema:draft3                171
-  jsonschema:draft4                172
-      schema:default                42
-  schematics:default                16
-      validr:default              2247
-  voluptuous:default               403
+      validr:default              1918
+      validr:model                 823
+  jsonschema:draft3                168
+  jsonschema:draft4                176
+  schematics:default                17
 ```
 
 ## Develop

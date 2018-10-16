@@ -4,7 +4,7 @@ from glob import glob
 from multiprocessing import cpu_count
 from setuptools import Extension, setup
 
-with open(os.path.join(dirname(__file__), 'README.md')) as f:
+with open(os.path.join(dirname(__file__), 'README.md'), 'r', encoding='utf-8') as f:
     long_description = f.read()
 
 DEBUG = os.getenv('VALIDR_DEBUG') == '1'

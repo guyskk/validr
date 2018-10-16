@@ -115,6 +115,42 @@ def validator(bint string=False):
     return decorator
 
 
+cdef str _UNIQUE_CHECK_ERROR_MESSAGE = "unable to check unique for non-hashable types"
+
+
+cdef _key_of_scalar(v):
+    return v
+
+
+def _key_func_of_schema(schema):
+    if schema is None:
+        raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
+
+    if schema.validator == 'dict':
+        if schema.items is None:
+            raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
+        keys = []
+        for k, v in schema.items.items():
+            keys.append((k, _key_func_of_schema(v)))
+
+        def key_of(dict v):
+            cdef str k
+            return tuple(key_of_value(v[k]) for k, key_of_value in keys)
+
+    elif schema.validator == 'list':
+        if schema.items is None:
+            raise SchemaError(_UNIQUE_CHECK_ERROR_MESSAGE)
+        key_of_value = _key_func_of_schema(schema.items)
+
+        def key_of(list v):
+            return tuple(key_of_value(x) for x in v)
+
+    else:
+        key_of = _key_of_scalar
+
+    return key_of
+
+
 @validator(string=False)
 def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
                    bint unique=False, bint optional=False):
@@ -123,25 +159,34 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
     else:
         with mark_index():
             inner = compiler.compile(items)
+    if unique:
+        key_of = _key_func_of_schema(items)
+
     def validate(value):
         try:
             value = enumerate(value)
         except TypeError:
             raise Invalid('not list')
         result = []
+        if unique:
+            keys = set()
         cdef int i = -1
         for i, x in value:
             if i >= maxlen:
                 raise Invalid('list length must <= %d' % maxlen)
             with mark_index(i):
                 v = inner(x) if inner is not None else copy.deepcopy(x)
-                if unique and v in result:
-                    raise Invalid('not unique')
+                if unique:
+                    k = key_of(v)
+                    if k in keys:
+                        raise Invalid('not unique')
+                    keys.add(k)
             result.append(v)
         if i + 1 < minlen:
             raise Invalid('list length must >= %d' % minlen)
         return result
     return validate
+
 
 @validator(string=False)
 def dict_validator(compiler, items=None, bint optional=False):

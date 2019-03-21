@@ -18,7 +18,7 @@ def clean(ctx):
     ctx.run('rm -rf build/*')
     ctx.run('rm -rf dist/*')
     ctx.run('rm -rf .pytest_cache')
-    ctx.run('find . | grep -E "(__pycache__|\.egg-info|\.so|\.c|\.pyc|\.pyo)$" | xargs rm -rf')
+    ctx.run(r'find . | grep -E "(__pycache__|\.egg-info|\.so|\.c|\.pyc|\.pyo)$" | xargs rm -rf')
 
 
 @task(pre=[clean])

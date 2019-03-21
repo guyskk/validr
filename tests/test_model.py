@@ -111,7 +111,7 @@ def test_asdict():
 def test_slice():
     expect = T.int.min(100).default(100)
     assert User["id"] == expect
-    assert User["id",] == T.dict(id=expect)
+    assert User["id", ] == T.dict(id=expect)
     assert T(User.id) == expect
     assert User["id", "name"] == T.dict(id=expect, name=T.str)
     with pytest.raises(KeyError):

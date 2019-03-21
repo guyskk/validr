@@ -34,7 +34,7 @@ from . import case
     ],
     T.bool.default(False): [
         (None, False),
-        ['']
+        ('', False),
     ],
 })
 def test_bool():

@@ -2,6 +2,7 @@ import re
 import sys
 import copy
 import uuid
+import time
 import datetime
 import ipaddress
 from functools import partial
@@ -26,37 +27,86 @@ cpdef _get_object_value(obj, str key):
     return getattr(obj, key, None)
 
 
-def validator(bint string=False):
+def validator(string=None, *, accept=None, output=None):
     """Decorator for create validator
 
     It will handle params default,optional,desc automatically.
 
     Usage:
 
-        @validator(string=False)
-        def xxx_validator(compiler, **params):
+        @validator(accept=(str,object), output=(str,object))
+        def xxx_validator(compiler, output_object, **params):
             def validate(value):
                 try:
-                    return value  # validate/convert the value
+                    # validate/convert the value
                 except Exception:
-                    raise Invalid('invalid xxx')
+                    # raise Invalid('invalid xxx')
+                if output_object:
+                    # return python object
+                else:
+                    # return string
             return validate
 
     Args:
-        string (bool): treat empty string as None or not
+        accept (str | object | (str,object)):
+            str: the validator accept only string, treat both None and empty string as None
+            object: the validator accept only object
+            (str,object): (default) the validator accept both string and object,
+                treat both None and empty string as None
+        output (str | object | (str,object)):
+            str: (default) the validator always output string, convert None to empty string
+            object: the validator always output object
+            (str, object): the validator can output both string and object,
+                and has an `object` parameter to control which to output
+        string (bool): deprecated in v1.1.0.
+            string=True equal to accept=(str, object), output=str
+            string=False equal to accept=(str, object), output=object
     """
+    cdef bint accept_string, accept_object, output_string, output_object
+    if isinstance(accept, (tuple, set, list)):
+        accept_string = str in accept
+        accept_object = object in accept
+    elif accept is not None:
+        accept_string = str is accept
+        accept_object = object is accept
+    else:
+        accept_string = True
+        accept_object = True
+    if not (accept_string or accept_object):
+        raise ValueError('invalid accept argument {}'.format(accept))
+    if isinstance(output, (tuple, set, list)):
+        output_string = str in output
+        output_object = object in output
+    elif output is not None:
+        output_string = str is output
+        output_object = object is output
+    else:
+        output_string = string
+        output_object = not string
+    if not (output_string or output_object):
+        raise ValueError('invalid output argument {}'.format(output))
+    del string, accept, output
+
     def decorator(f):
 
         def m_validator(compiler, schema):
             params = schema.params.copy()
             if schema.items is not None:
                 params['items'] = schema.items
+            cdef bint local_output_object = output_object
+            if output_string and output_object:
+                local_output_object = bool(params.pop('object', None))
+                params['output_object'] = local_output_object
+            if local_output_object:
+                null_output = None
+            else:
+                null_output = ''
             cdef bint optional = params.pop('optional', False)
             default = params.pop('default', None)
             desc = params.pop('desc', None)
 
             cdef bint has_default
-            if string:
+            if accept_string:
                 has_default = not (default is None or default == '')
             else:
                 has_default = not (default is None)
@@ -74,15 +124,17 @@ def validator(bint string=False):
                     raise SchemaError(msg) from None
 
             # optimize, speedup 15%
-            if string:
+            if accept_string:
                 def m_validate(value):
                     if value is None or value == '':
                         if has_default:
                             return default
                         elif optional:
-                            return ''
+                            return null_output
                         else:
                             raise Invalid('required')
+                    if not accept_object and not isinstance(value, str):
+                        raise Invalid('require string value')
                     return validate(value)
             else:
                 def m_validate(value):
@@ -90,7 +142,7 @@ def validator(bint string=False):
                         if has_default:
                             return default
                         elif optional:
-                            return None
+                            return null_output
                         else:
                             raise Invalid('required')
                     return validate(value)
@@ -104,7 +156,11 @@ def validator(bint string=False):
                 m_validate.__qualname__ = '{}<{}>'.format(f.__qualname__, m_repr)
             m_validate.__doc__ = f.__doc__ if f.__doc__ else desc
             return m_validate
-        m_validator.is_string = string
+        m_validator.is_string = output_string
+        m_validator.accept_string = accept_string
+        m_validator.accept_object = accept_object
+        m_validator.output_string = output_string
+        m_validator.output_object = output_object
         m_validator.validator = f
         m_validator.__module__ = f.__module__
         m_validator.__name__ = f.__name__
@@ -151,7 +207,7 @@ def _key_func_of_schema(schema):
     return key_of
 
 
-@validator(string=False)
+@validator(accept=object, output=object)
 def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
                    bint unique=False, bint optional=False):
     if items is None:
@@ -188,7 +244,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
     return validate
 
 
-@validator(string=False)
+@validator(accept=object, output=object)
 def dict_validator(compiler, items=None, bint optional=False):
     if items is None:
         inners = None
@@ -215,7 +271,7 @@ def dict_validator(compiler, items=None, bint optional=False):
     return validate
 
 
-@validator(string=False)
+@validator(output=object)
 def int_validator(compiler, min=-sys.maxsize, max=sys.maxsize):
     """Validate int or convert string to int
 
@@ -236,7 +292,7 @@ def int_validator(compiler, min=-sys.maxsize, max=sys.maxsize):
     return validate
 
 
-@validator(string=False)
+@validator(output=object)
 def bool_validator(compiler):
     """Validate bool"""
     def validate(value):
@@ -255,7 +311,7 @@ def bool_validator(compiler):
     return validate
 
 
-@validator(string=False)
+@validator(output=object)
 def float_validator(compiler, min=-sys.float_info.max, max=sys.float_info.max,
                     bint exmin=False, bint exmax=False):
     """Validate float string
@@ -287,9 +343,9 @@ def float_validator(compiler, min=-sys.float_info.max, max=sys.float_info.max,
     return validate
 
 
-@validator(string=True)
+@validator(output=str)
 def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
-                  bint strip=False, bint escape=False):
+                  bint strip=False, bint escape=False, bint accept_object=False):
     """Validate string
 
     Args:
@@ -299,7 +355,10 @@ def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
     """
     def validate(value):
         if not isinstance(value, str):
-            raise Invalid('invalid string')
+            if accept_object:
+                value = str(value)
+            else:
+                raise Invalid('invalid string')
         if strip:
             value = value.strip()
         cdef int length = len(value)
@@ -318,8 +377,8 @@ def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
     return validate
 
 
-@validator(string=True)
-def date_validator(compiler, format='%Y-%m-%d'):
+@validator(output=(str,object))
+def date_validator(compiler, format='%Y-%m-%d', bint output_object=False):
     """Validate date string or convert date to string
 
     Args:
@@ -329,14 +388,17 @@ def date_validator(compiler, format='%Y-%m-%d'):
         try:
             if not isinstance(value, (datetime.datetime, datetime.date)):
                 value = datetime.datetime.strptime(value, format)
-            return value.strftime(format)
+            if output_object:
+                return value
+            else:
+                return value.strftime(format)
         except Exception:
             raise Invalid('invalid date') from None
     return validate
 
 
-@validator(string=True)
-def time_validator(compiler, format='%H:%M:%S'):
+@validator(output=(str,object))
+def time_validator(compiler, format='%H:%M:%S', bint output_object=False):
     """Validate time string or convert time to string
 
     Args:
@@ -346,15 +408,17 @@ def time_validator(compiler, format='%H:%M:%S'):
         try:
             if not isinstance(value, (datetime.datetime, datetime.time)):
                 value = datetime.datetime.strptime(value, format)
-            return value.strftime(format)
+            if output_object:
+                return value
+            else:
+                return value.strftime(format)
         except Exception:
             raise Invalid('invalid time') from None
     return validate
 
-import time
 
-@validator(string=True)
-def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ'):
+@validator(output=(str,object))
+def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_object=False):
     """Validate datetime string or convert datetime to string
 
     Args:
@@ -366,36 +430,47 @@ def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ'):
                 value = datetime.datetime.fromtimestamp(time.mktime(value))
             elif not isinstance(value, datetime.datetime):
                 value = datetime.datetime.strptime(value, format)
-            return value.strftime(format)
+            if output_object:
+                return value
+            else:
+                return value.strftime(format)
         except Exception:
             raise Invalid('invalid datetime') from None
     return validate
 
 
-@validator(string=True)
-def ipv4_validator(compiler):
+@validator(output=(str,object))
+def ipv4_validator(compiler, bint output_object=False):
     def validate(value):
         try:
-            return ipaddress.IPv4Address(value.strip()).compressed
+            value = ipaddress.IPv4Address(value.strip())
         except ipaddress.AddressValueError as ex:
             raise Invalid(str(ex)) from None
         except Exception:
             raise Invalid('invalid ipv4 address') from None
+        if output_object:
+            return value
+        else:
+            return value.compressed
     return validate
 
 
-@validator(string=True)
-def ipv6_validator(compiler):
+@validator(output=(str,object))
+def ipv6_validator(compiler, bint output_object=False):
     def validate(value):
         try:
-            return ipaddress.IPv6Address(value.strip()).compressed
+            value = ipaddress.IPv6Address(value.strip())
         except ipaddress.AddressValueError as ex:
             raise Invalid(str(ex)) from None
         except Exception:
             raise Invalid('invalid ipv6 address') from None
+        if output_object:
+            return value
+        else:
+            return value.compressed
     return validate
 
-@validator(string=True)
+@validator(accept=str, output=str)
 def email_validator(compiler):
     # https://stackoverflow.com/questions/201323/using-a-regular-expression-to-validate-an-email-address
     # http://emailregex.com/
@@ -414,8 +489,8 @@ def email_validator(compiler):
     return validate
 
 
-@validator(string=True)
-def url_validator(compiler, scheme='http https', maxlen=256):
+@validator(output=(str,object))
+def url_validator(compiler, scheme='http https', maxlen=256, bint output_object=False):
     # https://stackoverflow.com/questions/7160737/python-how-to-validate-a-url-in-python-malformed-or-not
     # https://stackoverflow.com/questions/827557/how-do-you-validate-a-url-with-a-regular-expression-in-python
     # https://github.com/python-hyper/rfc3986
@@ -435,12 +510,15 @@ def url_validator(compiler, scheme='http https', maxlen=256):
             raise Invalid('invalid url') from None
         if not parsed.scheme or parsed.scheme not in allow_scheme:
             raise Invalid(f'invalid url scheme, expect {allow_scheme}')
-        return urlunparse(parsed)
+        if output_object:
+            return parsed
+        else:
+            return urlunparse(parsed)
     return validate
 
 
-@validator(string=True)
-def uuid_validator(compiler, version=None):
+@validator(output=(str,object))
+def uuid_validator(compiler, version=None, bint output_object=False):
     if version is None:
         msg = 'invalid uuid'
     else:
@@ -455,7 +533,10 @@ def uuid_validator(compiler, version=None):
                 raise Invalid(msg) from None
         if version is not None and value.version != version:
             raise Invalid(msg)
-        return str(value)
+        if output_object:
+            return value
+        else:
+            return str(value)
     return validate
 
 
@@ -484,7 +565,7 @@ def create_re_validator(str name, r):
         return validate
     re_validator.__name__ = name + '_validator'
     re_validator.__qualname__ = name + '_validator'
-    return validator(string=True)(re_validator)
+    return validator(accept=str, output=str)(re_validator)
 
 
 builtin_validators = {
@@ -531,4 +612,7 @@ def create_enum_validator(str name, items, string=True):
         return validate
     enum_validator.__name__ = name + '_validator'
     enum_validator.__qualname__ = name + '_validator'
-    return validator(string=string)(enum_validator)
+    if string:
+        return validator(accept=str, output=str)(enum_validator)
+    else:
+        return validator(accept=object, output=object)(enum_validator)

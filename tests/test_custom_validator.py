@@ -3,7 +3,7 @@ from validr import create_enum_validator, builtin_validators
 
 
 def test_custom_validator():
-    @validator(string=True)
+    @validator(accept=str, output=str)
     def choice_validator(compiler, items):
         choices = set(items.split())
 
@@ -24,10 +24,14 @@ def test_custom_validator():
 def test_wrapped_validator():
     str_validator = builtin_validators['str']
     assert str_validator.is_string
+    assert str_validator.accept_string
+    assert str_validator.accept_object
+    assert str_validator.output_string
+    assert not str_validator.output_object
 
     logs = []
 
-    @validator(string=True)
+    @validator(accept=(str, object), string=True)
     def wrapped_str_validator(*args, **kwargs):
         _validate = str_validator.validator(*args, **kwargs)
 

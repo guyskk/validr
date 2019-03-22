@@ -8,13 +8,12 @@ _ = Compiler().compile
 
 def test_optional():
     assert _(T.int.optional)(None) is None
+    assert _(T.int.optional)('') is None
     assert _(T.str.optional)(None) == ''
     assert _(T.str.optional)('') == ''
     assert _(T.list(T.int).optional)(None) is None
     assert _(T.dict(key=T.int).optional)(None) is None
 
-    with pytest.raises(Invalid):
-        assert _(T.int.optional)('')
     with pytest.raises(Invalid):
         assert _(T.dict(key=T.int).optional)('')
 

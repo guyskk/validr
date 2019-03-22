@@ -89,7 +89,7 @@ def validator(string=None, *, accept=None, output=None):
 
     def decorator(f):
 
-        def m_validator(compiler, schema):
+        def _m_validator(compiler, schema):
             params = schema.params.copy()
             if schema.items is not None:
                 params['items'] = schema.items
@@ -142,7 +142,7 @@ def validator(string=None, *, accept=None, output=None):
 
             # optimize, speedup 15%
             if accept_string:
-                def m_validate(value):
+                def _m_validate(value):
                     if value is None or value == '':
                         if has_default:
                             return default
@@ -154,7 +154,7 @@ def validator(string=None, *, accept=None, output=None):
                         raise Invalid('require string value')
                     return validate(value)
             else:
-                def m_validate(value):
+                def _m_validate(value):
                     if value is None:
                         if has_default:
                             return default
@@ -164,13 +164,17 @@ def validator(string=None, *, accept=None, output=None):
                             raise Invalid('required')
                     return validate(value)
 
-            if has_invalid_to or invalid_to_default:
-                _m_validate = m_validate
-                def m_validate(value):
-                    try:
-                        return _m_validate(value)
-                    except Invalid:
+            supress_invalid = has_invalid_to or invalid_to_default
+
+            def m_validate(value):
+                try:
+                    return _m_validate(value)
+                except Invalid as ex:
+                    ex.set_value(value)
+                    if supress_invalid:
                         return invalid_to
+                    else:
+                        raise
 
             # make friendly validate func representation
             m_repr = schema.repr(prefix=False, desc=False)
@@ -181,6 +185,14 @@ def validator(string=None, *, accept=None, output=None):
                 m_validate.__qualname__ = '{}<{}>'.format(f.__qualname__, m_repr)
             m_validate.__doc__ = f.__doc__ if f.__doc__ else desc
             return m_validate
+
+        def m_validator(compiler, schema):
+            try:
+                return _m_validator(compiler, schema)
+            except SchemaError as ex:
+                ex.set_value(schema)
+                raise
+
         m_validator.is_string = output_string
         m_validator.accept_string = accept_string
         m_validator.accept_object = accept_object

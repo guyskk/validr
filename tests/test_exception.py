@@ -25,18 +25,32 @@ def test_exception_position():
     assert e.position == 'key[0][]'
 
 
+def test_exception_field():
+    e = Invalid('invalid').mark_key('key')
+    assert e.field == 'key'
+
+    e = Invalid('invalid').mark_key('key').mark_index(0)
+    assert e.field == 0
+
+    e = Invalid('invalid').mark_index(0).mark_key('key')
+    assert e.field == 'key'
+
+
 def test_exception_str():
     ex = Invalid('invalid').mark_index(0).mark_key('key')
-    assert str(ex) == 'invalid in key[0]'
+    assert str(ex) == 'key[0]: invalid'
 
     ex = Invalid().mark_index(0).mark_key('key')
-    assert str(ex) == 'in key[0]'
+    assert str(ex) == 'key[0]: invalid'
 
     ex = Invalid('invalid')
     assert str(ex) == 'invalid'
 
     ex = Invalid()
-    assert str(ex) == ''
+    assert str(ex) == 'invalid'
+
+    ex = Invalid(value='x' * 1000)
+    assert len(str(ex)) < 100
 
 
 @expect_position('[0]')

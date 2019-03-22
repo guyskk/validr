@@ -56,6 +56,17 @@ def test_invalid_to_schema_error(schema):
         _(schema)
 
 
+@pytest.mark.parametrize('schema,value,expect', [
+    (T.int, 'x', 'x'),
+    (T.dict(key=T.int), {'key': 'x'}, 'x'),
+    (T.list(T.int), [1, 'x'], 'x'),
+])
+def test_exception_value(schema, value, expect):
+    with pytest.raises(Invalid) as exinfo:
+        _(schema)(value)
+    assert exinfo.value.value == expect
+
+
 @schema_error_position(
     (T.unknown, ''),
     (T.str.unknown, ''),

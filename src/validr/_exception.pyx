@@ -1,8 +1,27 @@
+_NOT_SET = object()
+
+
+cpdef shorten(str text, int length):
+    if len(text) > length:
+        return text[:length] + '..'
+    return text
+
+
+cpdef _format_error(args, str position, str value_clause=None):
+    cdef str msg = str(args[0]) if args else 'invalid'
+    if position:
+        msg = '%s: %s' % (position, msg)
+    if value_clause:
+        msg = '%s, %s' % (msg, value_clause)
+    return msg
+
+
 class ValidrError(ValueError):
     """Base exception of validr"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, value=_NOT_SET, **kwargs):
         super().__init__(*args, **kwargs)
+        self._value = value
         # marks item: (is_key, index_or_key)
         self.marks = []
 
@@ -13,6 +32,31 @@ class ValidrError(ValueError):
     def mark_key(self, str key):
         self.marks.append((True, key))
         return self
+
+    @property
+    def has_value(self):
+        """Check has value set"""
+        return self._value is not _NOT_SET
+
+    def set_value(self, value):
+        """Set value if not set"""
+        if self._value is _NOT_SET:
+            self._value = value
+
+    @property
+    def value(self):
+        """The invalid value"""
+        if self._value is _NOT_SET:
+            return None
+        return self._value
+
+    @property
+    def field(self):
+        """First level index or key, usually it's the field"""
+        if not self.marks:
+            return None
+        __, index_or_key = self.marks[-1]
+        return index_or_key
 
     @property
     def position(self):
@@ -51,25 +95,26 @@ class ValidrError(ValueError):
             return None
 
     def __str__(self):
-        cdef str position = self.position
-        if self.args:
-            if position:
-                return '%s in %s' % (self.args[0], position)
-            else:
-                return self.args[0]
-        else:
-            if position:
-                return 'in %s' % position
-            else:
-                return super().__str__()
+        return _format_error(self.args, self.position)
+
 
 
 class Invalid(ValidrError):
     """Data invalid"""
+    def __str__(self):
+        cdef str value_clause = None
+        if self.has_value:
+            value_clause = 'value=%s' % shorten(str(self.value), 75)
+        return _format_error(self.args, self.position, value_clause)
 
 
 class SchemaError(ValidrError):
     """Schema error"""
+    def __str__(self):
+        cdef str value_clause = None
+        if self.has_value:
+            value_clause = 'schema=%s' % self.value.repr(prefix=False, desc=False)
+        return _format_error(self.args, self.position, value_clause)
 
 
 cdef class mark_index:

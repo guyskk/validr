@@ -8,6 +8,10 @@ python:
   - "pypy3"
 
 matrix:
+    include:
+        - dist: xenial
+          language: python
+          python: 3.7
     allow_failures:
         - python: "pypy3"
         - python: "nightly"

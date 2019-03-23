@@ -89,7 +89,7 @@ def validator(string=None, *, accept=None, output=None):
 
     def decorator(f):
 
-        def m_validator(compiler, schema):
+        def _m_validator(compiler, schema):
             params = schema.params.copy()
             if schema.items is not None:
                 params['items'] = schema.items
@@ -104,13 +104,18 @@ def validator(string=None, *, accept=None, output=None):
             cdef bint optional = params.pop('optional', False)
             default = params.pop('default', None)
             desc = params.pop('desc', None)
-
+            cdef bint invalid_to_default = params.pop('invalid_to_default', False)
+            cdef bint has_invalid_to = 'invalid_to' in params
+            invalid_to = params.pop('invalid_to', None)
             cdef bint has_default
             if accept_string:
                 has_default = not (default is None or default == '')
             else:
                 has_default = not (default is None)
-
+            if has_invalid_to and invalid_to_default:
+                raise SchemaError('can not set both invalid_to and invalid_to_default')
+            if invalid_to_default and (not has_default) and (not optional):
+                raise SchemaError('default or optional must be set when set invalid_to_default')
             try:
                 validate = f(compiler, **params)
             except TypeError as e:
@@ -122,10 +127,22 @@ def validator(string=None, *, accept=None, output=None):
                 except Invalid:
                     msg = 'invalid default value {!r}'.format(default)
                     raise SchemaError(msg) from None
+                if invalid_to_default:
+                    invalid_to = default
+            else:
+                if invalid_to_default:
+                    invalid_to = null_output
+            # check invalid_to value
+            if has_invalid_to:
+                try:
+                    invalid_to = validate(invalid_to)
+                except Invalid:
+                    msg = 'invalid invalid_to value {!r}'.format(invalid_to)
+                    raise SchemaError(msg) from None
 
             # optimize, speedup 15%
             if accept_string:
-                def m_validate(value):
+                def _m_validate(value):
                     if value is None or value == '':
                         if has_default:
                             return default
@@ -137,7 +154,7 @@ def validator(string=None, *, accept=None, output=None):
                         raise Invalid('require string value')
                     return validate(value)
             else:
-                def m_validate(value):
+                def _m_validate(value):
                     if value is None:
                         if has_default:
                             return default
@@ -146,6 +163,18 @@ def validator(string=None, *, accept=None, output=None):
                         else:
                             raise Invalid('required')
                     return validate(value)
+
+            supress_invalid = has_invalid_to or invalid_to_default
+
+            def m_validate(value):
+                try:
+                    return _m_validate(value)
+                except Invalid as ex:
+                    ex.set_value(value)
+                    if supress_invalid:
+                        return invalid_to
+                    else:
+                        raise
 
             # make friendly validate func representation
             m_repr = schema.repr(prefix=False, desc=False)
@@ -156,6 +185,14 @@ def validator(string=None, *, accept=None, output=None):
                 m_validate.__qualname__ = '{}<{}>'.format(f.__qualname__, m_repr)
             m_validate.__doc__ = f.__doc__ if f.__doc__ else desc
             return m_validate
+
+        def m_validator(compiler, schema):
+            try:
+                return _m_validator(compiler, schema)
+            except SchemaError as ex:
+                ex.set_value(schema)
+                raise
+
         m_validator.is_string = output_string
         m_validator.accept_string = accept_string
         m_validator.accept_object = accept_object
@@ -388,6 +425,8 @@ def date_validator(compiler, format='%Y-%m-%d', bint output_object=False):
         try:
             if not isinstance(value, (datetime.datetime, datetime.date)):
                 value = datetime.datetime.strptime(value, format)
+            if isinstance(value, datetime.datetime):
+                value = value.date()
             if output_object:
                 return value
             else:
@@ -408,6 +447,8 @@ def time_validator(compiler, format='%H:%M:%S', bint output_object=False):
         try:
             if not isinstance(value, (datetime.datetime, datetime.time)):
                 value = datetime.datetime.strptime(value, format)
+            if isinstance(value, datetime.datetime):
+                value = value.time()
             if output_object:
                 return value
             else:

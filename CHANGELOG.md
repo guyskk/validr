@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.0 - 2019-03-23
+
+### Added
+
+- Support control validator accept and output type, add `object` parameter. #22 #24
+- Add `accept_object` parameter to `str` validator. #24
+- Handle invalid values more flexibly. #23 #25
+- Add `invalid_to` and `invalid_to_default` parameter. #25
+- Add `field` and `value` attributes to ValidrError #25
+
+### Changed
+
+- `validator` decorator now use `accept` and `output` to control data types, `string` argument is deprecated. #24
+
 ## 1.0.6 - 2018-10-16
 
 ### Fixed

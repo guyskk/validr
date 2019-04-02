@@ -97,4 +97,4 @@ inv benchmark
 
 ## License
 
-MIT License
+Anti-996 License

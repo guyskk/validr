@@ -43,11 +43,12 @@ if DEBUG:
 
 setup(
     name='validr',
-    version='1.1.0',
+    version='1.1.1',
     keywords='validation validator validate schema jsonschema',
     description=('A simple, fast, extensible python library '
                  'for data validation.'),
     long_description=long_description,
+    long_description_content_type="text/markdown",
     author='guyskk',
     author_email='guyskk@qq.com',
     url='https://github.com/guyskk/validr',

@@ -1,3 +1,6 @@
+from terminaltables import AsciiTable
+
+
 _NOT_SET = object()
 
 
@@ -106,6 +109,22 @@ class Invalid(ValidrError):
         if self.has_value:
             value_clause = 'value=%s' % shorten(str(self.value), 75)
         return _format_error(self.args, self.position, value_clause)
+
+
+class ModelInvalid(Invalid):
+    """Model data invalid"""
+    def __init__(self, errors):
+        if not errors:
+            raise ValueError('errors is required')
+        self.errors = errors
+        message = errors[0].message or 'invalid'
+        message += ' ...total {} errors'.format(len(errors))
+        super().__init__(message)
+
+    def __str__(self):
+        error_items = [(ex.position, ex.message) for ex in self.errors]
+        table = [("Key", "Error")] + error_items
+        return '\n' + AsciiTable(table).table
 
 
 class SchemaError(ValidrError):

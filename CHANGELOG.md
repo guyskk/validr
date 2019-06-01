@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.1 - 2019-06-01
+
+### Added
+
+- Add ModelInvalid exception, support get error datails when modelclass invalid. #28 #28
+
 ## 1.1.0 - 2019-03-23
 
 ### Added

@@ -6,6 +6,7 @@ from validr import (
     asdict,
     Compiler,
     Invalid,
+    ModelInvalid,
     ImmutableInstanceError,
 )
 
@@ -47,8 +48,6 @@ class ImmutableModel:
 
 
 def test_model():
-    with pytest.raises(Invalid):
-        User(name="test", xxx=123)
     user = User(name="test")
     assert user.id == 100
     assert user.name == "test"
@@ -127,5 +126,10 @@ def test_init():
     assert user == User(id=123, name="test")
     u2 = User(user, id=456)
     assert u2.id == 456
-    with pytest.raises(Invalid):
+    with pytest.raises(ModelInvalid) as exinfo:
+        User(id=-1, name=object())
+    assert len(exinfo.value.errors) == 2
+    with pytest.raises(ModelInvalid) as exinfo:
         User(id=123, name="test", unknown=0)
+    assert len(exinfo.value.errors) == 1
+    assert 'undesired key' in str(exinfo.value)

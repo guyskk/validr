@@ -2,10 +2,8 @@
 Model class is a convenient way to use schema, it's inspired by data class but
 works differently.
 """
-from terminaltables import AsciiTable
-
 from .schema import Compiler, T, Schema
-from ._exception import Invalid, mark_key
+from ._exception import Invalid, ModelInvalid, mark_key
 from ._validator import _is_dict, _get_dict_value, _get_object_value
 
 
@@ -129,23 +127,22 @@ def _create_model_class(model_cls, compiler, immutable):
                         try:
                             setattr(self, k, getter(obj, k))
                         except Invalid as ex:
-                            errors.append((ex.position, ex.message))
+                            errors.append(ex)
                 else:
                     for k in self.__fields__ - params_set:
                         try:
                             setattr(self, k, None)
                         except Invalid as ex:
-                            errors.append((ex.position, ex.message))
+                            errors.append(ex)
                 for k in self.__fields__ & params_set:
                     try:
                         setattr(self, k, params[k])
                     except Invalid as ex:
-                        errors.append((ex.position, ex.message))
+                        errors.append(ex)
                 for k in params_set - self.__fields__:
-                    errors.append((k, "undesired key"))
+                    errors.append(Invalid("undesired key").mark_key(k))
                 if errors:
-                    table = [("Key", "Error")] + errors
-                    raise Invalid("\n" + AsciiTable(table).table)
+                    raise ModelInvalid(errors)
                 type(self).post_init(self)
                 self.__dict__["__immutable__"] = immutable
 

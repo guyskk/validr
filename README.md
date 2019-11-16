@@ -42,6 +42,17 @@ Note: Only support python 3.4+
 
     pip install validr
 
+When you have c compiler in your system, validr will be c speedup mode.
+Otherwise validr will fallback to pure python mode.
+
+To force c speedup mode:
+
+    VALIDR_SETUP_MODE=c pip install validr
+
+To force pure python mode:
+
+    VALIDR_SETUP_MODE=py pip install validr
+
 ## Document
 
 https://github.com/guyskk/validr/wiki

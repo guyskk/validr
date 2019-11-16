@@ -3,8 +3,8 @@ Model class is a convenient way to use schema, it's inspired by data class but
 works differently.
 """
 from .schema import Compiler, T, Schema
-from ._exception import Invalid, ModelInvalid, mark_key
-from ._validator import _is_dict, _get_dict_value, _get_object_value
+from .exception import Invalid, ModelInvalid, mark_key
+from .validator import is_dict, get_dict_value, get_object_value
 
 
 class ImmutableInstanceError(AttributeError):
@@ -119,10 +119,10 @@ def _create_model_class(model_cls, compiler, immutable):
                         )
                         raise TypeError(msg)
                     obj = obj[0]
-                    if _is_dict(obj):
-                        getter = _get_dict_value
+                    if is_dict(obj):
+                        getter = get_dict_value
                     else:
-                        getter = _get_object_value
+                        getter = get_object_value
                     for k in self.__fields__ - params_set:
                         try:
                             setattr(self, k, getter(obj, k))

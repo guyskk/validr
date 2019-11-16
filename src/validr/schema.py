@@ -36,8 +36,8 @@ from pyparsing import (
     pyparsing_common, ParseBaseException,
 )
 
-from ._validator import builtin_validators
-from ._exception import SchemaError, mark_index, mark_key
+from .validator import builtin_validators
+from .exception import SchemaError, mark_index, mark_key
 
 
 def _make_keyword(kwd_str, kwd_value):

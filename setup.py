@@ -134,7 +134,7 @@ def _prepare_setup_options(mode):
         sources = list(glob('src/validr/*.pyx'))
         compile_pyx_to_py(sources, debug=is_debug)
 
-    return dict(**_SETUP_OPTIONS, ext_modules=ext_modules)
+    return dict(ext_modules=ext_modules, **_SETUP_OPTIONS)
 
 
 def _validr_setup():

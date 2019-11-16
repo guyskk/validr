@@ -558,13 +558,13 @@ def url_validator(compiler, scheme='http https', maxlen=256, bint output_object=
         except Exception:
             raise Invalid('invalid url') from None
         if len(value) > maxlen:
-            raise Invalid(f'url length must <= {maxlen}')
+            raise Invalid('url length must <= {}'.format(maxlen))
         try:
             parsed = urlparse(value)
         except Exception:
             raise Invalid('invalid url') from None
         if not parsed.scheme or parsed.scheme not in allow_scheme:
-            raise Invalid(f'invalid url scheme, expect {allow_scheme}')
+            raise Invalid('invalid url scheme, expect {}'.format(allow_scheme))
         if output_object:
             return parsed
         else:
@@ -579,7 +579,7 @@ def uuid_validator(compiler, version=None, bint output_object=False):
     else:
         if not 1 <= version <= 5:
             raise SchemaError('illegal version number')
-        msg = f'invalid uuid{version}'
+        msg = 'invalid uuid{}'.format(version)
 
     def validate(value):
         if not isinstance(value, uuid.UUID):

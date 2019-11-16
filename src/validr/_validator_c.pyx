@@ -6,24 +6,23 @@ import time
 import datetime
 import ipaddress
 from functools import partial
-from fnmatch import fnmatch
 from urllib.parse import urlparse, urlunparse
 from email_validator import validate_email, EmailNotValidError
 
-from ._exception import Invalid, SchemaError, mark_key, mark_index
+from .exception import Invalid, SchemaError, mark_key, mark_index
 
 
-cpdef _is_dict(obj):
+cpdef is_dict(obj):
     # use isinstance(obj, Mapping) is slow,
     # hasattr check can speed up about 30%
     return hasattr(obj, '__getitem__') and hasattr(obj, 'get')
 
 
-cpdef _get_dict_value(obj, str key):
+cpdef get_dict_value(obj, str key):
     return obj.get(key, None)
 
 
-cpdef _get_object_value(obj, str key):
+cpdef get_object_value(obj, str key):
     return getattr(obj, key, None)
 
 
@@ -34,7 +33,7 @@ def validator(string=None, *, accept=None, output=None):
 
     Usage:
 
-        @validator(accept=(str,object), output=(str,object))
+        @validator(accept=(str,object), output=(str, object))
         def xxx_validator(compiler, output_object, **params):
             def validate(value):
                 try:
@@ -290,15 +289,16 @@ def dict_validator(compiler, items=None, bint optional=False):
         for k, v in items.items():
             with mark_key(k):
                 inners.append((k, compiler.compile(v)))
+
     def validate(value):
         if inners is None:
-            if not _is_dict(value):
+            if not is_dict(value):
                 raise Invalid('must be dict')
             return copy.deepcopy(value)
-        if _is_dict(value):
-            getter = _get_dict_value
+        if is_dict(value):
+            getter = get_dict_value
         else:
-            getter = _get_object_value
+            getter = get_object_value
         result = {}
         cdef str k
         for k, inner in inners:
@@ -329,19 +329,27 @@ def int_validator(compiler, min=-sys.maxsize, max=sys.maxsize):
     return validate
 
 
+_TRUE_VALUES = {
+    True, 1, '1',
+    'True', 'true', 'TRUE',
+    'Yes', 'yes', 'YES', 'y', 'Y',
+    'On', 'on', 'ON',
+}
+_FALSE_VALUES = {
+    False, 0, '0',
+    'False', 'false', 'FALSE',
+    'No', 'no', 'NO', 'n', 'N',
+    'Off', 'off', 'OFF',
+}
+
+
 @validator(output=object)
 def bool_validator(compiler):
     """Validate bool"""
     def validate(value):
-        if value in {True, 1, '1',
-                     'True', 'true', 'TRUE',
-                     'Yes', 'yes', 'YES', 'y', 'Y',
-                     'On', 'on', 'ON',}:
+        if value in _TRUE_VALUES:
             return True
-        elif value in {False, 0, '0',
-                       'False', 'false', 'FALSE',
-                       'No', 'no', 'NO', 'n', 'N',
-                       'Off', 'off', 'OFF',}:
+        elif value in _FALSE_VALUES:
             return False
         else:
             raise Invalid('invalid bool')
@@ -414,7 +422,7 @@ def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
     return validate
 
 
-@validator(output=(str,object))
+@validator(output=(str, object))
 def date_validator(compiler, format='%Y-%m-%d', bint output_object=False):
     """Validate date string or convert date to string
 
@@ -436,7 +444,7 @@ def date_validator(compiler, format='%Y-%m-%d', bint output_object=False):
     return validate
 
 
-@validator(output=(str,object))
+@validator(output=(str, object))
 def time_validator(compiler, format='%H:%M:%S', bint output_object=False):
     """Validate time string or convert time to string
 
@@ -458,7 +466,7 @@ def time_validator(compiler, format='%H:%M:%S', bint output_object=False):
     return validate
 
 
-@validator(output=(str,object))
+@validator(output=(str, object))
 def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_object=False):
     """Validate datetime string or convert datetime to string
 
@@ -480,7 +488,7 @@ def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_obj
     return validate
 
 
-@validator(output=(str,object))
+@validator(output=(str, object))
 def ipv4_validator(compiler, bint output_object=False):
     def validate(value):
         try:
@@ -496,7 +504,7 @@ def ipv4_validator(compiler, bint output_object=False):
     return validate
 
 
-@validator(output=(str,object))
+@validator(output=(str, object))
 def ipv6_validator(compiler, bint output_object=False):
     def validate(value):
         try:
@@ -511,14 +519,19 @@ def ipv6_validator(compiler, bint output_object=False):
             return value.compressed
     return validate
 
+
 @validator(accept=str, output=str)
 def email_validator(compiler):
     # https://stackoverflow.com/questions/201323/using-a-regular-expression-to-validate-an-email-address
     # http://emailregex.com/
     # https://github.com/JoshData/python-email-validator
-    _validate = partial(validate_email, allow_smtputf8=False,
-                        check_deliverability=False,
-                        allow_empty_local=False)
+    _validate = partial(
+        validate_email,
+        allow_smtputf8=False,
+        check_deliverability=False,
+        allow_empty_local=False,
+    )
+
     def validate(value):
         try:
             value = _validate(value.strip())
@@ -530,7 +543,7 @@ def email_validator(compiler):
     return validate
 
 
-@validator(output=(str,object))
+@validator(output=(str, object))
 def url_validator(compiler, scheme='http https', maxlen=256, bint output_object=False):
     # https://stackoverflow.com/questions/7160737/python-how-to-validate-a-url-in-python-malformed-or-not
     # https://stackoverflow.com/questions/827557/how-do-you-validate-a-url-with-a-regular-expression-in-python
@@ -538,6 +551,7 @@ def url_validator(compiler, scheme='http https', maxlen=256, bint output_object=
     # https://github.com/dgerber/rfc3987
     # https://github.com/tkem/uritools
     allow_scheme = set(scheme.split())
+
     def validate(value):
         try:
             value = value.strip()
@@ -558,7 +572,7 @@ def url_validator(compiler, scheme='http https', maxlen=256, bint output_object=
     return validate
 
 
-@validator(output=(str,object))
+@validator(output=(str, object))
 def uuid_validator(compiler, version=None, bint output_object=False):
     if version is None:
         msg = 'invalid uuid'
@@ -566,6 +580,7 @@ def uuid_validator(compiler, version=None, bint output_object=False):
         if not 1 <= version <= 5:
             raise SchemaError('illegal version number')
         msg = f'invalid uuid{version}'
+
     def validate(value):
         if not isinstance(value, uuid.UUID):
             try:

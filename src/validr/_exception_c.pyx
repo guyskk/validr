@@ -101,7 +101,6 @@ class ValidrError(ValueError):
         return _format_error(self.args, self.position)
 
 
-
 class Invalid(ValidrError):
     """Data invalid"""
     def __str__(self):

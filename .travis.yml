@@ -21,11 +21,9 @@ install:
 
 script:
     - pre-commit run --all-files
-    - pytest --cov validr
-    - inv build
-    - pip install --ignore-installed dist/*
-    - pytest
-    - python benchmark/benchmark.py benchmark
+    - inv test
+    - inv e2e-test
+    - inv benchmark
 
 after_success:
     - codecov

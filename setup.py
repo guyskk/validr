@@ -1,53 +1,21 @@
 import os
 from os.path import dirname, basename, splitext
 from glob import glob
-from multiprocessing import cpu_count
 from setuptools import Extension, setup
 
-with open(os.path.join(dirname(__file__), 'README.md'), 'r', encoding='utf-8') as f:
-    long_description = f.read()
 
-DEBUG = os.getenv('VALIDR_DEBUG') == '1'
-print('VALIDR_DEBUG={}'.format(DEBUG))
-USE_CYTHON = os.getenv('VALIDR_USE_CYTHON') == '1'
-print('VALIDR_USE_CYTHON={}'.format(USE_CYTHON))
+def _read_file(filepath):
+    with open(os.path.join(dirname(__file__), filepath), 'r', encoding='utf-8') as f:
+        return f.read()
 
-if USE_CYTHON:
-    from Cython.Build import cythonize
-    directives = {'language_level': 3}
-    if DEBUG:
-        directives.update({
-            'profile': True,
-            'linetrace': True,
-        })
-    ext_modules = cythonize(
-        'src/validr/*.pyx',
-        nthreads=cpu_count(),
-        compiler_directives=directives
-    )
-else:
-    sources = list(glob('src/validr/*.c'))
-    assert sources, 'Not found any *.c source files'
-    ext_modules = []
-    for filepath in sources:
-        module_name = 'validr.' + splitext(basename(filepath))[0]
-        ext_modules.append(Extension(module_name, [filepath]))
 
-if DEBUG:
-    for m in ext_modules:
-        m.define_macros.extend([
-            ('CYTHON_TRACE', '1'),
-            ('CYTHON_TRACE_NOGIL', '1'),
-            ('CYTHON_PROFILE', '1'),
-        ])
-
-setup(
+_SETUP_OPTIONS = dict(
     name='validr',
     version='1.1.1',
     keywords='validation validator validate schema jsonschema',
-    description=('A simple, fast, extensible python library '
-                 'for data validation.'),
-    long_description=long_description,
+    description=(
+        'A simple, fast, extensible python library for data validation.'),
+    long_description=_read_file('README.md'),
     long_description_content_type="text/markdown",
     author='guyskk',
     author_email='guyskk@qq.com',
@@ -83,7 +51,6 @@ setup(
         ],
     },
     zip_safe=False,
-    ext_modules=ext_modules,
     classifiers=[
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
@@ -92,3 +59,89 @@ setup(
         'Topic :: Software Development :: Libraries :: Python Modules'
     ]
 )
+
+
+_SETUP_MODES = {
+    'pyx',       # cythonize *.pyx
+    'pyx_dbg',   # cythonize *.pyx with debug info
+    'c',         # ext_modules from *.c
+    'c_dbg',     # ext_modules from *.c with debug info
+    'py',        # pure python
+    'dist',      # build *_c.c and *_py.py for release
+    'dist_dbg',  # build *_c.c and *_py.py for release with debug info
+}
+
+
+def _has_c_compiler():
+    try:
+        import distutils.ccompiler
+        cc = distutils.ccompiler.new_compiler()
+        return cc.has_function('rand', includes=['stdlib.h'])
+    except Exception as ex:
+        print('failed to check c compiler: {}'.format(ex))
+        return False
+
+
+def _get_validr_setup_mode():
+    mode = os.getenv('VALIDR_SETUP_MODE')
+    if mode:
+        mode = mode.strip().lower()
+        assert mode in _SETUP_MODES, 'unknown validr setup mode {}'.format(mode)
+        return mode
+    if _has_c_compiler():
+        return 'c'
+    else:
+        return 'py'
+
+
+def _prepare_setup_options(mode):
+    is_pyx = mode in ['pyx', 'pyx_dbg']
+    is_c = mode in ['c', 'c_dbg']
+    is_dist = mode in ['dist', 'dist_dbg']
+    is_debug = mode.endswith('_dbg')
+    ext_modules = None
+    if is_pyx or is_c or is_dist:
+        if is_pyx or is_dist:
+            from multiprocessing import cpu_count
+            from Cython.Build import cythonize
+            directives = {'language_level': 3}
+            if is_debug:
+                directives.update({
+                    'profile': True,
+                    'linetrace': True,
+                })
+            ext_modules = cythonize(
+                'src/validr/*.pyx',
+                nthreads=cpu_count(),
+                compiler_directives=directives
+            )
+        if is_c:
+            sources = list(glob('src/validr/*.c'))
+            assert sources, 'Not found any *.c source files'
+            ext_modules = []
+            for filepath in sources:
+                module_name = 'validr.' + splitext(basename(filepath))[0]
+                ext_modules.append(Extension(module_name, [filepath]))
+        if is_debug:
+            for m in ext_modules:
+                m.define_macros.extend([
+                    ('CYTHON_TRACE', '1'),
+                    ('CYTHON_TRACE_NOGIL', '1'),
+                    ('CYTHON_PROFILE', '1'),
+                ])
+    if is_dist:
+        from validr_uncython import compile_pyx_to_py
+        sources = list(glob('src/validr/*.pyx'))
+        compile_pyx_to_py(sources, debug=is_debug)
+
+    return dict(**_SETUP_OPTIONS, ext_modules=ext_modules)
+
+
+def _validr_setup():
+    mode = _get_validr_setup_mode()
+    print('VALIDR_SETUP_MODE={}'.format(mode))
+    options = _prepare_setup_options(mode)
+    setup(**options)
+
+
+_validr_setup()

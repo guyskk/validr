@@ -55,8 +55,11 @@ def e2e_test(ctx):
 
 
 @task(pre=[build])
-def benchmark(ctx):
+def benchmark(ctx, validr=False):
     os.environ['VALIDR_SETUP_MODE'] = ''
     ctx.run('pip uninstall -y validr')
     ctx.run('pip install dist/*')
-    ctx.run('python benchmark/benchmark.py benchmark')
+    benchmark_command = 'python benchmark/benchmark.py benchmark'
+    if validr:
+        benchmark_command += ' --validr'
+    ctx.run(benchmark_command)

@@ -1,4 +1,4 @@
-from validr import T, Compiler, modelclass, asdict
+from validr import T, Compiler, modelclass, asdict, builtin_validators
 
 
 @modelclass
@@ -19,9 +19,18 @@ class Model:
 compiler = Compiler()
 default = compiler.compile(T(Model))
 
+any_validators = {}
+for name, v in builtin_validators.items():
+    if name in ('list', 'dict'):
+        continue
+    any_validators[name] = builtin_validators['any']
+
+any_compiler = Compiler(validators=any_validators)
+any_case = any_compiler.compile(T(Model))
+
 
 def model(value):
     return asdict(Model(value))
 
 
-CASES = {"default": default, "model": model}
+CASES = {"default": default, "model": model, "any": any_case}

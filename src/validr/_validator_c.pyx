@@ -1,10 +1,10 @@
 import re
 import sys
-import copy
 import uuid
 import time
 import datetime
 import ipaddress
+from copy import copy
 from functools import partial
 from urllib.parse import urlparse, urlunparse
 from email_validator import validate_email, EmailNotValidError
@@ -267,7 +267,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
             if i >= maxlen:
                 raise Invalid('list length must <= %d' % maxlen)
             with mark_index(i):
-                v = inner(x) if inner is not None else copy.deepcopy(x)
+                v = inner(x) if inner is not None else copy(x)
                 if unique:
                     k = key_of(v)
                     if k in keys:
@@ -294,7 +294,7 @@ def dict_validator(compiler, items=None, bint optional=False):
         if inners is None:
             if not is_dict(value):
                 raise Invalid('must be dict')
-            return copy.deepcopy(value)
+            return copy(value)
         if is_dict(value):
             getter = get_dict_value
         else:
@@ -306,6 +306,16 @@ def dict_validator(compiler, items=None, bint optional=False):
                 result[k] = inner(getter(value, k))
         return result
     return validate
+
+
+cpdef any_validate(value):
+    return copy(value)
+
+
+@validator(accept=object, output=object)
+def any_validator(compiler, **ignore_kwargs):
+    """Accept any value"""
+    return any_validate
 
 
 @validator(output=object)
@@ -627,6 +637,7 @@ def create_re_validator(str name, r):
 builtin_validators = {
     'list': list_validator,
     'dict': dict_validator,
+    'any': any_validator,
     'int': int_validator,
     'bool': bool_validator,
     'float': float_validator,

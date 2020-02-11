@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## TODO
+
+### Changed
+
+- Change behavior from deepcopy to copy when use dict and list validator without inner validator, improve performance.
+
+## 1.1.2
+
+### Added
+
+- Support pure Python mode. #30
+
 ## 1.1.1 - 2019-06-01
 
 ### Added

@@ -2,12 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
-## TODO
+## 1.1.3
+
+### Added
+
+- fields function support dict schema, eg: T.dict({...}). #32
 
 ### Changed
 
-- Change behavior from deepcopy to copy when use dict and list validator without inner validator, improve performance.
-- fields function support dict schema, eg: T.dict({...}).
+- Change behavior from deepcopy to copy when use dict and list validator without inner validator, improve performance. #31
+- Deprecate Python 3.4, Add Python 3.8 to CI  #33
 
 ## 1.1.2
 

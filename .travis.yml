@@ -12,7 +12,12 @@ matrix:
         - dist: xenial
           language: python
           python: 3.7
+        - dist: xenial
+          language: python
+          python: 3.8
     allow_failures:
+        - python: "3.4"
+        - python: "3.8"
         - python: "pypy3"
         - python: "nightly"
 

@@ -38,7 +38,7 @@ print(asdict(guyskk))
 
 ## Install
 
-Note: Only support python 3.4+
+Note: Only support Python 3.5+
 
     pip install validr
 
@@ -85,7 +85,7 @@ benchmark result in Travis-CI:
 ## Develop
 
 Validr is implemented by [Cython](http://cython.org/) since v0.14.0, it's 5X
-faster than original pure python implemented.
+faster than pure Python implemented.
 
 **setup**:
 

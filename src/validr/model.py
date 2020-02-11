@@ -207,9 +207,23 @@ def _create_model_class(model_cls, compiler, immutable):
     return Model
 
 
-def fields(m):
-    return m.__fields__
+def fields(m) -> set:
+    """Get fields of model or dict schema"""
+    if hasattr(m, '__fields__'):  # modelclass
+        return m.__fields__
+    if hasattr(m, '__schema__'):
+        schema = m.__schema__     # T.dict({...})
+    else:
+        schema = m                # Schema
+    if isinstance(schema, Schema):
+        if schema.validator == 'dict':
+            if schema.items:
+                return set(schema.items.keys())
+            else:
+                return set()
+    raise TypeError("can not find fields of {!r}".format(m))
 
 
-def asdict(m, *, keys=None):
+def asdict(m, *, keys=None) -> dict:
+    """Convert model instance to dict"""
     return m.__asdict__(keys=keys)

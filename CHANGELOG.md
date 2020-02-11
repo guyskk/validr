@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Change behavior from deepcopy to copy when use dict and list validator without inner validator, improve performance.
+- fields function support dict schema, eg: T.dict({...}).
 
 ## 1.1.2
 

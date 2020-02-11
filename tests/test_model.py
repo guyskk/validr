@@ -99,6 +99,11 @@ def test_fields():
     assert fields(User) == {"id", "name"}
     user = User(id=123, name="test")
     assert fields(user) == {"id", "name"}
+    assert fields(T.dict) == set()
+    assert fields(T(User)) == {"id", "name"}
+    assert fields(T(User).__schema__) == {"id", "name"}
+    with pytest.raises(TypeError):
+        fields(T.list(T.str))
 
 
 def test_asdict():

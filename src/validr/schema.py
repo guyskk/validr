@@ -103,6 +103,24 @@ def _sort_schema_params(params):
     return list(sorted(params, key=key))
 
 
+def _schema_of(obj) -> "Schema":
+    if hasattr(obj, '__schema__'):
+        obj = obj.__schema__
+    return obj
+
+
+def _schema_copy_of(obj) -> "Schema":
+    if isinstance(obj, Schema):
+        obj = obj.copy()
+    return obj
+
+
+def _schema_primitive_of(obj):
+    if isinstance(obj, Schema):
+        obj = obj.to_primitive()
+    return obj
+
+
 class Schema:
 
     def __init__(self, *, validator=None, items=None, params=None):
@@ -111,8 +129,7 @@ class Schema:
         self.params = params or {}
 
     def __eq__(self, other):
-        if hasattr(other, '__schema__'):
-            other = other.__schema__
+        other = _schema_of(other)
         if not isinstance(other, Schema):
             return False
         return (self.validator == other.validator and
@@ -124,6 +141,8 @@ class Schema:
         items = self.items
         if isinstance(items, dict):
             items = tuple(sorted(items.items()))
+        elif isinstance(items, list):
+            items = tuple(items)
         return hash((self.validator, items, params))
 
     def __str__(self):
@@ -142,6 +161,13 @@ class Schema:
                 ret.append('{}({})'.format(self.validator, '{' + keys + '}'))
             elif self.validator == 'list':
                 ret.append('{}({})'.format(self.validator, self.items.validator))
+            elif self.validator == 'union':
+                if self.items and isinstance(self.items, list):
+                    keys = ', '.join(x.validator for x in self.items)
+                    ret.append('{}([{}])'.format(self.validator, keys))
+                else:
+                    keys = ', '.join(sorted(self.items)) if self.items else ''
+                    ret.append('{}({})'.format(self.validator, '{' + keys + '}'))
             else:
                 ret.append(_pair(self.validator, self.items))
         for k, v in _sort_schema_params(self.params.items()):
@@ -162,16 +188,14 @@ class Schema:
     def copy(self):
         schema = type(self)(validator=self.validator, params=self.params.copy())
         if self.validator == 'dict' and self.items is not None:
-            items = {}
-            for k, v in self.items.items():
-                if isinstance(v, Schema):
-                    v = v.copy()
-                items[k] = v
+            items = {k: _schema_copy_of(v) for k, v in self.items.items()}
         elif self.validator == 'list' and self.items is not None:
-            if isinstance(self.items, Schema):
-                items = self.items.copy()
+            items = _schema_copy_of(self.items)
+        elif self.validator == 'union' and self.items is not None:
+            if isinstance(self.items, list):
+                items = [_schema_copy_of(x) for x in self.items]
             else:
-                items = self.items
+                items = {k: _schema_copy_of(v) for k, v in self.items.items()}
         else:
             items = self.items
         schema.items = items
@@ -187,7 +211,7 @@ class Schema:
         if not self.validator:
             return None
         ret = []
-        if self.validator in {'dict', 'list'} or self.items is None:
+        if self.validator in {'dict', 'list', 'union'} or self.items is None:
             ret.append(self.validator)
         else:
             ret.append(_pair(self.validator, self.items))
@@ -202,15 +226,18 @@ class Schema:
         if self.validator == 'dict' and self.items is not None:
             ret = {'$self': ret}
             for k, v in self.items.items():
-                if isinstance(v, Schema):
-                    v = v.to_primitive()
-                ret[k] = v
+                ret[k] = _schema_primitive_of(v)
         elif self.validator == 'list' and self.items is not None:
-            ret = [ret]
-            if isinstance(self.items, Schema):
-                ret.append(self.items.to_primitive())
+            ret = [ret, _schema_primitive_of(self.items)]
+        elif self.validator == 'union' and self.items is not None:
+            if isinstance(self.items, list):
+                ret = [ret]
+                for x in self.items:
+                    ret.append(_schema_primitive_of(x))
             else:
-                ret.append(self.items)
+                ret = {'$self': ret}
+                for k, v in self.items.items():
+                    ret[k] = _schema_primitive_of(v)
         return ret
 
     @classmethod
@@ -252,16 +279,25 @@ class Schema:
             if len(obj) == 1:
                 validator = 'list'
                 params = None
-                items = obj[0]
-            elif len(obj) == 2:
+                items = cls.parse_isomorph_schema(obj[0])
+            elif len(obj) >= 2:
                 e = cls.parse_element(obj[0])
                 validator = e.validator
                 params = e.params
-                items = obj[1]
+                if validator == 'list':
+                    if len(obj) > 2:
+                        raise SchemaError('invalid list schema')
+                    with mark_index():
+                        items = cls.parse_isomorph_schema(obj[1])
+                elif validator == 'union':
+                    items = []
+                    for i, x in enumerate(obj[1:]):
+                        with mark_index(i):
+                            items.append(cls.parse_isomorph_schema(x))
+                else:
+                    raise SchemaError('unknown {} schema'.format(validator))
             else:
                 raise SchemaError('invalid list schema')
-            with mark_index():
-                items = cls.parse_isomorph_schema(items)
             return cls(validator=validator, items=items, params=params)
         else:
             raise SchemaError('{} object is not schema'.format(type(obj)))
@@ -276,8 +312,7 @@ class Compiler:
         self.is_dump = is_dump
 
     def compile(self, schema):
-        if hasattr(schema, '__schema__'):
-            schema = schema.__schema__
+        schema = _schema_of(schema)
         if not isinstance(schema, Schema):
             raise SchemaError('{} object is not schema'.format(type(schema)))
         if not schema.validator:
@@ -313,9 +348,7 @@ class Builder:
         return self._schema.__str__()
 
     def __eq__(self, other):
-        if hasattr(other, '__schema__'):
-            other = other.__schema__
-        return self._schema == other
+        return self._schema == _schema_of(other)
 
     def __hash__(self):
         return self._schema.__hash__()
@@ -360,7 +393,7 @@ class Builder:
                 raise SchemaError("can't call with both positional argument and keyword argument")
             if len(args) > 1:
                 raise SchemaError("can't call with more than one positional argument")
-            if self._schema.validator == 'dict':
+            if self._schema.validator in {'dict', 'union'}:
                 items = args[0] if args else kwargs
             else:
                 if kwargs:
@@ -385,8 +418,7 @@ class Builder:
                        items=items, params=params, last_attr=None)
 
     def _load_schema(self, obj):
-        if hasattr(obj, '__schema__'):
-            obj = obj.__schema__
+        obj = _schema_of(obj)
         if isinstance(obj, Schema):
             obj = obj.copy()
         elif isinstance(obj, (str, list, dict)):
@@ -402,23 +434,35 @@ class Builder:
         return Builder(state, validator=obj.validator,
                        items=obj.items, params=obj.params, last_attr=None)
 
+    def _check_dict_items(self, items):
+        if not isinstance(items, dict):
+            raise SchemaError('items must be dict')
+        ret = {}
+        for k, v in items.items():
+            v = _schema_of(v)
+            if not isinstance(v, Schema):
+                raise SchemaError('items[{}] is not schema'.format(k))
+            ret[k] = v
+        return ret
+
     def _check_items(self, items):
         if self._schema.validator == 'dict':
-            if not isinstance(items, dict):
-                raise SchemaError('items must be dict')
-            ret = {}
-            for k, v in items.items():
-                if hasattr(v, '__schema__'):
-                    v = v.__schema__
-                if not isinstance(v, Schema):
-                    raise SchemaError('items[{}] is not schema'.format(k))
-                ret[k] = v
+            ret = self._check_dict_items(items)
         elif self._schema.validator == 'list':
-            if hasattr(items, '__schema__'):
-                items = items.__schema__
+            items = _schema_of(items)
             if not isinstance(items, Schema):
                 raise SchemaError('items is not schema')
             ret = items
+        elif self._schema.validator == 'union':
+            if isinstance(items, list):
+                ret = []
+                for i, v in enumerate(items):
+                    v = _schema_of(v)
+                    if not isinstance(v, Schema):
+                        raise SchemaError('items[{}] is not schema'.format(i))
+                    ret.append(v)
+            else:
+                ret = self._check_dict_items(items)
         else:
             if not isinstance(items, (bool, int, float, str)):
                 raise SchemaError('items must be bool, int, float or str')

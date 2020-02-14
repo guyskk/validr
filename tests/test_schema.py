@@ -1,5 +1,6 @@
 import json
-from validr import T, Schema, Compiler
+import pytest
+from validr import T, Schema, Compiler, SchemaError
 
 from .helper import skipif_dict_not_ordered
 
@@ -66,3 +67,29 @@ def test_slice():
         age=T.int.min(0),
         name=T.str,
     ).optional
+
+
+def test_union_list():
+    schema = T.union([
+        T.str,
+        T.list(T.str),
+        T.dict(key1=T.str),
+        T.dict(key1=T.str, key2=T.str),
+    ]).optional
+    assert T(json.loads(str(schema))) == schema
+    assert T(schema.__schema__.to_primitive()) == schema
+    with pytest.raises(SchemaError):
+        T.union(T.str, T.int)
+    with pytest.raises(SchemaError):
+        T.union([T.str, int])
+
+
+def test_union_dict():
+    schema = T.union(
+        type1=T.dict(key1=T.str),
+        type2=T.dict(key2=T.str, key3=T.list(T.int)),
+    ).by('type').optional
+    assert T(json.loads(str(schema))) == schema
+    assert T(schema.__schema__.to_primitive()) == schema
+    with pytest.raises(SchemaError):
+        T.union(type1=T.dict, type2=dict)

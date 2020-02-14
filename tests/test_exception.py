@@ -1,4 +1,4 @@
-from validr import Invalid, mark_index, mark_key
+from validr import Invalid, SchemaError, T, mark_index, mark_key
 
 from .helper import expect_position
 
@@ -48,6 +48,10 @@ def test_exception_str():
 
     ex = Invalid()
     assert str(ex) == 'invalid'
+
+    assert str(Invalid('invalid', value=123)) == 'invalid, value=123'
+
+    assert str(SchemaError('invalid', value=T.str.__schema__)) == 'invalid, schema=str'
 
     ex = Invalid(value='x' * 1000)
     assert len(str(ex)) < 100

@@ -26,7 +26,7 @@ cpdef get_object_value(obj, str key):
     return getattr(obj, key, None)
 
 
-def validator(string=None, *, accept=None, output=None):
+def validator(string=None, *, accept=None, output=None, _pass_schema=False):
     """Decorator for create validator
 
     It will handle params default,optional,desc automatically.
@@ -90,6 +90,8 @@ def validator(string=None, *, accept=None, output=None):
 
         def _m_validator(compiler, schema):
             params = schema.params.copy()
+            if _pass_schema:
+                params['schema'] = schema
             if schema.items is not None:
                 params['items'] = schema.items
             cdef bint local_output_object = output_object
@@ -177,6 +179,8 @@ def validator(string=None, *, accept=None, output=None):
 
             # make friendly validate func representation
             m_repr = schema.repr(prefix=False, desc=False)
+            m_validate.has_default = has_default
+            m_validate.optional = optional
             m_validate.__schema__ = schema
             m_validate.__module__ = f.__module__
             m_validate.__name__ = '{}<{}>'.format(f.__name__, m_repr)
@@ -245,7 +249,7 @@ def _key_func_of_schema(schema):
 
 @validator(accept=object, output=object)
 def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
-                   bint unique=False, bint optional=False):
+                   bint unique=False):
     if items is None:
         inner = None
     else:
@@ -281,7 +285,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
 
 
 @validator(accept=object, output=object)
-def dict_validator(compiler, items=None, bint optional=False):
+def dict_validator(compiler, items=None):
     if items is None:
         inners = None
     else:
@@ -305,6 +309,123 @@ def dict_validator(compiler, items=None, bint optional=False):
             with mark_key(k):
                 result[k] = inner(getter(value, k))
         return result
+    return validate
+
+
+@validator(accept=object, output=object, _pass_schema=True)
+def union_validator(compiler, schema, items=None, str by=None):
+    if not items:
+        raise SchemaError('union schemas not provided')
+    if isinstance(items, list):
+        if by is not None:
+            raise SchemaError("needless 'by' argument for union list schema")
+        return _union_list_validator(compiler, schema, items)
+    elif isinstance(items, dict):
+        if by is None:
+            raise SchemaError("required 'by' argument for union dict schema")
+        if not isinstance(by, str):
+            raise SchemaError("'by' argument must be str type for union schema")
+        return _union_dict_validator(compiler, schema, items, by=by)
+    else:
+        raise SchemaError('union schemas type invalid')
+
+
+def _get_required_fields_of_dict_schema(compiler, dict_schema):
+    if not dict_schema.items:
+        return tuple()
+    required_fields = []
+    for k, v in dict_schema.items.items():
+        validate = compiler.compile(v)
+        if not (validate.optional or validate.has_default):
+            required_fields.append(k)
+    return tuple(sorted(required_fields))
+
+def _optional_or_has_default(schema):
+    if schema.params.get('optional'):
+        return True
+    if schema.params.get('default') is not None:
+        return True
+    return False
+
+def _union_list_validator(compiler, raw_schema, list items):
+    scalar_inner = None
+    list_inner = None
+    dict_inners = {}
+    for i, schema in enumerate(items):
+        with mark_index(i):
+            if schema.validator == 'union':
+                raise SchemaError('ambiguous union schema')
+            if _optional_or_has_default(schema):
+                raise SchemaError('not allowed optional or default for union schemas')
+            if schema.validator == 'list':
+                if list_inner is not None:
+                    raise SchemaError('ambiguous union schema')
+                list_inner = compiler.compile(schema)
+            elif schema.validator == 'dict':
+                dict_inner = compiler.compile(schema)
+                key = _get_required_fields_of_dict_schema(compiler, schema)
+                if key in dict_inners:
+                    raise SchemaError('ambiguous union schema')
+                dict_inners[key] = dict_inner
+            else:
+                if scalar_inner is not None:
+                    raise SchemaError('ambiguous union schema')
+                if raw_schema.params.get('optional'):
+                    schema = schema.copy()
+                    schema.params['optional'] = True
+                if raw_schema.params.get('default') is not None:
+                    schema = schema.copy()
+                    schema.params['default'] = raw_schema.params['default']
+                scalar_inner = compiler.compile(schema)
+    dict_inners = [(k, v) for k, v in sorted(dict_inners.items(), key=lambda x: x[0], reverse=True)]
+
+    def validate(value):
+        if isinstance(value, list):
+            if list_inner is None:
+                raise Invalid('not allowed list')
+            return list_inner(value)
+        elif isinstance(value, dict):
+            for keys, inner in dict_inners:
+                if set(keys).issubset(value.keys()):
+                    return inner(value)
+            raise Invalid('not match any union schemas')
+        else:
+            if scalar_inner is None:
+                raise Invalid('not allowed scalar value')
+            return scalar_inner(value)
+
+    return validate
+
+
+def _union_dict_validator(compiler, raw_schema, dict items, str by):
+    inners = {}
+    for key, schema in items.items():
+        with mark_key(key):
+            if _optional_or_has_default(schema):
+                raise SchemaError('not allowed optional or default for union schemas')
+            if schema.validator != 'dict':
+                raise SchemaError('must be dict schema')
+            inners[key] = compiler.compile(schema)
+    expect_bys = '{' + ', '.join(sorted(inners.keys())) + '}'
+
+    def validate(value):
+        if is_dict(value):
+            getter = get_dict_value
+        else:
+            getter = get_object_value
+        cdef str by_name
+        with mark_key(by):
+            by_name = getter(value, by)
+            if not by_name:
+                raise Invalid('required', value=by_name)
+            inner = inners.get(by_name)
+            if inner is None:
+                err_msg = 'expect one of {}'.format(expect_bys)
+                raise Invalid(err_msg, value=by_name)
+        result = inner(value)
+        result[by] = by_name
+        return result
+
     return validate
 
 
@@ -637,6 +758,7 @@ def create_re_validator(str name, r):
 builtin_validators = {
     'list': list_validator,
     'dict': dict_validator,
+    'union': union_validator,
     'any': any_validator,
     'int': int_validator,
     'bool': bool_validator,

@@ -29,6 +29,7 @@ relations:
     T.__schema__ -> Schema
 """
 import json
+import copy
 
 from pyparsing import (
     Group, Keyword, Optional, StringEnd, StringStart, Suppress,
@@ -163,6 +164,9 @@ class Schema:
                 ret.append('{}({})'.format(self.validator, '{' + keys + '}'))
             elif self.validator == 'list':
                 ret.append('{}({})'.format(self.validator, self.items.validator))
+            elif self.validator == 'enum':
+                values = ', '.join(map(_dump_value, self.items)) if self.items else ''
+                ret.append('{}({})'.format(self.validator, '{' + values + '}'))
             elif self.validator == 'union':
                 if self.items and isinstance(self.items, list):
                     keys = ', '.join(x.validator for x in self.items)
@@ -200,7 +204,7 @@ class Schema:
             else:
                 items = {k: _schema_copy_of(v) for k, v in self.items.items()}
         else:
-            items = self.items
+            items = copy.copy(self.items)
         schema.items = items
         return schema
 
@@ -214,7 +218,7 @@ class Schema:
         if not self.validator:
             return None
         ret = []
-        if self.validator in {'dict', 'list', 'union'} or self.items is None:
+        if self.validator in {'dict', 'list', 'union', 'enum'} or self.items is None:
             ret.append(self.validator)
         else:
             ret.append(_pair(self.validator, self.items))
@@ -239,6 +243,8 @@ class Schema:
                     ret[k] = _schema_primitive_of(v)
         elif self.validator == 'list' and self.items is not None:
             ret = [ret, _schema_primitive_of(self.items)]
+        elif self.validator == 'enum' and self.items is not None:
+            ret = [ret, *self.items]
         elif self.validator == 'union' and self.items is not None:
             if isinstance(self.items, list):
                 ret = [ret]
@@ -303,6 +309,8 @@ class Schema:
                         raise SchemaError('invalid list schema')
                     with mark_index():
                         items = cls.parse_isomorph_schema(obj[1])
+                elif validator == 'enum':
+                    items = list(obj[1:])
                 elif validator == 'union':
                     items = []
                     for i, x in enumerate(obj[1:]):
@@ -467,6 +475,17 @@ class Builder:
             if not isinstance(items, Schema):
                 raise SchemaError('items is not schema')
             ret = items
+        elif self._schema.validator == 'enum':
+            if isinstance(items, str):
+                items = set(items.replace(',', ' ').strip().split())
+            if not isinstance(items, (list, tuple, set)):
+                raise SchemaError('items is not list or set')
+            ret = []
+            for i, v in enumerate(items):
+                if not isinstance(v, (bool, int, float, str)):
+                    raise SchemaError('enum value must be bool, int, float or str')
+                ret.append(v)
+            ret = list(sorted(set(ret), key=lambda x: (str(type(x)), str(x))))
         elif self._schema.validator == 'union':
             if isinstance(items, list):
                 ret = []

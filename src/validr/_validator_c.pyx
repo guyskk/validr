@@ -354,6 +354,34 @@ def dict_validator(compiler, items=None, key=None, value=None):
     return validate
 
 
+cpdef _dump_enum_value(value):
+    if value is None:
+        return 'null'
+    elif value is False:
+        return 'false'
+    elif value is True:
+        return 'true'
+    elif isinstance(value, str):
+        return repr(value)  # single quotes by default
+    else:
+        return str(value)  # number
+
+
+@validator(output=object)
+def enum_validator(compiler, items):
+    if not items:
+        raise SchemaError("enum items not provided")
+    expects = '{' + ', '.join(map(_dump_enum_value, items)) + '}'
+    items = frozenset(items)
+
+    def validate(value):
+        if value in items:
+            return value
+        raise Invalid("expect one of {}".format(expects))
+
+    return validate
+
+
 cpdef union_validator(compiler, schema):
     if not schema.items:
         raise SchemaError('union schemas not provided')
@@ -839,6 +867,7 @@ builtin_validators = {
     'list': list_validator,
     'dict': dict_validator,
     'union': union_validator,
+    'enum': enum_validator,
     'any': any_validator,
     'int': int_validator,
     'bool': bool_validator,

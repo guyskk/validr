@@ -9,8 +9,8 @@ elements = {
     'int.desc("a number")': T.int.desc('a number'),
     'int.min(0).max(10).optional.default(5).desc("a number")':
         T.int.min(0).max(10).optional.default(5).desc('a number'),
-    'enum("A B C")': T.enum('A B C'),
-    "enum('A B C')": T.enum('A B C'),
+    'abc("A B C")': T.abc('A B C'),
+    "abc('A B C')": T.abc('A B C'),
 }
 
 invalid_elements = [
@@ -20,7 +20,7 @@ invalid_elements = [
     'int.min()()',
     'int.range(0,10)',
     'int.range([0,10])',
-    'enum([1,2,3])',
+    'abc([1,2,3])',
 ]
 
 

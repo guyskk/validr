@@ -10,6 +10,13 @@ cpdef shorten(str text, int length):
     return text
 
 
+cpdef _format_value(value):
+    if isinstance(value, str):
+        return repr(shorten(value, 75))
+    else:
+        return shorten(str(value), 75)
+
+
 cpdef _format_error(args, str position, str value_clause=None):
     cdef str msg = str(args[0]) if args else 'invalid'
     if position:
@@ -106,7 +113,7 @@ class Invalid(ValidrError):
     def __str__(self):
         cdef str value_clause = None
         if self.has_value:
-            value_clause = 'value=%s' % shorten(str(self.value), 75)
+            value_clause = 'value=%s' % _format_value(self.value)
         return _format_error(self.args, self.position, value_clause)
 
 

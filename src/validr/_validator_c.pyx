@@ -885,8 +885,9 @@ builtin_validators = {
 }
 
 regexs = {
-    'phone': r'((\+86)|(86))?1\d{10}',
+    'phone': r'((\+\d{2})|(\d{2}))?1\d{10}',
     'idcard': r'(\d{17}[\d|x|X])|(\d{15})',
+    'slug': r'[a-z0-9]+(?:-[a-z0-9]+)*',
 }
 for name, r in regexs.items():
     builtin_validators[name] = create_re_validator(name, r)

@@ -19,14 +19,14 @@ def test(ctx, benchmark=False, profile=False, k=None):
     os.environ['VALIDR_SETUP_MODE'] = 'dist_dbg'
     ctx.run('pip install --no-deps -e .')
     # cython speedup mode
-    ctx.run('pytest --cov=validr --cov-report=term-missing' + pytest_k)
+    ctx.run("pytest" + pytest_k)
     if benchmark:
         ctx.run('python benchmark/benchmark.py benchmark --validr')
     if profile:
         ctx.run('python benchmark/benchmark.py profile')
     # pure python mode
     ctx.run('rm -rf src/validr/*.so')
-    ctx.run('pytest --cov=validr --cov-report=term-missing --cov-config=.coveragerc_py' + pytest_k)
+    ctx.run("pytest --cov-config=.coveragerc_py" + pytest_k)
     if benchmark:
         ctx.run('python benchmark/benchmark.py benchmark --validr')
     if profile:

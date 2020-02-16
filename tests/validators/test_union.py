@@ -4,33 +4,31 @@ from . import case, compiler
 
 
 @case({
-    T.union([T.str, T.list(T.str)]): [
-        ('xxx', 'xxx'),
-        (['xxx', 'yyy'], ['xxx', 'yyy']),
+    T.union([T.int, T.list(T.int)]): [
+        (111, 111),
+        ([111, 222], [111, 222]),
         ([], []),
-        [None, '', 123],
+        [None, '', 'xxx'],
     ],
     T.union([T.str, T.list(T.str)]).optional: [
-        ('xxx', 'xxx'),
-        (['xxx', 'yyy'], ['xxx', 'yyy']),
         ([], []),
-        ('', ''),
         (None, ''),
-        [123],
+        ('', ''),
+        [object],
     ],
-    T.union([T.list(T.str)]).optional: [
-        (['xxx', 'yyy'], ['xxx', 'yyy']),
+    T.union([T.list(T.int)]).optional: [
+        ([111, 222], [111, 222]),
         (None, None),
-        ['xxx', '', 123],
+        ['xxx', '', ['yyy']],
     ],
     T.union([
-        T.str,
-        T.list(T.str),
-        T.dict(key=T.str),
+        T.int,
+        T.list(T.int),
+        T.dict(key=T.int),
     ]): [
-        ('xxx', 'xxx'),
-        (['xxx', 'yyy'], ['xxx', 'yyy']),
-        ({'key': 'vvv'}, {'key': 'vvv'}),
+        (111, 111),
+        ([111, 222], [111, 222]),
+        ({'key': 333}, {'key': 333}),
     ]
 })
 def test_union_list():

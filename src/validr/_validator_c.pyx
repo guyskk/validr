@@ -577,7 +577,7 @@ def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
 
     def validate(value):
         if not isinstance(value, str):
-            if accept_object:
+            if accept_object or isinstance(value, int):
                 value = str(value)
             else:
                 raise Invalid('invalid string')

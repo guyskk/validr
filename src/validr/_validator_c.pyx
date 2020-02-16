@@ -265,6 +265,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
             inner = compiler.compile(items)
     if unique:
         key_of = _key_func_of_schema(items)
+    del compiler, items
 
     def validate(value):
         try:
@@ -293,7 +294,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
 
 
 @validator(accept=object, output=object)
-def dict_validator(compiler, items=None):
+def dict_validator(compiler, items=None, key=None, value=None):
     if items is None:
         inners = None
     else:
@@ -301,9 +302,19 @@ def dict_validator(compiler, items=None):
         for k, v in items.items():
             with mark_key(k):
                 inners.append((k, compiler.compile(v)))
+    validate_extra_key = validate_extra_value = None
+    if key is not None:
+        with mark_key('$self_key'):
+            validate_extra_key = compiler.compile(key)
+    if value is not None:
+        with mark_key('$self_value'):
+            validate_extra_value = compiler.compile(value)
+    cdef bint is_dynamic
+    is_dynamic = bool(validate_extra_key or validate_extra_value)
+    del compiler, items, key, value
 
     def validate(value):
-        if inners is None:
+        if inners is None and not is_dynamic:
             if not is_dict(value):
                 raise Invalid('must be dict')
             return copy(value)
@@ -311,11 +322,26 @@ def dict_validator(compiler, items=None):
             getter = get_dict_value
         else:
             getter = get_object_value
+            if is_dynamic:
+                raise Invalid("dynamic dict not allowed non-dict value")
         result = {}
         cdef str k
-        for k, inner in inners:
-            with mark_key(k):
-                result[k] = inner(getter(value, k))
+        if inners is not None:
+            for k, inner in inners:
+                with mark_key(k):
+                    result[k] = inner(getter(value, k))
+        if is_dynamic:
+            extra_keys = map(str, set(value) - set(result))
+            for k in extra_keys:
+                if validate_extra_key:
+                    with mark_key('$self_key'):
+                        k = str(validate_extra_key(k))
+                with mark_key(k):
+                    value = getter(value, k)
+                    if validate_extra_value:
+                        result[k] = validate_extra_value(value)
+                    else:
+                        result[k] = copy(value)
         return result
     return validate
 

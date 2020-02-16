@@ -77,6 +77,8 @@ def _dump_value(value):
         return 'true'
     elif isinstance(value, str):
         return repr(value)  # single quotes by default
+    elif isinstance(value, Schema):
+        return value.validator
     else:
         return str(value)  # number
 
@@ -186,7 +188,8 @@ class Schema:
         return '{}<{}>'.format(type(self).__name__, r)
 
     def copy(self):
-        schema = type(self)(validator=self.validator, params=self.params.copy())
+        params = {k: _schema_copy_of(v)for k, v in self.params.items()}
+        schema = type(self)(validator=self.validator, params=params)
         if self.validator == 'dict' and self.items is not None:
             items = {k: _schema_copy_of(v) for k, v in self.items.items()}
         elif self.validator == 'list' and self.items is not None:
@@ -216,6 +219,8 @@ class Schema:
         else:
             ret.append(_pair(self.validator, self.items))
         for k, v in _sort_schema_params(self.params.items()):
+            if self.validator == 'dict' and k in {'key', 'value'}:
+                continue
             if v is False:
                 continue
             if v is True:
@@ -223,10 +228,15 @@ class Schema:
             else:
                 ret.append(_pair(k, v))
         ret = '.'.join(ret)
-        if self.validator == 'dict' and self.items is not None:
+        if self.validator == 'dict':
             ret = {'$self': ret}
-            for k, v in self.items.items():
-                ret[k] = _schema_primitive_of(v)
+            for pkey in ['key', 'value']:
+                pvalue = self.params.get(pkey)
+                if pvalue is not None:
+                    ret['$self_{}'.format(pkey)] = _schema_primitive_of(pvalue)
+            if self.items is not None:
+                for k, v in self.items.items():
+                    ret[k] = _schema_primitive_of(v)
         elif self.validator == 'list' and self.items is not None:
             ret = [ret, _schema_primitive_of(self.items)]
         elif self.validator == 'union' and self.items is not None:
@@ -274,6 +284,10 @@ class Schema:
             for k, v in obj.items():
                 with mark_key(k):
                     items[k] = cls.parse_isomorph_schema(v)
+            for pkey in ['key', 'value']:
+                pvalue = items.pop('$self_{}'.format(pkey), None)
+                if pvalue is not None:
+                    e.params[pkey] = pvalue
             return cls(validator=e.validator, items=items, params=e.params)
         elif isinstance(obj, list):
             if len(obj) == 1:
@@ -410,7 +424,7 @@ class Builder:
                 raise SchemaError('require one positional argument')
             if len(args) > 1:
                 raise SchemaError("can't call with more than one positional argument")
-            param_value = self._check_param_value(args[0])
+            param_value = self._check_param_value(self._last_attr, args[0])
             items = self._schema.items
             params = self._schema.params.copy()
             params[self._last_attr] = param_value
@@ -469,9 +483,18 @@ class Builder:
             ret = items
         return ret
 
-    def _check_param_value(self, value):
+    def _check_param_value(self, key, value):
+        if self._schema.validator == 'dict':
+            if key in {'key', 'value'}:
+                return self._check_dict_param_value(key, value)
         if not isinstance(value, (bool, int, float, str)):
-            raise SchemaError('param value must be bool, int, float or str')
+            raise SchemaError('parameter value must be bool, int, float or str')
+        return value
+
+    def _check_dict_param_value(self, key, value):
+        value = _schema_of(value)
+        if not isinstance(value, Schema):
+            raise SchemaError('dict {} parameter is not schema'.format(key))
         return value
 
 

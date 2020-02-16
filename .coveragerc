@@ -1,3 +1,3 @@
 [run]
 plugins=Cython.Coverage
-omit=src/validr/*_py.py
+omit=src/validr/*_py.py,src/validr/_vendor/*.py

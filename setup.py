@@ -21,11 +21,10 @@ _SETUP_OPTIONS = dict(
     author_email='guyskk@qq.com',
     url='https://github.com/guyskk/validr',
     license='MIT',
-    packages=['validr'],
+    packages=['validr', 'validr._vendor'],
     package_dir={'': 'src'},
     install_requires=[
         'pyparsing>=2.1.0',
-        'email_validator>=1.0.3',
         'terminaltables>=3.1.0',
     ],
     extras_require={
@@ -42,7 +41,6 @@ _SETUP_OPTIONS = dict(
             'bumpversion>=0.5.3',
         ],
         'benchmark': [
-            'beeprint>=2.4.6',
             'click>=6.7',
             'schema>=0.6.5',
             'jsonschema>=2.5.1',

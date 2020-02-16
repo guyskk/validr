@@ -15,10 +15,10 @@ from . import case
             'a--b',
             'a-',
             '-a',
-            '中文 ',
+            '中文',
             ' whitespace '
         ]
     }
 })
-def test_idcard():
+def test_slug():
     pass

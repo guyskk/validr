@@ -26,6 +26,15 @@ from . import case
         ('中文', '中文'),
         ("&><'\"", '&amp;&gt;&lt;&#39;&#34;')
     ],
+    T.str.strip: [
+        (' aaa ', 'aaa'),
+        (' 中文 ', '中文'),
+        [' ', '  ', None]
+    ],
+    T.str.match("[a-z]+"): [
+        ('aaz', 'aaz'),
+        [None, '', 'aA', 'zZ', 'a0', 'a-'],
+    ]
 })
 def test_str():
     pass

@@ -19,7 +19,7 @@ def pyx_to_py(text: str, debug=False):
                     line = line.replace(cdef_t, '')
                 else:
                     line = re.sub(r'(\s*)(\S.*)', r'\1# \2', line)
-        if re.match(r'\s*\w*def\s\w+\(.*(,|\):)', line) or re.match(r'\s+.*=.*\):', line):
+        if re.match(r'\s*\w*def\s\w+\(.*(,|\):)', line) or re.match(r'\s+.*=.*(\):$|,$)', line):
             line = re.sub(r'(bint|str|int|float|dict|list)\s(\w+)', r'\2', line)
         if debug and origin != line:
             print('{:>3d}- '.format(i) + origin, end='')

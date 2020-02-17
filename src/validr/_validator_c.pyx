@@ -10,6 +10,7 @@ from urllib.parse import urlparse, urlunparse
 from email_validator import validate_email, EmailNotValidError
 
 from .exception import Invalid, SchemaError, mark_key, mark_index
+from ._vendor import durationpy
 
 
 cpdef is_dict(obj):
@@ -667,6 +668,38 @@ def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_obj
 
 
 @validator(output=(str, object))
+def timedelta_validator(compiler, bint output_object=False):
+    """Validate timedelta string or convert timedelta to string
+
+    Format (Go's Duration strings):
+        ns - nanoseconds
+        us - microseconds
+        ms - milliseconds
+        s - seconds
+        m - minutes
+        h - hours
+        d - days
+        mo - months
+        y - years
+    """
+    def validate(value):
+        if isinstance(value, (int, float)):
+            value = datetime.timedelta(seconds=value)
+        elif isinstance(value, str):
+            try:
+                value = durationpy.from_str(value)
+            except (durationpy.DurationError, ValueError, TypeError) as ex:
+                raise Invalid('invalid timedelta') from ex
+        else:
+            if not isinstance(value, datetime.timedelta):
+                raise Invalid("invalid timedelta")
+        if output_object:
+            return value
+        return durationpy.to_str(value)
+    return validate
+
+
+@validator(output=(str, object))
 def ipv4_validator(compiler, bint output_object=False):
     def validate(value):
         try:
@@ -814,6 +847,7 @@ builtin_validators = {
     'date': date_validator,
     'time': time_validator,
     'datetime': datetime_validator,
+    'timedelta': timedelta_validator,
     'ipv4': ipv4_validator,
     'ipv6': ipv6_validator,
     'email': email_validator,

@@ -4,8 +4,7 @@ attrs==19.3.0
 bleach==3.1.0
 bumpversion==0.5.3
 certifi==2019.11.28
-cfgv==2.0.1;python_version<'3.6'
-cfgv==3.0.0
+cfgv==2.0.1
 chardet==3.0.4
 Click==7.0
 codecov==2.0.15

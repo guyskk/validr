@@ -14,18 +14,21 @@ def clean(ctx):
 
 
 @task(pre=[clean])
-def test(ctx, profile=False):
+def test(ctx, benchmark=False, profile=False, k=None):
+    pytest_k = ' -k {}'.format(k) if k is not None else ''
     os.environ['VALIDR_SETUP_MODE'] = 'dist_dbg'
     ctx.run('pip install --no-deps -e .')
     # cython speedup mode
-    ctx.run('pytest --cov=validr --cov-report=term-missing')
-    ctx.run('python benchmark/benchmark.py benchmark --validr')
+    ctx.run('pytest --cov=validr --cov-report=term-missing' + pytest_k)
+    if benchmark:
+        ctx.run('python benchmark/benchmark.py benchmark --validr')
     if profile:
         ctx.run('python benchmark/benchmark.py profile')
     # pure python mode
     ctx.run('rm -rf src/validr/*.so')
-    ctx.run('pytest --cov=validr --cov-report=term-missing --cov-config=.coveragerc_py')
-    ctx.run('python benchmark/benchmark.py benchmark --validr')
+    ctx.run('pytest --cov=validr --cov-report=term-missing --cov-config=.coveragerc_py' + pytest_k)
+    if benchmark:
+        ctx.run('python benchmark/benchmark.py benchmark --validr')
     if profile:
         ctx.run('python benchmark/benchmark.py profile')
 

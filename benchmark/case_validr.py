@@ -4,7 +4,10 @@ from validr import T, Compiler, modelclass, asdict, builtin_validators
 @modelclass
 class Model:
     user = T.dict(userid=T.int.min(0).max(9).desc("UserID"))
-    tags = T.list(T.int.min(0))
+    tags = T.union([
+        T.int.min(0),
+        T.list(T.int.min(0)),
+    ])
     style = T.dict(
         width=T.int.desc("width"),
         height=T.int.desc("height"),

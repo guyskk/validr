@@ -107,3 +107,14 @@ def test_dynamic_dict():
         T.dict.key('abc')
     with pytest.raises(SchemaError):
         T.dict.value('abc')
+
+
+def test_enum():
+    schema = T.enum([123, 'xyz', True]).optional
+    assert T(json.loads(str(schema))) == schema
+    assert T(schema.__schema__.to_primitive()) == schema
+    T.enum('A B C') == T.enum(['A', 'B', 'C'])
+    with pytest.raises(SchemaError):
+        T.enum([T.str])
+    with pytest.raises(SchemaError):
+        T.enum([object])

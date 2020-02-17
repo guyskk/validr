@@ -41,20 +41,24 @@ def build(ctx):
 
 
 @task(pre=[build])
+def e2e_test(ctx):
+    PYTHON = '.test-venv/bin/python'
+    PIP = '{PYTHON} -m pip'.format(PYTHON=PYTHON)
+
+    os.environ['VALIDR_SETUP_MODE'] = 'py'
+    ctx.run('python -m venv --clear .test-venv')
+    ctx.run('{PIP} install dist/*'.format(PIP=PIP))
+    ctx.run('{PYTHON} tests/smoke.py'.format(PYTHON=PYTHON))
+
+    os.environ['VALIDR_SETUP_MODE'] = ''
+    ctx.run('python -m venv --clear .test-venv')
+    ctx.run('{PIP} install dist/*'.format(PIP=PIP))
+    ctx.run('{PYTHON} tests/smoke.py'.format(PYTHON=PYTHON))
+
+
+@task(pre=[test, e2e_test, build])
 def publish(ctx):
     ctx.run('twine upload dist/*')
-
-
-@task(pre=[build])
-def e2e_test(ctx):
-    os.environ['VALIDR_SETUP_MODE'] = ''
-    ctx.run('pip uninstall -y validr')
-    ctx.run('pip install dist/*')
-    ctx.run('pytest --cov=validr')
-    os.environ['VALIDR_SETUP_MODE'] = 'py'
-    ctx.run('pip uninstall -y validr')
-    ctx.run('pip install dist/*')
-    ctx.run('pytest --cov=validr --cov-config=.coveragerc_py')
 
 
 @task(pre=[build])

@@ -24,18 +24,17 @@ _SETUP_OPTIONS = dict(
     packages=['validr', 'validr._vendor'],
     package_dir={'': 'src'},
     install_requires=[
+        'idna>=2.5',
         'pyparsing>=2.1.0',
         'terminaltables>=3.1.0',
     ],
     extras_require={
         'dev': [
             'pre-commit>=0.13.3',
-            'tox>=2.6.0',
             'flake8>=3.2.1',
             'pytest>=3.0.6',
             'pytest-cov>=2.4.0',
             'codecov>=2.0.5',
-            'terminaltables>=3.1.0',
             'invoke>=1.0.0',
             'twine>=1.11.0',
             'bumpversion>=0.5.3',

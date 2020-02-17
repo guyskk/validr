@@ -90,7 +90,7 @@ faster than pure Python implemented.
 **setup**:
 
 It's better to use [virtualenv](https://virtualenv.pypa.io/en/stable/) or
-similar tools to create isolated Python environment for develop.  
+similar tools to create isolated Python environment for develop.
 
 After that, install dependencys:
 

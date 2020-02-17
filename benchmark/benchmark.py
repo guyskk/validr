@@ -15,9 +15,9 @@ from profile import runctx
 from glob import glob
 from os.path import basename, dirname, splitext
 from timeit import Timer as BaseTimer
+from pprint import pprint as pp
 
 import click
-from beeprint import pp
 
 DATA = {
     'user': {'userid': 5},

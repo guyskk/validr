@@ -7,10 +7,11 @@ import ipaddress
 from copy import copy
 from functools import partial
 from urllib.parse import urlparse, urlunparse
-from email_validator import validate_email, EmailNotValidError
 
 from .exception import Invalid, SchemaError, mark_key, mark_index
 from ._vendor import durationpy
+from ._vendor.email_validator import validate_email, EmailNotValidError
+from ._vendor.fqdn import FQDN
 
 
 cpdef is_dict(obj):
@@ -811,6 +812,20 @@ def url_validator(compiler, scheme='http https', maxlen=256, bint output_object=
     return validate
 
 
+@validator(output=str)
+def fqdn_validator(compiler):
+    def validate(value):
+        try:
+            value = value.strip()
+            fqdn_obj = FQDN(value)
+            if fqdn_obj.is_valid:
+                return fqdn_obj.relative
+        except (ValueError, TypeError, AttributeError) as ex:
+            raise Invalid("invalid fqdn") from ex
+        raise Invalid("invalid fqdn")
+    return validate
+
+
 @validator(output=(str, object))
 def uuid_validator(compiler, version=None, bint output_object=False):
     if version is None:
@@ -881,12 +896,14 @@ builtin_validators = {
     'ipv6': ipv6_validator,
     'email': email_validator,
     'url': url_validator,
+    'fqdn': fqdn_validator,
     'uuid': uuid_validator,
 }
 
 regexs = {
-    'phone': r'((\+86)|(86))?1\d{10}',
+    'phone': r'((\+\d{2})|(\d{2}))?1\d{10}',
     'idcard': r'(\d{17}[\d|x|X])|(\d{15})',
+    'slug': r'[a-z0-9]+(?:-[a-z0-9]+)*',
 }
 for name, r in regexs.items():
     builtin_validators[name] = create_re_validator(name, r)

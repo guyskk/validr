@@ -1,1 +1,2 @@
 [run]
+omit=src/validr/_vendor/*.py

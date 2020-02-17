@@ -154,29 +154,36 @@ def validator(string=None, *, accept=None, output=None):
                     msg = 'invalid invalid_to value {!r}'.format(invalid_to)
                     raise SchemaError(msg) from None
 
-            # optimize, speedup 15%
-            if accept_string:
-                def _m_validate(value):
-                    if value is None or value == '':
-                        if has_default:
-                            return default
-                        elif optional:
-                            return null_output
-                        else:
-                            raise Invalid('required')
-                    if not accept_object and not isinstance(value, str):
-                        raise Invalid('require string value')
-                    return validate(value)
-            else:
-                def _m_validate(value):
-                    if value is None:
-                        if has_default:
-                            return default
-                        elif optional:
-                            return null_output
-                        else:
-                            raise Invalid('required')
-                    return validate(value)
+            # check null, empty string and default
+            def _m_validate(value):
+                cdef bint is_null
+                if accept_string:
+                    is_null = value is None or value == ''
+                else:
+                    is_null = value is None
+                if is_null:
+                    if has_default:
+                        return default
+                    elif optional:
+                        return null_output
+                    else:
+                        raise Invalid('required')
+                if not accept_object and not isinstance(value, str):
+                    raise Invalid('require string value')
+                value = validate(value)
+                # check again after validate
+                if accept_string:
+                    is_null = value is None or value == ''
+                else:
+                    is_null = value is None
+                if is_null:
+                    if has_default:
+                        return default
+                    elif optional:
+                        return null_output
+                    else:
+                        raise Invalid('required')
+                return value
 
             supress_invalid = has_invalid_to or invalid_to_default
 
@@ -265,6 +272,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
             inner = compiler.compile(items)
     if unique:
         key_of = _key_func_of_schema(items)
+    del compiler, items
 
     def validate(value):
         try:
@@ -293,7 +301,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
 
 
 @validator(accept=object, output=object)
-def dict_validator(compiler, items=None):
+def dict_validator(compiler, items=None, key=None, value=None):
     if items is None:
         inners = None
     else:
@@ -301,9 +309,19 @@ def dict_validator(compiler, items=None):
         for k, v in items.items():
             with mark_key(k):
                 inners.append((k, compiler.compile(v)))
+    validate_extra_key = validate_extra_value = None
+    if key is not None:
+        with mark_key('$self_key'):
+            validate_extra_key = compiler.compile(key)
+    if value is not None:
+        with mark_key('$self_value'):
+            validate_extra_value = compiler.compile(value)
+    cdef bint is_dynamic
+    is_dynamic = bool(validate_extra_key or validate_extra_value)
+    del compiler, items, key, value
 
     def validate(value):
-        if inners is None:
+        if inners is None and not is_dynamic:
             if not is_dict(value):
                 raise Invalid('must be dict')
             return copy(value)
@@ -311,11 +329,26 @@ def dict_validator(compiler, items=None):
             getter = get_dict_value
         else:
             getter = get_object_value
+            if is_dynamic:
+                raise Invalid("dynamic dict not allowed non-dict value")
         result = {}
         cdef str k
-        for k, inner in inners:
-            with mark_key(k):
-                result[k] = inner(getter(value, k))
+        if inners is not None:
+            for k, inner in inners:
+                with mark_key(k):
+                    result[k] = inner(getter(value, k))
+        if is_dynamic:
+            extra_keys = map(str, set(value) - set(result))
+            for k in extra_keys:
+                if validate_extra_key:
+                    with mark_key('$self_key'):
+                        k = str(validate_extra_key(k))
+                with mark_key(k):
+                    value = getter(value, k)
+                    if validate_extra_value:
+                        result[k] = validate_extra_value(value)
+                    else:
+                        result[k] = copy(value)
         return result
     return validate
 
@@ -521,17 +554,30 @@ def float_validator(compiler, min=-sys.float_info.max, max=sys.float_info.max,
 
 @validator(output=str)
 def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
-                  bint strip=False, bint escape=False, bint accept_object=False):
+                  bint strip=False, bint escape=False, str match=None,
+                  bint accept_object=False):
     """Validate string
 
     Args:
         minlen (int): min length of string, default 0
         maxlen (int): max length of string, default 1024*1024
+        strip (bool): strip white space or not, default false
         escape (bool): escape to html safe string or not, default false
+        match (str): regex to match, default None
     """
+
+    # To make sure that the entire string matches
+    if match:
+        try:
+            re_match = re.compile(r'(?:%s)\Z' % match).match
+        except Exception as ex:
+            raise SchemaError('match regex %s compile failed' % match) from ex
+    else:
+        re_match = None
+
     def validate(value):
         if not isinstance(value, str):
-            if accept_object:
+            if accept_object or isinstance(value, int):
                 value = str(value)
             else:
                 raise Invalid('invalid string')
@@ -543,13 +589,14 @@ def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
         elif length > maxlen:
             raise Invalid('string length must <= %d' % maxlen)
         if escape:
-            return (value.replace('&', '&amp;')
-                    .replace('>', '&gt;')
-                    .replace('<', '&lt;')
-                    .replace("'", '&#39;')
-                    .replace('"', '&#34;'))
-        else:
-            return value
+            value = (value.replace('&', '&amp;')
+                     .replace('>', '&gt;')
+                     .replace('<', '&lt;')
+                     .replace("'", '&#39;')
+                     .replace('"', '&#34;'))
+        if re_match and not re_match(value):
+            raise Invalid("string not match regex %s" % match)
+        return value
     return validate
 
 

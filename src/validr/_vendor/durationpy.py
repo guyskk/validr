@@ -1,6 +1,5 @@
 """
 https://github.com/icholy/durationpy/blob/master/durationpy/duration.py
-https://github.com/icholy/durationpy/issues/8
 
 >>> int(from_str('0').total_seconds())
 0
@@ -31,11 +30,11 @@ https://github.com/icholy/durationpy/issues/8
 >>> print(to_str(datetime.timedelta(seconds=0.000005)))
 5us
 >>> D = 24*60*60
->>> print(to_str(datetime.timedelta(seconds=2*D + 60 + 5)))
+>>> print(to_str(datetime.timedelta(seconds=2*D + 60 + 5), extended=True))
 2d1m5s
->>> print(to_str(datetime.timedelta(seconds=35*D + 60 + 5)))
+>>> print(to_str(datetime.timedelta(seconds=35*D + 60 + 5), extended=True))
 1mo5d1m5s
->>> print(to_str(datetime.timedelta(seconds=370*D + 60 + 5)))
+>>> print(to_str(datetime.timedelta(seconds=370*D + 60 + 5), extended=True))
 1y5d1m5s
 >>> from_str('10x')
 Traceback (most recent call last):
@@ -113,15 +112,12 @@ def from_str(duration: str) -> datetime.timedelta:
     return datetime.timedelta(microseconds=sign * microseconds)
 
 
-def to_str(delta: datetime.timedelta, extended=None) -> str:
+def to_str(delta: datetime.timedelta, extended=False) -> str:
     """Format a datetime.timedelta to a duration string"""
 
     total_seconds = delta.total_seconds()
     sign = "-" if total_seconds < 0 else ""
     nanoseconds = abs(total_seconds * _second_size)
-
-    if extended is None and nanoseconds > _day_size:
-        extended = True
 
     if total_seconds < 1:
         result_str = _to_str_small(nanoseconds, extended)

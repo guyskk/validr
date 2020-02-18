@@ -697,7 +697,7 @@ def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_obj
 
 
 @validator(output=(str, object))
-def timedelta_validator(compiler, bint output_object=False):
+def timedelta_validator(compiler, bint extended=False, bint output_object=False):
     """Validate timedelta string or convert timedelta to string
 
     Format (Go's Duration strings):
@@ -724,7 +724,7 @@ def timedelta_validator(compiler, bint output_object=False):
                 raise Invalid("invalid timedelta")
         if output_object:
             return value
-        return durationpy.to_str(value)
+        return durationpy.to_str(value, extended=extended)
     return validate
 
 

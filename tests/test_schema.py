@@ -29,6 +29,20 @@ def test_str_copy_and_to_primitive():
     assert copy.to_primitive() == EXPECT
 
 
+def test_param_type():
+    T.str.default(None)
+    T.str.default("")
+    T.int.default(0)
+    T.bool.default(True)
+    T.float.default(1.5)
+    with pytest.raises(SchemaError):
+        T.xxx.param([])
+    with pytest.raises(SchemaError):
+        T.xxx.param({})
+    with pytest.raises(SchemaError):
+        T.xxx.param(object)
+
+
 def test_repr():
     schema = T.dict(
         key=T.list(T.int).unique,

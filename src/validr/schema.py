@@ -506,13 +506,13 @@ class Builder:
         if self._schema.validator == 'dict':
             if key in {'key', 'value'}:
                 return self._check_dict_param_value(key, value)
-        if not isinstance(value, (bool, int, float, str)):
+        if value is not None and not isinstance(value, (bool, int, float, str)):
             raise SchemaError('parameter value must be bool, int, float or str')
         return value
 
     def _check_dict_param_value(self, key, value):
         value = _schema_of(value)
-        if not isinstance(value, Schema):
+        if value is not None and not isinstance(value, Schema):
             raise SchemaError('dict {} parameter is not schema'.format(key))
         return value
 

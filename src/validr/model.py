@@ -2,6 +2,7 @@
 Model class is a convenient way to use schema, it's inspired by data class but
 works differently.
 """
+import inspect
 from .schema import Compiler, T, Schema
 from .exception import Invalid, ModelInvalid, mark_key
 from .validator import is_dict, get_dict_value, get_object_value
@@ -27,14 +28,22 @@ def _create_model_class(model_cls, compiler, immutable):
 
     def _extract_schemas(cls):
         schemas = {}
+        fields = {}
         for k, v in vars(cls).items():
             if k == "__schema__":
                 continue
+            is_modelclass = False
             if hasattr(v, "__schema__"):
+                is_modelclass = inspect.isclass(v)
+                if is_modelclass:
+                    fields[k] = v
+                    v = T(v).optional
                 v = v.__schema__
             if isinstance(v, Schema):
                 schemas[k] = v
-        return schemas
+                if not is_modelclass:
+                    fields[k] = v
+        return schemas, fields
 
     def _extract_post_init(cls):
         f = vars(cls).get("__post_init__", None)
@@ -45,12 +54,23 @@ def _create_model_class(model_cls, compiler, immutable):
     class Field:
         def __init__(self, name, schema):
             self.name = name
-            self.__schema__ = schema
-            with mark_key(self.name):
-                self.validate = compiler.compile(schema)
+            self._is_modelclass = inspect.isclass(schema)
+            if self._is_modelclass:
+                self._model = schema
+                self.__schema__ = schema.__schema__
+                self.validate = schema
+            else:
+                self._model = None
+                self.__schema__ = schema
+                with mark_key(self.name):
+                    self.validate = compiler.compile(schema)
 
         def __repr__(self):
-            return "Field(name={!r}, schema={!r})".format(self.name, self.__schema__)
+            if self._is_modelclass:
+                info = "schema={}".format(self._model.__name__)
+            else:
+                info = "schema={!r}".format(self.__schema__)
+            return "Field(name={!r}, {})".format(self.name, info)
 
         def __get__(self, obj, obj_type):
             if obj is None:
@@ -58,22 +78,27 @@ def _create_model_class(model_cls, compiler, immutable):
             return obj.__dict__.get(self.name, None)
 
         def __set__(self, obj, value):
-            with mark_key(self.name):
-                value = self.validate(value)
+            if not (self._is_modelclass and value is None):
+                with mark_key(self.name):
+                    value = self.validate(value)
             obj.__dict__[self.name] = value
 
     class ModelMeta(type):
         def __init__(cls, *args, **kwargs):
             super().__init__(*args, **kwargs)
             schemas = {}
+            fields = {}
             post_inits = []
             for cls_or_base in reversed(cls.__mro__):
                 post_init = _extract_post_init(cls_or_base)
                 if post_init is not None:
                     post_inits.append(post_init)
-                for name, schema in _extract_schemas(cls_or_base).items():
+                tmp_schemas, tmp_fields = _extract_schemas(cls_or_base)
+                for name, schema in tmp_schemas.items():
                     schemas[name] = schema
-            for name, schema in schemas.items():
+                for name, schema_or_model in tmp_fields.items():
+                    fields[name] = schema_or_model
+            for name, schema in fields.items():
                 setattr(cls, name, Field(name, schema))
             cls.__post_inits = post_inits
             cls.__schema__ = T.dict(schemas).__schema__
@@ -182,7 +207,7 @@ def _create_model_class(model_cls, compiler, immutable):
         if "__eq__" not in model_cls.__dict__:
 
             def __eq__(self, other):
-                fields = getattr(other, "__fields__")
+                fields = getattr(other, "__fields__", None)
                 if not fields:
                     return False
                 if self.__fields__ != fields:
@@ -197,7 +222,13 @@ def _create_model_class(model_cls, compiler, immutable):
                 keys = self.__fields__
             else:
                 keys = set(keys) & self.__fields__
-            return {k: getattr(self, k) for k in keys}
+            ret = {}
+            for k in keys:
+                v = getattr(self, k)
+                if hasattr(v, '__asdict__'):
+                    v = v.__asdict__()
+                ret[k] = v
+            return ret
 
     Model.__module__ = model_cls.__module__
     Model.__name__ = model_cls.__name__

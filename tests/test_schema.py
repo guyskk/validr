@@ -90,6 +90,7 @@ def test_union_list():
         T.dict(key1=T.str),
         T.dict(key1=T.str, key2=T.str),
     ]).optional
+    assert schema.__schema__.copy() == schema.__schema__
     assert T(json.loads(str(schema))) == schema
     assert T(schema.__schema__.to_primitive()) == schema
     with pytest.raises(SchemaError):

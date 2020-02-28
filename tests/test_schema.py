@@ -1,6 +1,6 @@
 import json
 import pytest
-from validr import T, Schema, Compiler, SchemaError
+from validr import T, Schema, Compiler, SchemaError, modelclass
 
 from .helper import skipif_dict_not_ordered
 
@@ -132,3 +132,22 @@ def test_enum():
         T.enum([T.str])
     with pytest.raises(SchemaError):
         T.enum([object])
+
+
+def test_model():
+
+    @modelclass
+    class UserModel:
+        name = T.str
+        age = T.int.min(0)
+
+    class ABC:
+        value = 123
+
+    T.model(UserModel).optional
+
+    with pytest.raises(SchemaError):
+        T.model(ABC)
+
+    with pytest.raises(SchemaError):
+        T.model(a=UserModel, b=UserModel)

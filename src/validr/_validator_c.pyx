@@ -394,6 +394,17 @@ def dict_validator(compiler, items=None, key=None, value=None):
     return validate
 
 
+@validator(accept=(typing.Mapping, typing.Any), output=object)
+def model_validator(compiler, items=None):
+    if items is None:
+        raise SchemaError('model class not provided')
+
+    def validate(value):
+        return items(value)
+
+    return validate
+
+
 cpdef _dump_enum_value(value):
     if value is None:
         return 'null'
@@ -920,6 +931,7 @@ def create_re_validator(str name, r):
 builtin_validators = {
     'list': list_validator,
     'dict': dict_validator,
+    'model': model_validator,
     'union': union_validator,
     'enum': enum_validator,
     'any': any_validator,

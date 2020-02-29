@@ -479,7 +479,7 @@ def _union_list_validator(compiler, schema):
                 if list_inner is not None:
                     raise SchemaError('ambiguous union schema')
                 list_inner = compiler.compile(inner_schema)
-            elif inner_schema.validator == 'dict':
+            elif inner_schema.validator in ('dict', 'model'):
                 if dict_inner is not None:
                     raise SchemaError('ambiguous union schema')
                 dict_inner = compiler.compile(inner_schema)
@@ -493,7 +493,7 @@ def _union_list_validator(compiler, schema):
             if list_inner is None:
                 raise Invalid('not allowed list')
             return list_inner(value)
-        elif isinstance(value, dict):
+        elif is_dict(value) or hasattr(value, '__asdict__'):
             if dict_inner is None:
                 raise Invalid('not allowed dict')
             return dict_inner(value)
@@ -514,11 +514,12 @@ def _union_dict_validator(compiler, items, by):
     inners = {}
     for key, schema in items.items():
         with mark_key(key):
-            if schema.validator != 'dict':
-                raise SchemaError('must be dict schema')
+            if schema.validator not in ('dict', 'model'):
+                raise SchemaError('must be dict or model schema')
             if _optional_or_has_default(schema):
                 raise SchemaError('not allowed optional or default for union schemas')
-            inners[key] = compiler.compile(schema)
+            is_model = schema.validator == 'model'
+            inners[key] = (is_model, compiler.compile(schema))
     expect_bys = '{' + ', '.join(sorted(inners.keys())) + '}'
 
     def validate(value):
@@ -531,12 +532,16 @@ def _union_dict_validator(compiler, items, by):
             by_name = getter(value, by)
             if not by_name:
                 raise Invalid('required', value=by_name)
-            inner = inners.get(by_name)
-            if inner is None:
+            inner_info = inners.get(by_name)
+            if inner_info is None:
                 err_msg = 'expect one of {}'.format(expect_bys)
                 raise Invalid(err_msg, value=by_name)
+        is_model, inner = inner_info
         result = inner(value)
-        result[by] = by_name
+        if is_model:
+            setattr(result, by, by_name)
+        else:
+            result[by] = by_name
         return result
 
     return validate

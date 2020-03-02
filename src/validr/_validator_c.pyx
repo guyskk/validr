@@ -4,6 +4,7 @@ import uuid
 import time
 import datetime
 import ipaddress
+import typing
 from copy import copy
 from functools import partial
 from urllib.parse import urlparse, urlunparse
@@ -43,6 +44,46 @@ cpdef _update_validate_func_info(validate_func, origin_func, schema):
         validate_func.__doc__ = schema.params.get('desc')
 
 
+def _parse_hints(hints):
+    if not isinstance(hints, (tuple, set, list)):
+        hints = [hints]
+    is_string = False
+    is_object = False
+    types = []
+    for hint in hints:
+        if hint is str:
+            is_string = True
+        else:
+            is_object = True
+        if hint is object:
+            hint = typing.Any
+        types.append(hint)
+    return is_string, is_object, tuple(types)
+
+
+def _update_validate_func_type_hints(
+        validate_func,
+        optional, has_default,
+        accept_hints, output_hints,
+):
+    assert accept_hints, 'no accept_hints'
+    assert output_hints, 'no output_hints'
+    if len(accept_hints) == 1:
+        value_typing = accept_hints[0]
+    else:
+        value_typing = typing.Union[accept_hints]
+    if optional:
+        value_typing = typing.Optional[value_typing]
+    if len(output_hints) == 1:
+        return_typing = output_hints[0]
+    else:
+        return_typing = typing.Union[output_hints]
+    if optional and not has_default:
+        return_typing = typing.Optional[return_typing]
+    annotations = {'value': value_typing, 'return': return_typing}
+    validate_func.__annotations__ = annotations
+
+
 def validator(string=None, *, accept=None, output=None):
     """Decorator for create validator
 
@@ -79,26 +120,20 @@ def validator(string=None, *, accept=None, output=None):
             string=False equal to accept=(str, object), output=object
     """
     cdef bint accept_string, accept_object, output_string, output_object
-    if isinstance(accept, (tuple, set, list)):
-        accept_string = str in accept
-        accept_object = object in accept
-    elif accept is not None:
-        accept_string = str is accept
-        accept_object = object is accept
-    else:
+    if accept is None or not accept:
         accept_string = True
         accept_object = True
+        accept_hints = (str, typing.Any)
+    else:
+        accept_string, accept_object, accept_hints = _parse_hints(accept)
     if not (accept_string or accept_object):
         raise ValueError('invalid accept argument {}'.format(accept))
-    if isinstance(output, (tuple, set, list)):
-        output_string = str in output
-        output_object = object in output
-    elif output is not None:
-        output_string = str is output
-        output_object = object is output
-    else:
+    if output is None or not output:
         output_string = string
         output_object = not string
+        output_hints = (str,) if string else (typing.Any,)
+    else:
+        output_string, output_object, output_hints = _parse_hints(output)
     if not (output_string or output_object):
         raise ValueError('invalid output argument {}'.format(output))
     del string, accept, output
@@ -201,6 +236,10 @@ def validator(string=None, *, accept=None, output=None):
 
             _update_validate_func_info(m_validate, f, schema)
 
+            _update_validate_func_type_hints(
+                m_validate, optional=optional, has_default=has_default,
+                accept_hints=accept_hints, output_hints=output_hints)
+
             return m_validate
 
         def m_validator(compiler, schema):
@@ -264,7 +303,7 @@ def _key_func_of_schema(schema):
     return key_of
 
 
-@validator(accept=object, output=object)
+@validator(accept=typing.Iterable, output=typing.List)
 def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
                    bint unique=False):
     if items is None:
@@ -302,7 +341,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
     return validate
 
 
-@validator(accept=object, output=object)
+@validator(accept=(typing.Mapping, typing.Any), output=dict)
 def dict_validator(compiler, items=None, key=None, value=None):
     if items is None:
         inners = None
@@ -352,6 +391,17 @@ def dict_validator(compiler, items=None, key=None, value=None):
                     else:
                         result[k] = copy(value)
         return result
+    return validate
+
+
+@validator(accept=(typing.Mapping, typing.Any), output=object)
+def model_validator(compiler, items=None):
+    if items is None:
+        raise SchemaError('model class not provided')
+
+    def validate(value):
+        return items(value)
+
     return validate
 
 
@@ -429,7 +479,7 @@ def _union_list_validator(compiler, schema):
                 if list_inner is not None:
                     raise SchemaError('ambiguous union schema')
                 list_inner = compiler.compile(inner_schema)
-            elif inner_schema.validator == 'dict':
+            elif inner_schema.validator in ('dict', 'model'):
                 if dict_inner is not None:
                     raise SchemaError('ambiguous union schema')
                 dict_inner = compiler.compile(inner_schema)
@@ -443,7 +493,7 @@ def _union_list_validator(compiler, schema):
             if list_inner is None:
                 raise Invalid('not allowed list')
             return list_inner(value)
-        elif isinstance(value, dict):
+        elif is_dict(value) or hasattr(value, '__asdict__'):
             if dict_inner is None:
                 raise Invalid('not allowed dict')
             return dict_inner(value)
@@ -464,11 +514,12 @@ def _union_dict_validator(compiler, items, by):
     inners = {}
     for key, schema in items.items():
         with mark_key(key):
-            if schema.validator != 'dict':
-                raise SchemaError('must be dict schema')
+            if schema.validator not in ('dict', 'model'):
+                raise SchemaError('must be dict or model schema')
             if _optional_or_has_default(schema):
                 raise SchemaError('not allowed optional or default for union schemas')
-            inners[key] = compiler.compile(schema)
+            is_model = schema.validator == 'model'
+            inners[key] = (is_model, compiler.compile(schema))
     expect_bys = '{' + ', '.join(sorted(inners.keys())) + '}'
 
     def validate(value):
@@ -481,12 +532,16 @@ def _union_dict_validator(compiler, items, by):
             by_name = getter(value, by)
             if not by_name:
                 raise Invalid('required', value=by_name)
-            inner = inners.get(by_name)
-            if inner is None:
+            inner_info = inners.get(by_name)
+            if inner_info is None:
                 err_msg = 'expect one of {}'.format(expect_bys)
                 raise Invalid(err_msg, value=by_name)
+        is_model, inner = inner_info
         result = inner(value)
-        result[by] = by_name
+        if is_model:
+            setattr(result, by, by_name)
+        else:
+            result[by] = by_name
         return result
 
     return validate
@@ -502,7 +557,7 @@ def any_validator(compiler, **ignore_kwargs):
     return any_validate
 
 
-@validator(output=object)
+@validator(accept=(int, float, str), output=int)
 def int_validator(compiler, min=-sys.maxsize, max=sys.maxsize):
     """Validate int or convert string to int
 
@@ -537,7 +592,7 @@ _FALSE_VALUES = {
 }
 
 
-@validator(output=object)
+@validator(accept=(bool, int, str), output=bool)
 def bool_validator(compiler):
     """Validate bool"""
     def validate(value):
@@ -550,7 +605,7 @@ def bool_validator(compiler):
     return validate
 
 
-@validator(output=object)
+@validator(accept=(int, float, str), output=float)
 def float_validator(compiler, min=-sys.float_info.max, max=sys.float_info.max,
                     bint exmin=False, bint exmax=False):
     """Validate float string
@@ -582,7 +637,7 @@ def float_validator(compiler, min=-sys.float_info.max, max=sys.float_info.max,
     return validate
 
 
-@validator(output=str)
+@validator(accept=(str, object), output=str)
 def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
                   bint strip=False, bint escape=False, str match=None,
                   bint accept_object=False):
@@ -630,7 +685,7 @@ def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
     return validate
 
 
-@validator(output=(str, object))
+@validator(accept=(str, datetime.date), output=(str, datetime.date))
 def date_validator(compiler, format='%Y-%m-%d', bint output_object=False):
     """Validate date string or convert date to string
 
@@ -652,7 +707,7 @@ def date_validator(compiler, format='%Y-%m-%d', bint output_object=False):
     return validate
 
 
-@validator(output=(str, object))
+@validator(accept=(str, datetime.time), output=(str, datetime.time))
 def time_validator(compiler, format='%H:%M:%S', bint output_object=False):
     """Validate time string or convert time to string
 
@@ -674,7 +729,7 @@ def time_validator(compiler, format='%H:%M:%S', bint output_object=False):
     return validate
 
 
-@validator(output=(str, object))
+@validator(accept=(str, datetime.datetime), output=(str, datetime.datetime))
 def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_object=False):
     """Validate datetime string or convert datetime to string
 
@@ -696,7 +751,7 @@ def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_obj
     return validate
 
 
-@validator(output=(str, object))
+@validator(accept=(str, datetime.timedelta), output=(str, datetime.timedelta))
 def timedelta_validator(compiler, bint extended=False, bint output_object=False):
     """Validate timedelta string or convert timedelta to string
 
@@ -728,7 +783,7 @@ def timedelta_validator(compiler, bint extended=False, bint output_object=False)
     return validate
 
 
-@validator(output=(str, object))
+@validator(accept=(str, ipaddress.IPv4Address), output=(str, ipaddress.IPv4Address))
 def ipv4_validator(compiler, bint output_object=False):
     def validate(value):
         try:
@@ -744,7 +799,7 @@ def ipv4_validator(compiler, bint output_object=False):
     return validate
 
 
-@validator(output=(str, object))
+@validator(accept=(str, ipaddress.IPv6Address), output=(str, ipaddress.IPv6Address))
 def ipv6_validator(compiler, bint output_object=False):
     def validate(value):
         try:
@@ -826,7 +881,7 @@ def fqdn_validator(compiler):
     return validate
 
 
-@validator(output=(str, object))
+@validator(output=(str, uuid.UUID))
 def uuid_validator(compiler, version=None, bint output_object=False):
     if version is None:
         msg = 'invalid uuid'
@@ -881,6 +936,7 @@ def create_re_validator(str name, r):
 builtin_validators = {
     'list': list_validator,
     'dict': dict_validator,
+    'model': model_validator,
     'union': union_validator,
     'enum': enum_validator,
     'any': any_validator,

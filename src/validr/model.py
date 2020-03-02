@@ -21,46 +21,61 @@ def modelclass(cls=None, *, compiler=None, immutable=False):
     return decorator
 
 
+def _value_asdict(value):
+    if hasattr(value, '__asdict__'):
+        return value.__asdict__()
+    elif is_dict(value):
+        return {k: _value_asdict(v) for k, v in value.items()}
+    elif isinstance(value, (list, tuple, set)):
+        return [_value_asdict(x) for x in value]
+    else:
+        return value
+
+
+def _extract_schemas(cls):
+    schemas = {}
+    for k, v in vars(cls).items():
+        if k == "__schema__":
+            continue
+        if hasattr(v, "__schema__"):
+            v = v.__schema__
+        if isinstance(v, Schema):
+            schemas[k] = v
+    return schemas
+
+
+def _extract_post_init(cls):
+    f = vars(cls).get("__post_init__", None)
+    if f is None or not callable(f):
+        return None
+    return f
+
+
+class Field:
+    def __init__(self, name, schema, compiler):
+        self.name = name
+        self.__schema__ = schema
+        with mark_key(self.name):
+            self.validate = compiler.compile(schema)
+
+    def __repr__(self):
+        info = "schema={!r}".format(self.__schema__)
+        return "Field(name={!r}, {})".format(self.name, info)
+
+    def __get__(self, obj, obj_type):
+        if obj is None:
+            return self
+        return obj.__dict__.get(self.name, None)
+
+    def __set__(self, obj, value):
+        with mark_key(self.name):
+            value = self.validate(value)
+        obj.__dict__[self.name] = value
+
+
 def _create_model_class(model_cls, compiler, immutable):
 
     compiler = compiler or Compiler()
-
-    def _extract_schemas(cls):
-        schemas = {}
-        for k, v in vars(cls).items():
-            if k == "__schema__":
-                continue
-            if hasattr(v, "__schema__"):
-                v = v.__schema__
-            if isinstance(v, Schema):
-                schemas[k] = v
-        return schemas
-
-    def _extract_post_init(cls):
-        f = vars(cls).get("__post_init__", None)
-        if f is None or not callable(f):
-            return None
-        return f
-
-    class Field:
-        def __init__(self, name, schema):
-            self.name = name
-            self.__schema__ = schema
-            with mark_key(self.name):
-                self.validate = compiler.compile(schema)
-
-        def __repr__(self):
-            return "Field(name={!r}, schema={!r})".format(self.name, self.__schema__)
-
-        def __get__(self, obj, obj_type):
-            if obj is None:
-                return self
-            return obj.__dict__.get(self.name, None)
-
-        def __set__(self, obj, value):
-            with mark_key(self.name):
-                value = self.validate(value)
-            obj.__dict__[self.name] = value
 
     class ModelMeta(type):
         def __init__(cls, *args, **kwargs):
@@ -74,7 +89,7 @@ def _create_model_class(model_cls, compiler, immutable):
                 for name, schema in _extract_schemas(cls_or_base).items():
                     schemas[name] = schema
             for name, schema in schemas.items():
-                setattr(cls, name, Field(name, schema))
+                setattr(cls, name, Field(name, schema, compiler))
             cls.__post_inits = post_inits
             cls.__schema__ = T.dict(schemas).__schema__
             cls.__fields__ = frozenset(schemas)
@@ -182,7 +197,7 @@ def _create_model_class(model_cls, compiler, immutable):
         if "__eq__" not in model_cls.__dict__:
 
             def __eq__(self, other):
-                fields = getattr(other, "__fields__")
+                fields = getattr(other, "__fields__", None)
                 if not fields:
                     return False
                 if self.__fields__ != fields:
@@ -197,7 +212,13 @@ def _create_model_class(model_cls, compiler, immutable):
                 keys = self.__fields__
             else:
                 keys = set(keys) & self.__fields__
-            return {k: getattr(self, k) for k in keys}
+            ret = {}
+            for k in keys:
+                v = getattr(self, k)
+                if v is not None:
+                    v = _value_asdict(v)
+                ret[k] = v
+            return ret
 
     Model.__module__ = model_cls.__module__
     Model.__name__ = model_cls.__name__

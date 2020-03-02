@@ -1,6 +1,6 @@
 import json
 import pytest
-from validr import T, Schema, Compiler, SchemaError
+from validr import T, Schema, Compiler, SchemaError, modelclass
 
 from .helper import skipif_dict_not_ordered
 
@@ -90,6 +90,7 @@ def test_union_list():
         T.dict(key1=T.str),
         T.dict(key1=T.str, key2=T.str),
     ]).optional
+    assert schema.__schema__.copy() == schema.__schema__
     assert T(json.loads(str(schema))) == schema
     assert T(schema.__schema__.to_primitive()) == schema
     with pytest.raises(SchemaError):
@@ -132,3 +133,22 @@ def test_enum():
         T.enum([T.str])
     with pytest.raises(SchemaError):
         T.enum([object])
+
+
+def test_model():
+
+    @modelclass
+    class UserModel:
+        name = T.str
+        age = T.int.min(0)
+
+    class ABC:
+        value = 123
+
+    T.model(UserModel).optional
+
+    with pytest.raises(SchemaError):
+        T.model(ABC)
+
+    with pytest.raises(SchemaError):
+        T.model(a=UserModel, b=UserModel)

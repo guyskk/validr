@@ -30,6 +30,7 @@ relations:
 """
 import json
 import copy
+import inspect
 
 from pyparsing import (
     Group, Keyword, Optional, StringEnd, StringStart, Suppress,
@@ -124,6 +125,10 @@ def _schema_primitive_of(obj):
     return obj
 
 
+def _is_model(obj):
+    return inspect.isclass(obj) and hasattr(obj, '__schema__')
+
+
 class Schema:
 
     def __init__(self, *, validator=None, items=None, params=None):
@@ -174,6 +179,8 @@ class Schema:
                 else:
                     keys = ', '.join(sorted(self.items)) if self.items else ''
                     ret.append('{}({})'.format(self.validator, '{' + keys + '}'))
+            elif self.validator == 'model' and self.items is not None:
+                ret.append('{}({})'.format(self.validator, self.items.__name__))
             else:
                 ret.append(_pair(self.validator, self.items))
         for k, v in _sort_schema_params(self.params.items()):
@@ -217,6 +224,13 @@ class Schema:
     def to_primitive(self):
         if not self.validator:
             return None
+        # T.model not support in JSON, convert it to T.dict
+        if self.validator == 'model':
+            if self.items is None:
+                items = None
+            else:
+                items = _schema_of(self.items).items
+            self = Schema(validator='dict', items=items, params=self.params)
         ret = []
         if self.validator in {'dict', 'list', 'union', 'enum'} or self.items is None:
             ret.append(self.validator)
@@ -417,6 +431,10 @@ class Builder:
                 raise SchemaError("can't call with more than one positional argument")
             if self._schema.validator in {'dict', 'union'}:
                 items = args[0] if args else kwargs
+            elif self._schema.validator == 'model':
+                if len(args) != 1 or kwargs:
+                    raise SchemaError('require exactly one positional argument')
+                items = args[0]
             else:
                 if kwargs:
                     raise SchemaError("can't call with keyword argument")
@@ -496,6 +514,10 @@ class Builder:
                     ret.append(v)
             else:
                 ret = self._check_dict_items(items)
+        elif self._schema.validator == 'model':
+            if not _is_model(items):
+                raise SchemaError('items must be model class')
+            ret = items
         else:
             if not isinstance(items, (bool, int, float, str)):
                 raise SchemaError('items must be bool, int, float or str')

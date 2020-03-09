@@ -3,7 +3,7 @@ from validr import T, modelclass
 from . import case, compiler
 
 
-@modelclass
+@modelclass(immutable=True)
 class User:
     name = T.str
     age = T.int.min(0)

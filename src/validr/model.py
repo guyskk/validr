@@ -173,13 +173,13 @@ def _create_model_class(model_cls, compiler, immutable):
 
             def __setattr__(self, name, value):
                 if self.__immutable__:
-                    msg = "{} object is immutable!".format(model_cls.__name__)
+                    msg = "{} object is immutable!".format(type(self).__name__)
                     raise ImmutableInstanceError(msg)
                 return object.__setattr__(self, name, value)
 
             def __delattr__(self, name):
                 if self.__immutable__:
-                    msg = "{} object is immutable!".format(model_cls.__name__)
+                    msg = "{} object is immutable!".format(type(self).__name__)
                     raise ImmutableInstanceError(msg)
                 return object.__delattr__(self, name)
 

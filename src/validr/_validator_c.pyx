@@ -538,9 +538,7 @@ def _union_dict_validator(compiler, items, by):
                 raise Invalid(err_msg, value=by_name)
         is_model, inner = inner_info
         result = inner(value)
-        if is_model:
-            setattr(result, by, by_name)
-        else:
+        if not is_model:
             result[by] = by_name
         return result
 

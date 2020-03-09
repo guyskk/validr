@@ -1,4 +1,5 @@
 import os
+import re
 from invoke import task
 
 
@@ -70,3 +71,33 @@ def benchmark(ctx, validr=False):
     if validr:
         benchmark_command += ' --validr'
     ctx.run(benchmark_command)
+
+
+@task()
+def bumpversion(ctx, version=None):
+    """
+    Fix bumpversion not support pre-release versioning:
+    - https://github.com/peritus/bumpversion/issues/128
+    - https://packaging.python.org/guides/distributing-packages-using-setuptools/#pre-release-versioning
+    """
+    with open('setup.py') as f:
+        text = f.read()
+    # https://www.python.org/dev/peps/pep-0440/#appendix-b-parsing-version-strings-with-regular-expressions
+    version_format = r'(0|[1-9][0-9]*)(\.(0|[1-9][0-9]*))*((a|b|rc)(0|[1-9][0-9]*))?'
+    version_re = "version='({})'".format(version_format)
+    match = re.search(version_re, text)
+    assert match, 'version not found'
+    old_version = match.group(1)
+    print('old version: {}'.format(old_version))
+    if version:
+        print('new version: {}'.format(version))
+    else:
+        version = input('new version: ')
+    assert re.fullmatch(version_format, version), 'new version invalid'
+    assert version != old_version, 'version not changed'
+    new_text = re.sub(version_re, "version='{}'".format(version), text)
+    with open('setup.py', 'w') as f:
+        f.write(new_text)
+    os.system('git add setup.py')
+    os.system('git commit -m "Bump version: {} → {}"'.format(old_version, version))
+    os.system('git tag v{}'.format(version))

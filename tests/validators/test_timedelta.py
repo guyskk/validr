@@ -1,15 +1,23 @@
-from validr import T
 from datetime import timedelta
 
-from . import case
+import pytest
+
+from validr import T, SchemaError
+from validr._vendor import durationpy
+
+from . import case, compiler
+
+
+def seconds(value):
+    return durationpy.from_str(value).total_seconds()
 
 
 @case({
     T.timedelta: [
-        (timedelta(seconds=10), '10s'),
-        ('12h59s', '12h59s'),
-        ('23h59m59s', '23h59m59s'),
-        ('2d59m59s', '48h59m59s'),
+        (timedelta(seconds=10), seconds('10s')),
+        ('12h59s', seconds('12h59s')),
+        ('23h59m59s', seconds('23h59m59s')),
+        ('2d59m59s', seconds('48h59m59s')),
         [
             '10x',
             '23:30:30',
@@ -19,19 +27,38 @@ from . import case
             object,
         ]
     ],
-    T.timedelta.extended: [
-        ('24h59m59s', '1d59m59s'),
-        ('2d59m59s', '2d59m59s'),
-        ('2mo59m59s', '2mo59m59s'),
+    T.timedelta.string: [
+        (timedelta(seconds=10), '10s'),
+        ('12h59s', '12h59s'),
+        ('23h59m59s', '23h59m59s'),
+        ('2d59m59s', '48h59m59s'),
+    ],
+    T.timedelta.min(10).max('24h'): [
+        (10, seconds('10s')),
+        ('24h', seconds('24h')),
+        ['9s', 9.9, '24h1s']
     ],
     T.timedelta.object.optional: [
         ('12h59s', timedelta(hours=12, seconds=59)),
         ('', None),
     ],
     T.timedelta.optional: [
+        (None, None),
+        ('', None)
+    ],
+    T.timedelta.string.optional: [
         (None, ''),
         ('', '')
     ],
 })
 def test_timedelta():
     pass
+
+
+def test_timedelta_schema():
+    with pytest.raises(SchemaError) as exinfo:
+        compiler.compile(T.timedelta.min('1x'))
+    assert 'min' in exinfo.value.message
+    with pytest.raises(SchemaError) as exinfo:
+        compiler.compile(T.timedelta.max('1x'))
+    assert 'max' in exinfo.value.message

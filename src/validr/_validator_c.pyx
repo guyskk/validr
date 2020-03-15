@@ -146,8 +146,9 @@ def validator(string=None, *, accept=None, output=None):
                 params['items'] = schema.items
             cdef bint local_output_object = output_object
             if output_string and output_object:
-                local_output_object = bool(params.pop('object', None))
-                params['output_object'] = local_output_object
+                local_output_object = bool(params.get('object', None))
+            if output_object and 'object' in params:
+                params['output_object'] = bool(params.pop('object', None))
             if local_output_object:
                 null_output = None
             else:
@@ -749,8 +750,19 @@ def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_obj
     return validate
 
 
-@validator(accept=(str, datetime.timedelta), output=(str, datetime.timedelta))
-def timedelta_validator(compiler, bint extended=False, bint output_object=False):
+cpdef _parse_timedelta(value):
+    if isinstance(value, (int, float)):
+        value = datetime.timedelta(seconds=value)
+    elif isinstance(value, str):
+        value = durationpy.from_str(value)
+    else:
+        if not isinstance(value, datetime.timedelta):
+            raise ValueError("invalid timedelta")
+    return value
+
+
+@validator(accept=(int, float, str, datetime.timedelta), output=(float, datetime.timedelta))
+def timedelta_validator(compiler, min=None, max=None, bint output_object=False):
     """Validate timedelta string or convert timedelta to string
 
     Format (Go's Duration strings):
@@ -764,20 +776,35 @@ def timedelta_validator(compiler, bint extended=False, bint output_object=False)
         mo - months
         y - years
     """
+    try:
+        min_value = _parse_timedelta(min) if min is not None else None
+    except (durationpy.DurationError, ValueError, TypeError) as ex:
+        raise SchemaError('invalid min timedelta') from ex
+    try:
+        max_value = _parse_timedelta(max) if max is not None else None
+    except (durationpy.DurationError, ValueError, TypeError) as ex:
+        raise SchemaError('invalid max timedelta') from ex
+    del min, max
+    min_repr = max_repr = None
+    if min_value is not None:
+        min_repr = durationpy.to_str(min_value, extended=True)
+    if max_value is not None:
+        max_repr = durationpy.to_str(max_value, extended=True)
+
     def validate(value):
-        if isinstance(value, (int, float)):
-            value = datetime.timedelta(seconds=value)
-        elif isinstance(value, str):
-            try:
-                value = durationpy.from_str(value)
-            except (durationpy.DurationError, ValueError, TypeError) as ex:
-                raise Invalid('invalid timedelta') from ex
-        else:
-            if not isinstance(value, datetime.timedelta):
-                raise Invalid("invalid timedelta")
+        try:
+            value = _parse_timedelta(value)
+        except (durationpy.DurationError, ValueError, TypeError) as ex:
+            raise Invalid('invalid timedelta') from ex
+        if min_value is not None:
+            if value < min_value:
+                raise Invalid('value must >= {}'.format(min_repr))
+        if max_value is not None:
+            if value > max_value:
+                raise Invalid('value must <= {}'.format(max_repr))
         if output_object:
             return value
-        return durationpy.to_str(value, extended=extended)
+        return value.total_seconds()
     return validate
 
 

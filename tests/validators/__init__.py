@@ -63,6 +63,7 @@ def case(cases):
                 with pytest.raises(Invalid):
                     f(value)
             else:
-                assert f(value) == expect
+                result = f(value)
+                assert result == expect, 'result={!r} expect={!r}'.format(result, expect)
         return wrapped
     return decorator

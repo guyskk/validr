@@ -147,6 +147,9 @@ def validator(string=None, *, accept=None, output=None):
             cdef bint local_output_object = output_object
             if output_string and output_object:
                 local_output_object = bool(params.get('object', None))
+                # TODO: fix special case of timedelta
+                if schema.validator == 'timedelta':
+                    local_output_object = not bool(params.get('string', None))
             if output_object and 'object' in params:
                 params['output_object'] = bool(params.pop('object', None))
             if local_output_object:
@@ -761,8 +764,9 @@ cpdef _parse_timedelta(value):
     return value
 
 
-@validator(accept=(int, float, str, datetime.timedelta), output=(float, datetime.timedelta))
-def timedelta_validator(compiler, min=None, max=None, bint output_object=False):
+@validator(accept=(int, float, str, datetime.timedelta), output=(str, float, datetime.timedelta))
+def timedelta_validator(compiler, min=None, max=None, bint string=False,
+                        bint extended=False, bint output_object=False):
     """Validate timedelta string or convert timedelta to string
 
     Format (Go's Duration strings):
@@ -776,6 +780,8 @@ def timedelta_validator(compiler, min=None, max=None, bint output_object=False):
         mo - months
         y - years
     """
+    if string and output_object:
+        raise SchemaError('can not output both string and object')
     try:
         min_value = _parse_timedelta(min) if min is not None else None
     except (durationpy.DurationError, ValueError, TypeError) as ex:
@@ -804,7 +810,11 @@ def timedelta_validator(compiler, min=None, max=None, bint output_object=False):
                 raise Invalid('value must <= {}'.format(max_repr))
         if output_object:
             return value
-        return value.total_seconds()
+        if string:
+            value = durationpy.to_str(value, extended=extended)
+        else:
+            value = value.total_seconds()
+        return value
     return validate
 
 

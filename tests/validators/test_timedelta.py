@@ -27,8 +27,14 @@ def seconds(value):
             object,
         ]
     ],
+    T.timedelta.string: [
+        (timedelta(seconds=10), '10s'),
+        ('12h59s', '12h59s'),
+        ('23h59m59s', '23h59m59s'),
+        ('2d59m59s', '48h59m59s'),
+    ],
     T.timedelta.min(10).max('24h'): [
-        ('10s', seconds('10s')),
+        (10, seconds('10s')),
         ('24h', seconds('24h')),
         ['9s', 9.9, '24h1s']
     ],
@@ -39,6 +45,10 @@ def seconds(value):
     T.timedelta.optional: [
         (None, None),
         ('', None)
+    ],
+    T.timedelta.string.optional: [
+        (None, ''),
+        ('', '')
     ],
 })
 def test_timedelta():

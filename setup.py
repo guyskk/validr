@@ -11,7 +11,7 @@ def _read_file(filepath):
 
 _SETUP_OPTIONS = dict(
     name='validr',
-    version='1.2.0a1',
+    version='1.2.0a2',
     keywords='validation validator validate schema jsonschema',
     description=(
         'A simple, fast, extensible python library for data validation.'),

@@ -15,18 +15,22 @@ from ._vendor.email_validator import validate_email, EmailNotValidError
 from ._vendor.fqdn import FQDN
 
 
-cpdef is_dict(obj):
+cpdef bint is_dict(obj):
     # use isinstance(obj, Mapping) is slow,
     # hasattr check can speed up about 30%
     return hasattr(obj, '__getitem__') and hasattr(obj, 'get')
 
 
-cpdef get_dict_value(obj, str key):
+cpdef inline get_dict_value(obj, str key):
     return obj.get(key, None)
 
 
-cpdef get_object_value(obj, str key):
+cpdef inline get_object_value(obj, str key):
     return getattr(obj, key, None)
+
+
+cpdef inline bint _is_empty(value):
+    return value is None or value == ''
 
 
 cpdef _update_validate_func_info(validate_func, origin_func, schema):
@@ -199,7 +203,7 @@ def validator(string=None, *, accept=None, output=None):
             def _m_validate(value):
                 cdef bint is_null
                 if accept_string:
-                    is_null = value is None or value == ''
+                    is_null = _is_empty(value)
                 else:
                     is_null = value is None
                 if is_null:
@@ -214,7 +218,7 @@ def validator(string=None, *, accept=None, output=None):
                 value = validate(value)
                 # check again after validate
                 if accept_string:
-                    is_null = value is None or value == ''
+                    is_null = _is_empty(value)
                 else:
                     is_null = value is None
                 if is_null:
@@ -271,10 +275,10 @@ def validator(string=None, *, accept=None, output=None):
     return decorator
 
 
-cdef str _UNIQUE_CHECK_ERROR_MESSAGE = "unable to check unique for non-hashable types"
+cpdef str _UNIQUE_CHECK_ERROR_MESSAGE = "unable to check unique for non-hashable types"
 
 
-cdef _key_of_scalar(v):
+cpdef inline _key_of_scalar(v):
     return v
 
 
@@ -345,8 +349,13 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
     return validate
 
 
+cpdef inline dict _slim_dict(dict value):
+    return {k: v for k, v in value.items() if not _is_empty(v)}
+
+
 @validator(accept=(typing.Mapping, typing.Any), output=dict)
-def dict_validator(compiler, items=None, key=None, value=None, int minlen=0, int maxlen=1024):
+def dict_validator(compiler, items=None, key=None, value=None,
+                   int minlen=0, int maxlen=1024, bint slim=False):
     if items is None:
         inners = None
     else:
@@ -373,6 +382,8 @@ def dict_validator(compiler, items=None, key=None, value=None, int minlen=0, int
                 raise Invalid('dict length must <= %d' % maxlen)
             elif minlen > 0 and len(value) < minlen:
                 raise Invalid('dict length must >= %d' % minlen)
+            if slim:
+                value = _slim_dict(value)
             return copy(value)
         if is_dict(value):
             getter = get_dict_value
@@ -403,6 +414,8 @@ def dict_validator(compiler, items=None, key=None, value=None, int minlen=0, int
                         result[k] = validate_extra_value(v)
                     else:
                         result[k] = copy(v)
+        if slim:
+            result = _slim_dict(result)
         return result
     return validate
 

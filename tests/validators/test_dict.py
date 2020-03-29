@@ -113,3 +113,13 @@ def test_dict_length(schema):
     with pytest.raises(Invalid) as exinfo:
         assert f({'xxx': 123, 'yyy': 123, 'zzz': 123, 'kkk': 123})
     assert 'must <=' in exinfo.value.message
+
+
+@pytest.mark.parametrize('schema', [
+    T.dict.slim,
+    T.dict(key1=T.str.optional, key2=T.int.optional).value(T.str).slim,
+])
+def test_slim_dict(schema):
+    f = compiler.compile(schema)
+    data = {'key1': '', 'key2': None, 'key3': 'xxx'}
+    assert f(data) == {'key3': 'xxx'}

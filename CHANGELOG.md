@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file.
 
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## 1.2.0 (Next release)
+
+### Added
+
+- add union validator. #36
+- support dynamic dict validator. #38
+- add timedelta validator. #39
+- add enum validator. #40
+- add slug validator. #41
+- add fqdn validator. #41
+- support nested model class. #7520d96
+- str validator accept int objects, and support match parameter. #38
+- add maxlen parameter to dict, url, and create_re_validator. #a64640
+
+### Changed
+
+- replaced custom enum validator with builtin enum validator.
+
+### Deprecated
+
+- `create_enum_validator` functon is deprecated, use builtin enum validator instead.
+
 ## 1.1.3
 
 ### Added

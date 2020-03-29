@@ -37,7 +37,6 @@ _SETUP_OPTIONS = dict(
             'codecov>=2.0.5',
             'invoke>=1.0.0',
             'twine>=1.11.0',
-            'bumpversion>=0.5.3',
         ],
         'benchmark': [
             'click>=6.7',

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - add fqdn validator. #41
 - support nested model class. #7520d96
 - str validator accept int objects, and support match parameter. #38
+- dict validator support slim parameter. #47
 - add maxlen parameter to dict, url, and create_re_validator. #a64640
 
 ### Changed

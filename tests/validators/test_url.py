@@ -23,6 +23,7 @@ from . import case
             'www.google.com',
             'https://www.google.com/' + 'x' * 256,
             b'https://github.com',
+            'http：//www.google.com',
             '//cdn.bootcss.com/bootstrap/4.0.0-alpha.3/css/bootstrap.min.css',
         ]
     }

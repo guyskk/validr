@@ -34,6 +34,7 @@ from . import case
             'a-',
             '-a',
             '中文',
+            str,
         ]
     },
     T.fqdn.optional: [

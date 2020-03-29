@@ -24,6 +24,13 @@ def test_list():
         ])
 
 
+def test_invalid_list():
+    with pytest.raises(SchemaError):
+        isomorph_schema([])
+    with pytest.raises(SchemaError):
+        isomorph_schema(['unknown', 1, 2, 3])
+
+
 def test_dict():
     schema = isomorph_schema({
         '$self': 'dict.optional.desc("a dict")',

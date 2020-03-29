@@ -1,5 +1,6 @@
-from validr import T
-from . import case
+import pytest
+from validr import T, SchemaError
+from . import case, compiler
 
 
 @case({
@@ -39,3 +40,8 @@ from . import case
 })
 def test_str():
     pass
+
+
+def test_invalid_match_regex():
+    with pytest.raises(SchemaError):
+        compiler.compile(T.str.match('c++'))

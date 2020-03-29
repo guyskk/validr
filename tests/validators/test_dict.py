@@ -97,3 +97,19 @@ def test_dynamic_dict_error():
         f({'yyyy': 'xx'})
     assert exinfo.value.position == 'yyyy'
     assert exinfo.value.value == 'xx'
+
+
+@pytest.mark.parametrize('schema', [
+    T.dict.minlen(2).maxlen(3),
+    T.dict.key(T.str).value(T.int).minlen(2).maxlen(3),
+])
+def test_dict_length(schema):
+    f = compiler.compile(schema)
+    assert f({'xxx': 123, 'yyy': 123})
+    assert f({'xxx': 123, 'yyy': 123, 'zzz': 123})
+    with pytest.raises(Invalid) as exinfo:
+        f({'xxx': 123})
+    assert 'must >=' in exinfo.value.message
+    with pytest.raises(Invalid) as exinfo:
+        assert f({'xxx': 123, 'yyy': 123, 'zzz': 123, 'kkk': 123})
+    assert 'must <=' in exinfo.value.message

@@ -9,6 +9,8 @@ phone_headers = [133, 153, 180, 181, 189, 177, 130, 131, 132,
                  182, 183, 184, 157, 187, 188, 147, 178]
 valid_phone = ['%d87654321' % x for x in phone_headers]
 valid_phone.extend(['+86%s' % x for x in valid_phone[:5]])
+valid_phone.extend(['+86 %s' % x for x in valid_phone[:5]])
+valid_phone.extend(['86 %s' % x for x in valid_phone[:5]])
 
 invalid_phone = ['%d87654321' for x in range(10, 20)
                  if x not in [13, 14, 15, 17, 18]]
@@ -23,6 +25,7 @@ invalid_phone.extend([
     '13312345678 ',
     ' 13312345678',
     '1331234 5678'
+    '+86 133123456785',
 ])
 
 

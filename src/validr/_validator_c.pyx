@@ -339,14 +339,14 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
                         raise Invalid('not unique')
                     keys.add(k)
             result.append(v)
-        if i + 1 < minlen:
+        if minlen > 0 and i + 1 < minlen:
             raise Invalid('list length must >= %d' % minlen)
         return result
     return validate
 
 
 @validator(accept=(typing.Mapping, typing.Any), output=dict)
-def dict_validator(compiler, items=None, key=None, value=None):
+def dict_validator(compiler, items=None, key=None, value=None, int minlen=0, int maxlen=1024):
     if items is None:
         inners = None
     else:
@@ -369,9 +369,18 @@ def dict_validator(compiler, items=None, key=None, value=None):
         if inners is None and not is_dynamic:
             if not is_dict(value):
                 raise Invalid('must be dict')
+            if len(value) > maxlen:
+                raise Invalid('dict length must <= %d' % maxlen)
+            elif minlen > 0 and len(value) < minlen:
+                raise Invalid('dict length must >= %d' % minlen)
             return copy(value)
         if is_dict(value):
             getter = get_dict_value
+            if is_dynamic:
+                if len(value) > maxlen:
+                    raise Invalid('dict length must <= %d' % maxlen)
+                elif minlen > 0 and len(value) < minlen:
+                    raise Invalid('dict length must >= %d' % minlen)
         else:
             getter = get_object_value
             if is_dynamic:
@@ -389,11 +398,11 @@ def dict_validator(compiler, items=None, key=None, value=None):
                     with mark_key('$self_key'):
                         k = str(validate_extra_key(k))
                 with mark_key(k):
-                    value = getter(value, k)
-                    if validate_extra_value:
-                        result[k] = validate_extra_value(value)
+                    v = getter(value, k)
+                    if validate_extra_value is not None:
+                        result[k] = validate_extra_value(v)
                     else:
-                        result[k] = copy(value)
+                        result[k] = copy(v)
         return result
     return validate
 
@@ -514,7 +523,7 @@ def _union_list_validator(compiler, schema):
 
 
 @validator(accept=object, output=object)
-def _union_dict_validator(compiler, items, by):
+def _union_dict_validator(compiler, items, str by):
     inners = {}
     for key, schema in items.items():
         with mark_key(key):
@@ -525,6 +534,7 @@ def _union_dict_validator(compiler, items, by):
             is_model = schema.validator == 'model'
             inners[key] = (is_model, compiler.compile(schema))
     expect_bys = '{' + ', '.join(sorted(inners.keys())) + '}'
+    del key, schema, is_model
 
     def validate(value):
         if is_dict(value):
@@ -567,6 +577,8 @@ def int_validator(compiler, min=-sys.maxsize, max=sys.maxsize):
         min (int): the min value, default -sys.maxsize
         max (int): the max value, default sys.maxsize
     """
+    min, max = int(min), int(max)
+
     def validate(value):
         try:
             v = int(value)
@@ -609,15 +621,27 @@ def bool_validator(compiler):
 
 @validator(accept=(int, float, str), output=float)
 def float_validator(compiler, min=-sys.float_info.max, max=sys.float_info.max,
-                    bint exmin=False, bint exmax=False):
+                    exmin=False, exmax=False):
     """Validate float string
 
     Args:
         min (float): the min value, default -sys.float_info.max
         max (float): the max value, default sys.float_info.max
-        exmin (bool): exclude min value or not, default false
-        exmax (bool): exclude max value or not, default false
+        exmin (bool,float): exclude min value or not, default false
+        exmax (bool,float): exclude max value or not, default false
     """
+    min, max = float(min), float(max)
+    if isinstance(exmin, (int, float)) and not isinstance(exmin, bool):
+        min = float(exmin)
+        exmin = True
+    else:
+        exmin = bool(exmin)
+    if isinstance(exmax, (int, float)) and not isinstance(exmax, bool):
+        max = float(exmax)
+        exmax = True
+    else:
+        exmax = bool(exmax)
+
     def validate(value):
         try:
             v = float(value)
@@ -681,14 +705,14 @@ def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
                      .replace('<', '&lt;')
                      .replace("'", '&#39;')
                      .replace('"', '&#34;'))
-        if re_match and not re_match(value):
+        if re_match is not None and not re_match(value):
             raise Invalid("string not match regex %s" % match)
         return value
     return validate
 
 
 @validator(accept=(str, datetime.date), output=(str, datetime.date))
-def date_validator(compiler, format='%Y-%m-%d', bint output_object=False):
+def date_validator(compiler, str format='%Y-%m-%d', bint output_object=False):
     """Validate date string or convert date to string
 
     Args:
@@ -710,7 +734,7 @@ def date_validator(compiler, format='%Y-%m-%d', bint output_object=False):
 
 
 @validator(accept=(str, datetime.time), output=(str, datetime.time))
-def time_validator(compiler, format='%H:%M:%S', bint output_object=False):
+def time_validator(compiler, str format='%H:%M:%S', bint output_object=False):
     """Validate time string or convert time to string
 
     Args:
@@ -732,7 +756,7 @@ def time_validator(compiler, format='%H:%M:%S', bint output_object=False):
 
 
 @validator(accept=(str, datetime.datetime), output=(str, datetime.datetime))
-def datetime_validator(compiler, format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_object=False):
+def datetime_validator(compiler, str format='%Y-%m-%dT%H:%M:%S.%fZ', bint output_object=False):
     """Validate datetime string or convert datetime to string
 
     Args:
@@ -874,7 +898,7 @@ def email_validator(compiler):
 
 
 @validator(output=(str, object))
-def url_validator(compiler, scheme='http https', maxlen=256, bint output_object=False):
+def url_validator(compiler, str scheme='http https', int maxlen=255, bint output_object=False):
     # https://stackoverflow.com/questions/7160737/python-how-to-validate-a-url-in-python-malformed-or-not
     # https://stackoverflow.com/questions/827557/how-do-you-validate-a-url-with-a-regular-expression-in-python
     # https://github.com/python-hyper/rfc3986
@@ -921,7 +945,7 @@ def uuid_validator(compiler, version=None, bint output_object=False):
     if version is None:
         msg = 'invalid uuid'
     else:
-        if not 1 <= version <= 5:
+        if version not in {1, 3, 4, 5}:
             raise SchemaError('illegal version number')
         msg = 'invalid uuid{}'.format(version)
 
@@ -940,7 +964,7 @@ def uuid_validator(compiler, version=None, bint output_object=False):
     return validate
 
 
-def create_re_validator(str name, r):
+def create_re_validator(str name, str r, int default_maxlen=255):
     """Create validator by regex string
 
     It will make sure that the entire string matches, so needn't
@@ -954,10 +978,17 @@ def create_re_validator(str name, r):
     match = re.compile(r'(?:%s)\Z' % r).match
     message = 'invalid %s' % name
 
-    def re_validator(compiler):
+    def re_validator(compiler, int minlen=0, int maxlen=default_maxlen, bint strip=False):
         def validate(value):
             if not isinstance(value, str):
                 raise Invalid('value must be string')
+            if strip:
+                value = value.strip()
+            cdef int length = len(value)
+            if length < minlen:
+                raise Invalid('%s length must >= %d' % (name, minlen))
+            elif length > maxlen:
+                raise Invalid('%s length must <= %d' % (name, maxlen))
             if match(value):
                 return value
             else:
@@ -992,21 +1023,23 @@ builtin_validators = {
 }
 
 regexs = {
-    'phone': r'((\+\d{2})|(\d{2}))?1\d{10}',
-    'idcard': r'(\d{17}[\d|x|X])|(\d{15})',
-    'slug': r'[a-z0-9]+(?:-[a-z0-9]+)*',
+    'phone': (r'((\+\d{2}\s?)|(\d{2}\s?))?1\d{10}', 15),
+    'idcard': (r'(\d{17}[\d|x|X])|(\d{15})', 18),
+    'slug': (r'[a-z0-9]+(?:-[a-z0-9]+)*', 255),
 }
-for name, r in regexs.items():
-    builtin_validators[name] = create_re_validator(name, r)
+for name, options in regexs.items():
+    builtin_validators[name] = create_re_validator(name, *options)
 
 
-def create_enum_validator(str name, items, string=True):
+def create_enum_validator(str name, items, bint string=True):
     """Create validator by enum items
 
     Args:
         name (str): validator name, used in error message
         items (iterable): enum items
         string (bool): is string like or not
+
+    Deprecated since v1.2.0, use enum validator instead.
     """
     items = set(items)
     message = 'invalid {}, expect one of {}'.format(name, list(sorted(items)))

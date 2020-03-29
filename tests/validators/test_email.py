@@ -24,6 +24,7 @@ from . import case
             'qq.com',
             ' @163.com',
             '中文@qq.com',
+            'i' * 256 + '@gmail.com',
             None,
             123,
         ],

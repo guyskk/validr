@@ -16,9 +16,14 @@ from . import case
             'a-',
             '-a',
             '中文',
-            ' whitespace '
+            ' whitespace ',
+            'x' * 256,
         ]
-    }
+    },
+    T.slug.maxlen(16): {
+        'valid': ['x', 'x' * 16],
+        'invalid': ['x' * 17]
+    },
 })
 def test_slug():
     pass

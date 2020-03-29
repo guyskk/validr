@@ -24,6 +24,7 @@ from . import case
             ),
         ],
         'invalid': [
+            'a' * 128 + '.' + 'b' * 128 + '.com',
             'a',
             'localhost',
             'a..bc',

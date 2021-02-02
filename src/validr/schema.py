@@ -30,6 +30,7 @@ relations:
 """
 import json
 import copy
+import enum
 import inspect
 
 from pyparsing import (
@@ -496,6 +497,8 @@ class Builder:
         elif self._schema.validator == 'enum':
             if isinstance(items, str):
                 items = set(items.replace(',', ' ').strip().split())
+            if inspect.isclass(items) and issubclass(items, enum.Enum):
+                items = [x.value for x in items.__members__.values()]
             if not isinstance(items, (list, tuple, set)):
                 raise SchemaError('items is not list or set')
             ret = []

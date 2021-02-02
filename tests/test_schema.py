@@ -1,4 +1,5 @@
 import json
+import enum
 import pytest
 from validr import T, Schema, Compiler, SchemaError, modelclass
 
@@ -133,6 +134,14 @@ def test_enum():
         T.enum([T.str])
     with pytest.raises(SchemaError):
         T.enum([object])
+
+
+def test_enum_class():
+    class ABC(enum.IntEnum):
+        A = 1
+        B = 2
+    assert T.enum(ABC) == T.enum([1, 2])
+    assert T.enum(enum.Enum('ABC', 'A,B')) == T.enum([1, 2])
 
 
 def test_model():

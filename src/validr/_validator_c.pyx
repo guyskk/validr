@@ -724,6 +724,28 @@ def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
     return validate
 
 
+@validator(accept=bytes, output=bytes)
+def bytes_validator(compiler, int minlen=0, int maxlen=-1):
+    """Validate bytes
+
+    Args:
+        minlen (int): min length of bytes, default 0
+        maxlen (int): max length of bytes, default unlimited
+    """
+
+    def validate(value):
+        if not isinstance(value, bytes):
+            raise Invalid('invalid bytes')
+        cdef int length = len(value)
+        if length < minlen:
+            raise Invalid('bytes length must >= %d' % minlen)
+        elif maxlen > -1 and length > maxlen:
+            raise Invalid('bytes length must <= %d' % maxlen)
+        return value
+
+    return validate
+
+
 @validator(accept=(str, datetime.date), output=(str, datetime.date))
 def date_validator(compiler, str format='%Y-%m-%d', bint output_object=False):
     """Validate date string or convert date to string
@@ -1023,6 +1045,7 @@ builtin_validators = {
     'bool': bool_validator,
     'float': float_validator,
     'str': str_validator,
+    'bytes': bytes_validator,
     'date': date_validator,
     'time': time_validator,
     'datetime': datetime_validator,

@@ -108,4 +108,4 @@ inv benchmark
 
 ## License
 
-Anti-996 License
+The project is open source under [Anti-996 License](/LICENSE) and [GNU GPL License](/LICENSE-GPL), you can choose one of them.

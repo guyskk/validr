@@ -30,7 +30,7 @@ pathlib2==2.3.5
 pkginfo==1.5.0.1
 pluggy==0.13.1
 pre-commit==1.21.0
-py==1.8.1
+py==1.10.0
 pycodestyle==2.5.0
 pyflakes==2.1.1
 Pygments==2.7.4

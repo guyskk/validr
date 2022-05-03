@@ -38,7 +38,7 @@ pyparsing==2.4.6
 pyrsistent==0.15.7
 pytest==5.3.5
 pytest-cov==2.8.1
-PyYAML==5.3
+PyYAML==5.4
 readme-renderer==24.0
 requests==2.22.0
 requests-toolbelt==0.9.1

@@ -198,22 +198,13 @@ cdef bint is_dict(obj):
     # hasattr check can speed up about 30%
     return hasattr(obj, '__getitem__') and hasattr(obj, 'get')
 
-def py_is_dict(obj):
-    return is_dict(obj)
-
 
 cdef inline get_dict_value(obj, str key):
     return obj.get(key, None)
 
-def py_get_dict_value(obj, key):
-    return get_dict_value(obj, key)
-
 
 cdef inline get_object_value(obj, str key):
     return getattr(obj, key, None)
-
-def py_get_object_value(obj, key):
-    return get_object_value(obj, key)
 
 
 cdef inline bint _is_empty(value):
@@ -1279,3 +1270,95 @@ def create_enum_validator(str name, items, bint string=True):
         return validator(accept=str, output=str)(enum_validator)
     else:
         return validator(accept=object, output=object)(enum_validator)
+
+
+cdef class _Field:
+
+    cdef str name
+
+    def __init__(self, str name, schema, compiler):
+        self.name = name
+        self.__schema__ = schema
+        with mark_key(self.name):
+            self.validate = compiler.compile(schema)
+
+    def __repr__(self):
+        info = "schema={!r}".format(self.__schema__)
+        return "Field(name={!r}, {})".format(self.name, info)
+
+    def __get__(self, obj, obj_type):
+        if obj is None:
+            return self
+        return obj.__dict__.get(self.name, None)
+
+    def __set__(self, obj, value):
+        with mark_key(self.name):
+            value = self.validate(value)
+        obj.__dict__[self.name] = value
+
+
+class Field(_Field): pass
+
+
+cdef _value_asdict(value):
+    if hasattr(value, '__asdict__'):
+        return value.__asdict__()
+    elif is_dict(value):
+        return {k: _value_asdict(v) for k, v in value.items()}
+    elif isinstance(value, (list, tuple, set)):
+        return [_value_asdict(x) for x in value]
+    else:
+        return value
+
+
+def py_model_init(self, obj, params):
+    params_set = set(params)
+    errors = []
+    cdef str k
+    if obj:
+        if len(obj) > 1:
+            msg = (
+                "__init__() takes 2 positional arguments "
+                "but {} were given".format(len(obj) + 1)
+            )
+            raise TypeError(msg)
+        obj = obj[0]
+        if is_dict(obj):
+            getter = get_dict_value
+        else:
+            getter = get_object_value
+        for k in self.__fields__ - params_set:
+            try:
+                setattr(self, k, getter(obj, k))
+            except Invalid as ex:
+                errors.append(ex)
+    else:
+        for k in self.__fields__ - params_set:
+            try:
+                setattr(self, k, None)
+            except Invalid as ex:
+                errors.append(ex)
+    for k in self.__fields__ & params_set:
+        try:
+            setattr(self, k, params[k])
+        except Invalid as ex:
+            errors.append(ex)
+    for k in params_set - self.__fields__:
+        errors.append(Invalid("undesired key").mark_key(k))
+    if errors:
+        raise ModelInvalid(errors)
+
+
+def py_model_asdict(self, keys=None):
+    if not keys:
+        keys = self.__fields__
+    else:
+        keys = set(keys) & self.__fields__
+    ret = {}
+    cdef str k
+    for k in keys:
+        v = getattr(self, k)
+        if v is not None:
+            v = _value_asdict(v)
+        ret[k] = v
+    return ret

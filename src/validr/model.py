@@ -3,11 +3,7 @@ Model class is a convenient way to use schema, it's inspired by data class
 but works differently.
 """
 from .schema import Compiler, Schema, T
-from .validator import Invalid, ModelInvalid
-from .validator import py_get_dict_value as get_dict_value
-from .validator import py_get_object_value as get_object_value
-from .validator import py_is_dict as is_dict
-from .validator import py_mark_key as mark_key
+from .validator import Field, py_model_asdict, py_model_init
 
 
 class ImmutableInstanceError(AttributeError):
@@ -22,17 +18,6 @@ def modelclass(cls=None, *, compiler=None, immutable=False):
         return _create_model_class(cls, compiler, immutable)
 
     return decorator
-
-
-def _value_asdict(value):
-    if hasattr(value, '__asdict__'):
-        return value.__asdict__()
-    elif is_dict(value):
-        return {k: _value_asdict(v) for k, v in value.items()}
-    elif isinstance(value, (list, tuple, set)):
-        return [_value_asdict(x) for x in value]
-    else:
-        return value
 
 
 def _extract_schemas(cls):
@@ -52,28 +37,6 @@ def _extract_post_init(cls):
     if f is None or not callable(f):
         return None
     return f
-
-
-class Field:
-    def __init__(self, name, schema, compiler):
-        self.name = name
-        self.__schema__ = schema
-        with mark_key(self.name):
-            self.validate = compiler.compile(schema)
-
-    def __repr__(self):
-        info = "schema={!r}".format(self.__schema__)
-        return "Field(name={!r}, {})".format(self.name, info)
-
-    def __get__(self, obj, obj_type):
-        if obj is None:
-            return self
-        return obj.__dict__.get(self.name, None)
-
-    def __set__(self, obj, value):
-        with mark_key(self.name):
-            value = self.validate(value)
-        obj.__dict__[self.name] = value
 
 
 def _create_model_class(model_cls, compiler, immutable):
@@ -127,40 +90,7 @@ def _create_model_class(model_cls, compiler, immutable):
 
             def __init__(self, *obj, **params):
                 self.__dict__["__immutable__"] = False
-                params_set = set(params)
-                errors = []
-                if obj:
-                    if len(obj) > 1:
-                        msg = (
-                            "__init__() takes 2 positional arguments "
-                            "but {} were given".format(len(obj) + 1)
-                        )
-                        raise TypeError(msg)
-                    obj = obj[0]
-                    if is_dict(obj):
-                        getter = get_dict_value
-                    else:
-                        getter = get_object_value
-                    for k in self.__fields__ - params_set:
-                        try:
-                            setattr(self, k, getter(obj, k))
-                        except Invalid as ex:
-                            errors.append(ex)
-                else:
-                    for k in self.__fields__ - params_set:
-                        try:
-                            setattr(self, k, None)
-                        except Invalid as ex:
-                            errors.append(ex)
-                for k in self.__fields__ & params_set:
-                    try:
-                        setattr(self, k, params[k])
-                    except Invalid as ex:
-                        errors.append(ex)
-                for k in params_set - self.__fields__:
-                    errors.append(Invalid("undesired key").mark_key(k))
-                if errors:
-                    raise ModelInvalid(errors)
+                py_model_init(self, obj, params)
                 type(self).post_init(self)
                 self.__dict__["__immutable__"] = immutable
 
@@ -211,17 +141,7 @@ def _create_model_class(model_cls, compiler, immutable):
                 return True
 
         def __asdict__(self, *, keys=None):
-            if not keys:
-                keys = self.__fields__
-            else:
-                keys = set(keys) & self.__fields__
-            ret = {}
-            for k in keys:
-                v = getattr(self, k)
-                if v is not None:
-                    v = _value_asdict(v)
-                ret[k] = v
-            return ret
+            return py_model_asdict(self, keys=keys)
 
     Model.__module__ = model_cls.__module__
     Model.__name__ = model_cls.__name__

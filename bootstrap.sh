@@ -9,4 +9,4 @@ pip install -r requirements.txt
 pip --version
 pip freeze
 python -c 'import Cython as c;print("Cython="+c.__version__)'
-VALIDR_SETUP_MODE=dist pip install -e .
+VALIDR_SETUP_MODE=dist pip install --no-build-isolation -e .

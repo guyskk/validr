@@ -1,7 +1,7 @@
 on: [push]
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       PIP_DISABLE_PIP_VERSION_CHECK: "1"
     strategy:
@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Display Python version
-        run: python -c "import sys; print(sys.version)"
-      - name: Setup requirements
+        run: python -VV && pip --version
+      - name: Bootstrap requirements
         run: ./bootstrap.sh
       - name: Run pre-commit
         run: .pre-commit/bin/pre-commit run --all-files

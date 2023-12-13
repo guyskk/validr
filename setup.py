@@ -1,11 +1,15 @@
 import os
-from os.path import dirname, basename, splitext
 from glob import glob
+from multiprocessing import cpu_count
+from os.path import basename, dirname, splitext
+from platform import python_implementation
+
 from setuptools import Extension, setup
 
 
 def _read_file(filepath):
-    with open(os.path.join(dirname(__file__), filepath), 'r', encoding='utf-8') as f:
+    filepath = os.path.join(dirname(__file__), filepath)
+    with open(filepath, 'r', encoding='utf-8') as f:
         return f.read()
 
 
@@ -28,26 +32,7 @@ _SETUP_OPTIONS = dict(
     install_requires=[
         'idna>=2.5',
         'pyparsing>=2.1.0',
-        'terminaltables>=3.1.0',
     ],
-    extras_require={
-        'dev': [
-            'pre-commit>=0.13.3',
-            'flake8>=3.2.1',
-            'pytest>=3.0.6',
-            'pytest-cov>=2.4.0',
-            'codecov>=2.0.5',
-            'invoke>=1.0.0',
-            'twine>=1.11.0',
-        ],
-        'benchmark': [
-            'click>=6.7',
-            'schema>=0.6.5',
-            'jsonschema>=2.5.1',
-            'schematics>=2.0.0a1',
-            'voluptuous>=0.9.3',
-        ],
-    },
     zip_safe=False,
     classifiers=[
         'Intended Audience :: Developers',
@@ -84,7 +69,9 @@ def _get_validr_setup_mode():
     mode = os.getenv('VALIDR_SETUP_MODE')
     if mode:
         mode = mode.strip().lower()
-        assert mode in _SETUP_MODES, 'unknown validr setup mode {}'.format(mode)
+        if mode not in _SETUP_MODES:
+            err_msg = 'unknown validr setup mode {}'.format(mode)
+            raise RuntimeError(err_msg)
         return mode
     if _has_c_compiler():
         return 'c'
@@ -95,12 +82,12 @@ def _get_validr_setup_mode():
 def _prepare_setup_options(mode):
     is_pyx = mode in ['pyx', 'pyx_dbg']
     is_c = mode in ['c', 'c_dbg']
-    is_dist = mode in ['dist', 'dist_dbg']
     is_debug = mode.endswith('_dbg')
+    is_dist = mode in ['dist', 'dist_dbg']
+    enable_c = python_implementation() == 'CPython'
     ext_modules = None
-    if is_pyx or is_c or is_dist:
+    if enable_c and (is_pyx or is_c or is_dist):
         if is_pyx or is_dist:
-            from multiprocessing import cpu_count
             from Cython.Build import cythonize
             directives = {'language_level': 3}
             if is_debug:
@@ -115,7 +102,8 @@ def _prepare_setup_options(mode):
             )
         if is_c:
             sources = list(glob('src/validr/*.c'))
-            assert sources, 'Not found any *.c source files'
+            if not sources:
+                raise RuntimeError('Not found any *.c source files')
             ext_modules = []
             for filepath in sources:
                 module_name = 'validr.' + splitext(basename(filepath))[0]
@@ -142,4 +130,5 @@ def _validr_setup():
     setup(**options)
 
 
-_validr_setup()
+if __name__ == '__main__':
+    _validr_setup()

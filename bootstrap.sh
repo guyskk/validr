@@ -1,9 +1,7 @@
 #!/bin/bash
 set -ex
 
-pip install 'pip>=19.1.1'
-pip install 'py>=1.8.0'  # work around pytest requirement
-pip install 'cython>=0.25.2'
-VALIDR_SETUP_MODE=dist pip install -e '.[dev,benchmark]' -r requirements.txt
-
-pre-commit install
+pip install 'pip>=22.3.1' 'wheel>=0.38.4'
+pip install -r requirements.txt
+pip list
+VALIDR_SETUP_MODE=dist pip install --no-build-isolation -e .

@@ -9,31 +9,209 @@ from copy import copy
 from functools import partial
 from urllib.parse import urlparse, urlunparse
 
-from .exception import Invalid, SchemaError, mark_key, mark_index
 from ._vendor import durationpy
 from ._vendor.email_validator import validate_email, EmailNotValidError
 from ._vendor.fqdn import FQDN
 
 
-cpdef bint is_dict(obj):
+_NOT_SET = object()
+
+
+cdef _shorten(str text, int length):
+    if len(text) > length:
+        return text[:length] + '..'
+    return text
+
+
+cdef _format_value(value):
+    if isinstance(value, str):
+        return repr(_shorten(value, 75))
+    else:
+        return _shorten(str(value), 75)
+
+
+cdef _format_error(args, str position, str value_clause=None):
+    cdef str msg = str(args[0]) if args else 'invalid'
+    if position:
+        msg = '%s: %s' % (position, msg)
+    if value_clause:
+        msg = '%s, %s' % (msg, value_clause)
+    return msg
+
+
+class ValidrError(ValueError):
+    """Base exception of validr"""
+
+    def __init__(self, *args, value=_NOT_SET, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._value = value
+        # marks item: (is_key, index_or_key)
+        self.marks = []
+
+    def mark_index(self, int index=-1):
+        self.marks.append((False, index))
+        return self
+
+    def mark_key(self, str key):
+        self.marks.append((True, key))
+        return self
+
+    @property
+    def has_value(self):
+        """Check has value set"""
+        return self._value is not _NOT_SET
+
+    def set_value(self, value):
+        """Set value if not set"""
+        if self._value is _NOT_SET:
+            self._value = value
+
+    @property
+    def value(self):
+        """The invalid value"""
+        if self._value is _NOT_SET:
+            return None
+        return self._value
+
+    @property
+    def field(self):
+        """First level index or key, usually it's the field"""
+        if not self.marks:
+            return None
+        __, index_or_key = self.marks[-1]
+        return index_or_key
+
+    @property
+    def position(self):
+        """A string which represent the position of invalid.
+
+        For example:
+
+            {
+                "tags": ["ok", "invalid"],  # tags[1]
+                "user": {
+                    "name": "invalid",      # user.name
+                    "age": 500              # user.age
+                }
+            }
+        """
+        cdef str text = ''
+        cdef bint is_key
+        for is_key, index_or_key in reversed(self.marks):
+            if is_key:
+                text = '%s.%s' % (text, index_or_key)
+            else:
+                if index_or_key == -1:
+                    text = '%s[]' % text
+                else:
+                    text = '%s[%d]' % (text, index_or_key)
+        if text and text[0] == '.':
+            text = text[1:]
+        return text
+
+    @property
+    def message(self):
+        """Error message"""
+        if self.args:
+            return self.args[0]
+        else:
+            return None
+
+    def __str__(self):
+        return _format_error(self.args, self.position)
+
+
+class Invalid(ValidrError):
+    """Data invalid"""
+    def __str__(self):
+        cdef str value_clause = None
+        if self.has_value:
+            value_clause = 'value=%s' % _format_value(self.value)
+        return _format_error(self.args, self.position, value_clause)
+
+
+class ModelInvalid(Invalid):
+    """Model data invalid"""
+    def __init__(self, errors):
+        if not errors:
+            raise ValueError('errors is required')
+        self.errors = errors
+        message = errors[0].message or 'invalid'
+        message += ' ...total {} errors'.format(len(errors))
+        super().__init__(message)
+
+    def __str__(self):
+        error_line_s = []
+        for ex in self.errors:
+            error_line_s.append('{} is {}'.format(ex.position, ex.message))
+        return '; '.join(error_line_s)
+
+
+class SchemaError(ValidrError):
+    """Schema error"""
+    def __str__(self):
+        cdef str value_clause = None
+        if self.has_value:
+            value_clause = 'schema=%s' % self.value.repr(prefix=False, desc=False)
+        return _format_error(self.args, self.position, value_clause)
+
+
+cdef class mark_index:
+    """Add current index to Invalid/SchemaError"""
+
+    cdef int index
+
+    def __init__(self, index=-1):
+        """index = -1 means the position is uncertainty"""
+        self.index = index
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None and issubclass(exc_type, ValidrError):
+            exc_val.mark_index(self.index)
+
+
+cdef class mark_key:
+    """Add current key to Invalid/SchemaError"""
+
+    cdef str key
+
+    def __init__(self, key):
+        self.key = key
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None and issubclass(exc_type, ValidrError):
+            exc_val.mark_key(self.key)
+
+
+class py_mark_index(mark_index): pass
+class py_mark_key(mark_key): pass
+
+
+cdef bint is_dict(obj):
     # use isinstance(obj, Mapping) is slow,
     # hasattr check can speed up about 30%
     return hasattr(obj, '__getitem__') and hasattr(obj, 'get')
 
 
-cpdef inline get_dict_value(obj, str key):
+cdef inline get_dict_value(obj, str key):
     return obj.get(key, None)
 
 
-cpdef inline get_object_value(obj, str key):
+cdef inline get_object_value(obj, str key):
     return getattr(obj, key, None)
 
 
-cpdef inline bint _is_empty(value):
+cdef inline bint _is_empty(value):
     return value is None or value == ''
 
 
-cpdef _update_validate_func_info(validate_func, origin_func, schema):
+cdef _update_validate_func_info(validate_func, origin_func, schema):
     # make friendly validate func representation
     m_repr = schema.repr(prefix=False, desc=False)
     validate_func.__schema__ = schema
@@ -244,9 +422,9 @@ def validator(string=None, *, accept=None, output=None):
 
             _update_validate_func_info(m_validate, f, schema)
 
-            _update_validate_func_type_hints(
-                m_validate, optional=optional, has_default=has_default,
-                accept_hints=accept_hints, output_hints=output_hints)
+            # _update_validate_func_type_hints(
+            #     m_validate, optional=optional, has_default=has_default,
+            #     accept_hints=accept_hints, output_hints=output_hints)
 
             return m_validate
 
@@ -275,10 +453,10 @@ def validator(string=None, *, accept=None, output=None):
     return decorator
 
 
-cpdef str _UNIQUE_CHECK_ERROR_MESSAGE = "unable to check unique for non-hashable types"
+cdef str _UNIQUE_CHECK_ERROR_MESSAGE = "unable to check unique for non-hashable types"
 
 
-cpdef inline _key_of_scalar(v):
+cdef inline _key_of_scalar(v):
     return v
 
 
@@ -349,7 +527,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
     return validate
 
 
-cpdef inline dict _slim_dict(dict value):
+cdef inline dict _slim_dict(dict value):
     return {k: v for k, v in value.items() if not _is_empty(v)}
 
 
@@ -431,7 +609,7 @@ def model_validator(compiler, items=None):
     return validate
 
 
-cpdef _dump_enum_value(value):
+cdef _dump_enum_value(value):
     if value is None:
         return 'null'
     elif value is False:
@@ -459,7 +637,7 @@ def enum_validator(compiler, items):
     return validate
 
 
-cpdef union_validator(compiler, schema):
+cdef union_validator(compiler, schema):
     if not schema.items:
         raise SchemaError('union schemas not provided')
     default = schema.params.get('default')
@@ -480,7 +658,7 @@ cpdef union_validator(compiler, schema):
         raise SchemaError('union schemas type invalid')
 
 
-cpdef _optional_or_has_default(schema):
+cdef _optional_or_has_default(schema):
     if schema.params.get('optional'):
         return True
     if schema.params.get('default') is not None:
@@ -572,7 +750,7 @@ def _union_dict_validator(compiler, items, str by):
     return validate
 
 
-cpdef any_validate(value):
+cdef any_validate(value):
     return copy(value)
 
 
@@ -812,7 +990,7 @@ def datetime_validator(compiler, str format='%Y-%m-%dT%H:%M:%S.%fZ', bint output
     return validate
 
 
-cpdef _parse_timedelta(value):
+cdef _parse_timedelta(value):
     if isinstance(value, (int, float)):
         value = datetime.timedelta(seconds=value)
     elif isinstance(value, str):
@@ -1092,3 +1270,95 @@ def create_enum_validator(str name, items, bint string=True):
         return validator(accept=str, output=str)(enum_validator)
     else:
         return validator(accept=object, output=object)(enum_validator)
+
+
+cdef class _Field:
+
+    cdef str name
+
+    def __init__(self, str name, schema, compiler):
+        self.name = name
+        self.__schema__ = schema
+        with mark_key(self.name):
+            self.validate = compiler.compile(schema)
+
+    def __repr__(self):
+        info = "schema={!r}".format(self.__schema__)
+        return "Field(name={!r}, {})".format(self.name, info)
+
+    def __get__(self, obj, obj_type):
+        if obj is None:
+            return self
+        return obj.__dict__.get(self.name, None)
+
+    def __set__(self, obj, value):
+        with mark_key(self.name):
+            value = self.validate(value)
+        obj.__dict__[self.name] = value
+
+
+class Field(_Field): pass
+
+
+cdef _value_asdict(value):
+    if hasattr(value, '__asdict__'):
+        return value.__asdict__()
+    elif is_dict(value):
+        return {k: _value_asdict(v) for k, v in value.items()}
+    elif isinstance(value, (list, tuple, set)):
+        return [_value_asdict(x) for x in value]
+    else:
+        return value
+
+
+def py_model_init(self, obj, params):
+    params_set = set(params)
+    errors = []
+    cdef str k
+    if obj:
+        if len(obj) > 1:
+            msg = (
+                "__init__() takes 2 positional arguments "
+                "but {} were given".format(len(obj) + 1)
+            )
+            raise TypeError(msg)
+        obj = obj[0]
+        if is_dict(obj):
+            getter = get_dict_value
+        else:
+            getter = get_object_value
+        for k in self.__fields__ - params_set:
+            try:
+                setattr(self, k, getter(obj, k))
+            except Invalid as ex:
+                errors.append(ex)
+    else:
+        for k in self.__fields__ - params_set:
+            try:
+                setattr(self, k, None)
+            except Invalid as ex:
+                errors.append(ex)
+    for k in self.__fields__ & params_set:
+        try:
+            setattr(self, k, params[k])
+        except Invalid as ex:
+            errors.append(ex)
+    for k in params_set - self.__fields__:
+        errors.append(Invalid("undesired key").mark_key(k))
+    if errors:
+        raise ModelInvalid(errors)
+
+
+def py_model_asdict(self, keys=None):
+    if not keys:
+        keys = self.__fields__
+    else:
+        keys = set(keys) & self.__fields__
+    ret = {}
+    cdef str k
+    for k in keys:
+        v = getattr(self, k)
+        if v is not None:
+            v = _value_asdict(v)
+        ret[k] = v
+    return ret

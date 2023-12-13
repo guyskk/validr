@@ -1,0 +1,13 @@
+name: Pre-Commit
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pre-commit
+        run: ./pre-commit-install.sh
+      - name: Run pre-commit
+        run: .pre-commit/bin/pre-commit run --verbose --all-files

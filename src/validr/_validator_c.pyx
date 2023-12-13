@@ -856,8 +856,7 @@ def float_validator(compiler, min=-sys.float_info.max, max=sys.float_info.max,
     return validate
 
 
-@validator(accept=(str, object), output=str)
-def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
+def _str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
                   bint strip=False, bint escape=False, str match=None,
                   bint accept_object=False):
     """Validate string
@@ -902,6 +901,10 @@ def str_validator(compiler, int minlen=0, int maxlen=1024 * 1024,
             raise Invalid("string not match regex %s" % match)
         return value
     return validate
+
+
+str_validator = validator(accept=(str, object), output=str)(_str_validator)
+nstr_validator = validator(accept=object, output=object)(_str_validator)
 
 
 @validator(accept=bytes, output=bytes)
@@ -1225,6 +1228,7 @@ builtin_validators = {
     'bool': bool_validator,
     'float': float_validator,
     'str': str_validator,
+    'nstr': nstr_validator,
     'bytes': bytes_validator,
     'date': date_validator,
     'time': time_validator,

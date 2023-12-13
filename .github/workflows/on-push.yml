@@ -2,6 +2,8 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PIP_DISABLE_PIP_VERSION_CHECK: "1"
     strategy:
       matrix:
         python-version:

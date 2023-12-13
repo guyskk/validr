@@ -29,7 +29,7 @@ packaging==20.1
 pathlib2==2.3.5
 pkginfo==1.5.0.1
 pluggy==0.13.1
-py==1.10.0
+py==1.11.0
 pycodestyle==2.11.1
 pyflakes==3.1.0
 Pygments==2.7.4

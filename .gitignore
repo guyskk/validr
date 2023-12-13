@@ -138,4 +138,6 @@ ENV/
 .mypy_cache/
 
 # editor
-.vscode
+.vscode/
+
+.pre-commit/

@@ -24,7 +24,7 @@ jobs:
       - name: Setup requirements
         run: ./bootstrap.sh
       - name: Run pre-commit
-        run: pre-commit run --all-files
+        run: .pre-commit/bin/pre-commit run --all-files
       - name: Run test
         run: inv test
       - name: Run e2e-test

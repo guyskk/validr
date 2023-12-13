@@ -1,7 +1,7 @@
 appdirs==1.4.3
 attrs==19.3.0
 autopep8==2.0.4
-bleach==3.3.0
+bleach==6.1.0
 certifi==2019.11.28
 chardet==3.0.4
 charset-normalizer==2.1.1
@@ -10,7 +10,7 @@ codecov==2.1.13
 contextlib2==0.5.5
 coverage==7.3.2
 Cython==3.0.6
-distlib==0.3.6
+distlib==0.3.8
 docutils==0.16
 entrypoints==0.3
 exceptiongroup==1.2.0
@@ -42,8 +42,7 @@ requests==2.31.0
 requests-toolbelt==1.0.0
 schema==0.7.1
 schematics==2.1.1
-six==1.14.0
-terminaltables==3.1.0
+six==1.16.0
 tomli==2.0.1
 tqdm==4.42.1
 twine==1.15.0

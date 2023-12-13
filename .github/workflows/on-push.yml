@@ -1,0 +1,34 @@
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "pypy3.9"
+          - "pypy3.10"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Display Python version
+        run: python -c "import sys; print(sys.version)"
+      - name: Setup requirements
+        run: ./bootstrap.sh
+      - name: Run pre-commit
+        run: pre-commit run --all-files
+      - name: Run test
+        run: inv test
+      - name: Run e2e-test
+        run: inv e2e-test
+      - name: Run benchmark
+        run: inv benchmark
+      - uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}

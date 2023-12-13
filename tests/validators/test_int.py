@@ -1,6 +1,8 @@
-import sys
 from validr import T
+
 from . import case
+
+MAX_INT = 2**64 - 1
 
 
 @case({
@@ -11,10 +13,10 @@ from . import case
         [-1, 10, 'abc']
     ],
     T.int: [
-        (sys.maxsize, sys.maxsize),
-        (-sys.maxsize, -sys.maxsize),
+        (MAX_INT, MAX_INT),
+        (-MAX_INT, -MAX_INT),
         (0, 0),
-        [sys.maxsize + 1, -sys.maxsize - 1, float('INF'), float('NAN')]
+        [MAX_INT + 1, -MAX_INT - 1, float('INF'), float('NAN')]
     ]
 })
 def test_int():

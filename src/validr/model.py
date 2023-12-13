@@ -1,11 +1,13 @@
 """
-Model class is a convenient way to use schema, it's inspired by data class but works differently.
+Model class is a convenient way to use schema, it's inspired by data class
+but works differently.
 """
-from .exception import Invalid, ModelInvalid, mark_key
 from .schema import Compiler, Schema, T
+from .validator import Invalid, ModelInvalid
 from .validator import py_get_dict_value as get_dict_value
 from .validator import py_get_object_value as get_object_value
 from .validator import py_is_dict as is_dict
+from .validator import py_mark_key as mark_key
 
 
 class ImmutableInstanceError(AttributeError):

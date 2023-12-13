@@ -28,19 +28,29 @@ relations:
     T(schema) -> T
     T.__schema__ -> Schema
 """
-import json
 import copy
 import enum
 import inspect
+import json
 
 from pyparsing import (
-    Group, Keyword, Optional, StringEnd, StringStart, Suppress,
-    ZeroOrMore, quotedString, removeQuotes, replaceWith,
-    pyparsing_common, ParseBaseException,
+    Group,
+    Keyword,
+    Optional,
+    ParseBaseException,
+    StringEnd,
+    StringStart,
+    Suppress,
+    ZeroOrMore,
+    pyparsing_common,
+    quotedString,
+    removeQuotes,
+    replaceWith,
 )
 
-from .validator import builtin_validators
-from .exception import SchemaError, mark_index, mark_key
+from .validator import SchemaError, builtin_validators
+from .validator import py_mark_index as mark_index
+from .validator import py_mark_key as mark_key
 
 
 def _make_keyword(kwd_str, kwd_value):

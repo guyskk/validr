@@ -1,5 +1,10 @@
 import typing
+
 from .schema import Compiler
+
+
+class ImmutableInstanceError(AttributeError):
+    ...
 
 
 M = typing.TypeVar('M')

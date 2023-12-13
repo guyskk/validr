@@ -1,9 +1,18 @@
 """A simple, fast, extensible python library for data validation."""
-from .exception import Invalid, ModelInvalid, SchemaError, ValidrError, mark_index, mark_key
+from .model import ImmutableInstanceError, asdict, fields, modelclass
+from .schema import Builder, Compiler, Schema, T
 from .validator import (
-    create_re_validator, create_enum_validator, builtin_validators, validator)
-from .schema import Schema, Compiler, T, Builder
-from .model import modelclass, fields, asdict, ImmutableInstanceError
+    Invalid,
+    ModelInvalid,
+    SchemaError,
+    ValidrError,
+    builtin_validators,
+    create_enum_validator,
+    create_re_validator,
+)
+from .validator import py_mark_index as mark_index
+from .validator import py_mark_key as mark_key
+from .validator import validator
 
 __all__ = (
     'ValidrError', 'Invalid', 'ModelInvalid', 'SchemaError',

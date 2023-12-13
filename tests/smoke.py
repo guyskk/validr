@@ -1,5 +1,7 @@
 import os
-from validr import T, modelclass, asdict
+from platform import python_implementation
+
+from validr import T, asdict, modelclass
 
 
 @modelclass
@@ -29,13 +31,15 @@ def check_pure_python():
 
 
 def check_c_python():
-    import validr._validator_py  # noqa: F401
     import validr._validator_c  # noqa: F401
+    import validr._validator_py  # noqa: F401
 
 
 def check():
     check_feature()
-    if os.getenv('VALIDR_SETUP_MODE') == 'py':
+    is_cpython = python_implementation() == 'CPython'
+    is_mode_py = os.getenv('VALIDR_SETUP_MODE') == 'py'
+    if is_mode_py or not is_cpython:
         check_pure_python()
     else:
         check_c_python()

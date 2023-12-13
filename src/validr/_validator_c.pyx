@@ -760,13 +760,15 @@ def any_validator(compiler, **ignore_kwargs):
     return any_validate
 
 
+MAX_INT = 2**64 - 1
+
 @validator(accept=(int, float, str), output=int)
-def int_validator(compiler, min=-sys.maxsize, max=sys.maxsize):
+def int_validator(compiler, min=-MAX_INT, max=MAX_INT):
     """Validate int or convert string to int
 
     Args:
-        min (int): the min value, default -sys.maxsize
-        max (int): the max value, default sys.maxsize
+        min (int): the min value, default -(2**64 - 1)
+        max (int): the max value, default (2**64 - 1)
     """
     min, max = int(min), int(max)
 

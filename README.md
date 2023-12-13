@@ -1,6 +1,6 @@
 # Validr
 
-[![travis-ci](https://travis-ci.org/guyskk/validr.svg?branch=master)](https://travis-ci.org/guyskk/validr) [![codecov](https://codecov.io/gh/guyskk/validr/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validr)
+[![github-action](https://github.com/guyskk/validr/actions/workflows/build-test.yml/badge.svg?branch=main)](https://github.com/guyskk/validr/actions/workflows/build-test.yml) [![codecov](https://codecov.io/gh/guyskk/validr/branch/master/graph/badge.svg)](https://codecov.io/gh/guyskk/validr)
 
 A simple, fast, extensible python library for data validation.
 

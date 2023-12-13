@@ -1,6 +1,3 @@
-from terminaltables import AsciiTable
-
-
 _NOT_SET = object()
 
 
@@ -128,9 +125,10 @@ class ModelInvalid(Invalid):
         super().__init__(message)
 
     def __str__(self):
-        error_items = [(ex.position, ex.message) for ex in self.errors]
-        table = [("Key", "Error")] + error_items
-        return '\n' + AsciiTable(table).table
+        error_line_s = []
+        for ex in self.errors:
+            error_line_s.append('{} is {}'.format(ex.position, ex.message))
+        return '; '.join(error_line_s)
 
 
 class SchemaError(ValidrError):

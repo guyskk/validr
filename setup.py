@@ -32,7 +32,6 @@ _SETUP_OPTIONS = dict(
     install_requires=[
         'idna>=2.5',
         'pyparsing>=2.1.0',
-        'terminaltables>=3.1.0',
     ],
     zip_safe=False,
     classifiers=[

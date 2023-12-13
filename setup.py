@@ -87,7 +87,12 @@ def _prepare_setup_options(mode):
     ext_modules = None
     if is_pyx or is_c or is_dist:
         if is_pyx or is_dist:
-            from Cython.Build import cythonize
+            try:
+                from Cython.Build import cythonize
+            except ImportError:
+                import os
+                os.system('pip freeze')
+                raise
             directives = {'language_level': 3}
             if is_debug:
                 directives.update({

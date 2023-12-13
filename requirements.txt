@@ -53,7 +53,7 @@ six==1.16.0
 tomli==2.0.1
 tqdm==4.42.1
 twine==4.0.2
-urllib3==1.26.5
+urllib3==1.26.18
 voluptuous==0.14.1
 wcwidth==0.1.8
 webencodings==0.5.1

@@ -9,4 +9,4 @@ jobs:
       - name: Install pre-commit
         run: ./pre-commit-install.sh
       - name: Run pre-commit
-        run: .pre-commit/bin/pre-commit run --all-files
+        run: .pre-commit/bin/pre-commit run --verbose --all-files

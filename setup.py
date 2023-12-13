@@ -83,13 +83,11 @@ def _prepare_setup_options(mode):
     is_pyx = mode in ['pyx', 'pyx_dbg']
     is_c = mode in ['c', 'c_dbg']
     is_debug = mode.endswith('_dbg')
-    _is_dist = mode in ['dist', 'dist_dbg']
-    _is_cpython = python_implementation() == 'CPython'
-    is_dist_c = _is_dist and _is_cpython
-    is_dist_py = _is_dist and not _is_cpython
+    is_dist = mode in ['dist', 'dist_dbg']
+    enable_c = python_implementation() == 'CPython'
     ext_modules = None
-    if is_pyx or is_c or is_dist_c:
-        if is_pyx or is_dist_c:
+    if enable_c and (is_pyx or is_c or is_dist):
+        if is_pyx or is_dist:
             from Cython.Build import cythonize
             directives = {'language_level': 3}
             if is_debug:
@@ -117,7 +115,7 @@ def _prepare_setup_options(mode):
                     ('CYTHON_TRACE_NOGIL', '1'),
                     ('CYTHON_PROFILE', '1'),
                 ])
-    if is_dist_c or is_dist_py:
+    if is_dist:
         from validr_uncython import compile_pyx_to_py
         sources = list(glob('src/validr/*.pyx'))
         compile_pyx_to_py(sources, debug=is_debug)

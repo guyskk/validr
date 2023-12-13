@@ -2,7 +2,7 @@ appdirs==1.4.3
 attrs==19.3.0
 autopep8==2.0.4
 bleach==6.1.0
-certifi==2019.11.28
+certifi==2023.7.22
 chardet==3.0.4
 charset-normalizer==2.1.1
 Click==7.0

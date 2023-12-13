@@ -15,25 +15,34 @@ from ._vendor.email_validator import validate_email, EmailNotValidError
 from ._vendor.fqdn import FQDN
 
 
-cpdef bint is_dict(obj):
+cdef bint is_dict(obj):
     # use isinstance(obj, Mapping) is slow,
     # hasattr check can speed up about 30%
     return hasattr(obj, '__getitem__') and hasattr(obj, 'get')
 
+def py_is_dict(obj):
+    return is_dict(obj)
 
-cpdef inline get_dict_value(obj, str key):
+
+cdef inline get_dict_value(obj, str key):
     return obj.get(key, None)
 
+def py_get_dict_value(obj, key):
+    return get_dict_value(obj, key)
 
-cpdef inline get_object_value(obj, str key):
+
+cdef inline get_object_value(obj, str key):
     return getattr(obj, key, None)
 
+def py_get_object_value(obj, key):
+    return get_object_value(obj, key)
 
-cpdef inline bint _is_empty(value):
+
+cdef inline bint _is_empty(value):
     return value is None or value == ''
 
 
-cpdef _update_validate_func_info(validate_func, origin_func, schema):
+cdef _update_validate_func_info(validate_func, origin_func, schema):
     # make friendly validate func representation
     m_repr = schema.repr(prefix=False, desc=False)
     validate_func.__schema__ = schema
@@ -244,9 +253,9 @@ def validator(string=None, *, accept=None, output=None):
 
             _update_validate_func_info(m_validate, f, schema)
 
-            _update_validate_func_type_hints(
-                m_validate, optional=optional, has_default=has_default,
-                accept_hints=accept_hints, output_hints=output_hints)
+            # _update_validate_func_type_hints(
+            #     m_validate, optional=optional, has_default=has_default,
+            #     accept_hints=accept_hints, output_hints=output_hints)
 
             return m_validate
 
@@ -275,10 +284,10 @@ def validator(string=None, *, accept=None, output=None):
     return decorator
 
 
-cpdef str _UNIQUE_CHECK_ERROR_MESSAGE = "unable to check unique for non-hashable types"
+cdef str _UNIQUE_CHECK_ERROR_MESSAGE = "unable to check unique for non-hashable types"
 
 
-cpdef inline _key_of_scalar(v):
+cdef inline _key_of_scalar(v):
     return v
 
 
@@ -349,7 +358,7 @@ def list_validator(compiler, items=None, int minlen=0, int maxlen=1024,
     return validate
 
 
-cpdef inline dict _slim_dict(dict value):
+cdef inline dict _slim_dict(dict value):
     return {k: v for k, v in value.items() if not _is_empty(v)}
 
 
@@ -431,7 +440,7 @@ def model_validator(compiler, items=None):
     return validate
 
 
-cpdef _dump_enum_value(value):
+cdef _dump_enum_value(value):
     if value is None:
         return 'null'
     elif value is False:
@@ -459,7 +468,7 @@ def enum_validator(compiler, items):
     return validate
 
 
-cpdef union_validator(compiler, schema):
+cdef union_validator(compiler, schema):
     if not schema.items:
         raise SchemaError('union schemas not provided')
     default = schema.params.get('default')
@@ -480,7 +489,7 @@ cpdef union_validator(compiler, schema):
         raise SchemaError('union schemas type invalid')
 
 
-cpdef _optional_or_has_default(schema):
+cdef _optional_or_has_default(schema):
     if schema.params.get('optional'):
         return True
     if schema.params.get('default') is not None:
@@ -572,7 +581,7 @@ def _union_dict_validator(compiler, items, str by):
     return validate
 
 
-cpdef any_validate(value):
+cdef any_validate(value):
     return copy(value)
 
 
@@ -812,7 +821,7 @@ def datetime_validator(compiler, str format='%Y-%m-%dT%H:%M:%S.%fZ', bint output
     return validate
 
 
-cpdef _parse_timedelta(value):
+cdef _parse_timedelta(value):
     if isinstance(value, (int, float)):
         value = datetime.timedelta(seconds=value)
     elif isinstance(value, str):

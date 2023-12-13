@@ -4,20 +4,20 @@ from terminaltables import AsciiTable
 _NOT_SET = object()
 
 
-cpdef shorten(str text, int length):
+cdef _shorten(str text, int length):
     if len(text) > length:
         return text[:length] + '..'
     return text
 
 
-cpdef _format_value(value):
+cdef _format_value(value):
     if isinstance(value, str):
-        return repr(shorten(value, 75))
+        return repr(_shorten(value, 75))
     else:
-        return shorten(str(value), 75)
+        return _shorten(str(value), 75)
 
 
-cpdef _format_error(args, str position, str value_clause=None):
+cdef _format_error(args, str position, str value_clause=None):
     cdef str msg = str(args[0]) if args else 'invalid'
     if position:
         msg = '%s: %s' % (position, msg)
@@ -142,7 +142,7 @@ class SchemaError(ValidrError):
         return _format_error(self.args, self.position, value_clause)
 
 
-cdef class mark_index:
+cdef class _mark_index:
     """Add current index to Invalid/SchemaError"""
 
     cdef int index
@@ -158,8 +158,9 @@ cdef class mark_index:
         if exc_type is not None and issubclass(exc_type, ValidrError):
             exc_val.mark_index(self.index)
 
+class mark_index(_mark_index): pass
 
-cdef class mark_key:
+cdef class _mark_key:
     """Add current key to Invalid/SchemaError"""
 
     cdef str key
@@ -173,3 +174,5 @@ cdef class mark_key:
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is not None and issubclass(exc_type, ValidrError):
             exc_val.mark_key(self.key)
+
+class mark_key(_mark_key): pass

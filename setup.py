@@ -1,6 +1,8 @@
 import os
-from os.path import dirname, basename, splitext
 from glob import glob
+from multiprocessing import cpu_count
+from os.path import basename, dirname, splitext
+
 from setuptools import Extension, setup
 
 
@@ -100,7 +102,6 @@ def _prepare_setup_options(mode):
     ext_modules = None
     if is_pyx or is_c or is_dist:
         if is_pyx or is_dist:
-            from multiprocessing import cpu_count
             from Cython.Build import cythonize
             directives = {'language_level': 3}
             if is_debug:
@@ -142,4 +143,5 @@ def _validr_setup():
     setup(**options)
 
 
-_validr_setup()
+if __name__ == '__main__':
+    _validr_setup()

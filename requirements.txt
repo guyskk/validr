@@ -33,7 +33,7 @@ py==1.11.0
 pycodestyle==2.11.1
 pyflakes==3.1.0
 Pygments==2.7.4
-pyparsing==2.4.6
+pyparsing==3.1.1
 pyrsistent==0.15.7
 pytest==7.4.3
 pytest-cov==4.1.0

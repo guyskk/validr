@@ -44,4 +44,4 @@ def test_str():
 
 def test_invalid_match_regex():
     with pytest.raises(SchemaError):
-        compiler.compile(T.str.match('c++'))
+        compiler.compile(T.str.match('?'))

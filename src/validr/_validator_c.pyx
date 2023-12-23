@@ -143,7 +143,7 @@ class ModelInvalid(Invalid):
     def __str__(self):
         error_line_s = []
         for ex in self.errors:
-            error_line_s.append('{} is {}'.format(ex.position, ex.message))
+            error_line_s.append('{} {}'.format(ex.position, ex.message))
         return '; '.join(error_line_s)
 
 

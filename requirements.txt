@@ -16,7 +16,7 @@ entrypoints==0.3
 exceptiongroup==1.2.0
 filelock==3.0.12
 flake8==6.1.0
-idna==2.8
+idna==3.7
 importlib-metadata==7.0.0
 importlib-resources==1.0.2
 iniconfig==2.0.0

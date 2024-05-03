@@ -51,7 +51,7 @@ schema==0.7.1
 schematics==2.1.1
 six==1.16.0
 tomli==2.0.1
-tqdm==4.42.1
+tqdm==4.66.3
 twine==4.0.2
 urllib3==1.26.18
 voluptuous==0.14.1

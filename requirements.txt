@@ -43,7 +43,7 @@ pyrsistent==0.15.7
 pytest==7.4.3
 pytest-cov==4.1.0
 readme-renderer==42.0
-requests==2.31.0
+requests==2.32.0
 requests-toolbelt==1.0.0
 rfc3986==2.0.0
 rich==13.7.0
